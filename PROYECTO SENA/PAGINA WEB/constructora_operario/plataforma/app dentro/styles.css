@@ -1,0 +1,1375 @@
+:root {
+  --primary: #1f4fd3;
+  --primary-dark: #163694;
+  --accent: #ffb300;
+  --bg: #f3f4f6;
+  --bg-card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top left, #e0ebff, #f9fafb 55%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Layout general */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: #ffffffdd;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-text span:first-child {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.brand-text span:last-child {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #eef2ff;
+  border-radius: 999px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
+.user-info span:first-child {
+  font-weight: 600;
+}
+
+.user-info span:last-child {
+  color: var(--muted);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  padding: 20px 28px 32px;
+  gap: 22px;
+  flex: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  background: #ffffffcc;
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-link {
+  text-decoration: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  transition: 0.2s ease;
+}
+
+.nav-link span.icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e5edff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.nav-link span.label {
+  flex: 1;
+}
+
+.nav-link.nav-active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.55);
+}
+
+.nav-link.nav-active span.icon {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sidebar-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: #f9fafb;
+  border-radius: var(--radius-md);
+  padding: 10px 10px;
+  border: 1px dashed #d1d5db;
+}
+
+/* Contenido principal */
+.content {
+  background: var(--bg);
+  border-radius: var(--radius-lg);
+  padding: 18px 18px 22px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid #e0e7ff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.content-title h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.content-title p {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.chips-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: #e0ebff;
+  border-radius: 999px;
+}
+
+.chip-pill {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.chip-pill.chip-active {
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
+  font-weight: 600;
+}
+
+/* Tarjetas */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 14px 14px 16px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--border);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.card-header h2 {
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
+.card-subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kpi-card {
+  background: #f3f4ff;
+  border-radius: 12px;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid #e5e7ff;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.kpi-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.kpi-tag {
+  font-size: 0.7rem;
+  color: var(--primary-dark);
+}
+
+/* Lista de tareas */
+.tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.tasks-list {
+  display: grid;
+  gap: 10px;
+}
+
+.task-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  align-items: flex-start;
+}
+
+.task-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.task-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.task-project {
+  font-size: 0.78rem;
+  color: #4b5563;
+  margin-top: 2px;
+}
+
+.task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  border: 1px solid #e5e7eb;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-status {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+.tag-urgent {
+  background: #fef3c7;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.tag-date {
+  background: #ecfeff;
+  border-color: #cffafe;
+  color: #0f766e;
+}
+
+.task-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.btn-outline {
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  background: #ffffff;
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s ease;
+}
+
+.btn-outline:hover {
+  background: #eef2ff;
+}
+
+.btn-small-muted {
+  border: none;
+  background: transparent;
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Detalles tarea */
+.task-details {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f9fafb;
+  font-size: 0.78rem;
+  color: #4b5563;
+  display: none;
+}
+
+.task-details p + p {
+  margin-top: 4px;
+}
+
+.task-details strong {
+  font-weight: 600;
+}
+
+/* Página Avances */
+.form-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+
+.form-group label {
+  font-weight: 500;
+}
+
+.form-group select,
+.form-group textarea,
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="file"] {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 0.82rem;
+  font-family: inherit;
+  resize: vertical;
+  background: #ffffff;
+}
+
+.form-group textarea {
+  min-height: 80px;
+}
+
+.form-range-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-group input[type="range"] {
+  flex: 1;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.btn-primary {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.55);
+  margin-top: 4px;
+}
+
+.btn-primary span.icon {
+  font-size: 0.95rem;
+}
+
+.tips-list {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.tips-list li {
+  margin-left: 18px;
+  margin-bottom: 4px;
+}
+
+.reports-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.report-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  font-size: 0.8rem;
+}
+
+.report-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.report-title {
+  font-weight: 600;
+}
+
+.report-meta {
+  color: var(--muted);
+}
+
+.report-progress {
+  font-weight: 600;
+  color: var(--primary-dark);
+}
+
+/* Página Materiales */
+.materials-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.search-input {
+  width: 220px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 0.8rem;
+}
+
+.materials-list {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.material-item {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr) auto;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.material-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.material-tag {
+  margin-top: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.material-stock {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 10px;
+}
+
+.material-stock span.label {
+  color: var(--muted);
+}
+
+.status-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-low {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-none {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.materials-footer {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Página Perfil */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.6);
+}
+
+.profile-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.profile-role {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.profile-badges {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.badge-secondary {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr);
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 0.82rem;
+}
+
+.profile-info-list {
+  display: grid;
+  gap: 6px;
+}
+
+.profile-info-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 6px;
+}
+
+.profile-info-label {
+  color: var(--muted);
+}
+
+.profile-kpis {
+  display: grid;
+  gap: 6px;
+}
+
+.profile-kpi-item {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-kpi-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.profile-kpi-value {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.profile-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.btn-ghost {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 6px 12px;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-highlight {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Responsivo */
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 14px 14px 24px;
+  }
+
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sidebar-section-title,
+  .sidebar-hint {
+    display: none;
+  }
+
+  .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-grid,
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .material-item {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.5fr);
+    grid-auto-rows: auto;
+  }
+
+  .status-pill {
+    justify-self: flex-start;
+  }
+}
+
+
+/* Header actions */
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logout-btn {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  background: #ffffff;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logout-btn span.icon {
+  font-size: 1rem;
+}
+
+.logout-btn:hover {
+  background: #f3f4ff;
+}
+
+/* Mobile bottom navigation */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 4px 6px 6px;
+  display: none;
+  justify-content: space-around;
+  z-index: 20;
+}
+
+.mobile-bottom-nav a {
+  flex: 1;
+  text-decoration: none;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 2px;
+  border-radius: 10px;
+}
+
+.mobile-bottom-nav a .icon {
+  font-size: 1.1rem;
+}
+
+.mobile-bottom-nav a.active {
+  color: var(--primary-dark);
+  background: #eef2ff;
+}
+
+/* Override for mobile layout to use bottom nav */
+@media (max-width: 960px) {
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding-bottom: 72px; /* space for bottom nav */
+  }
+
+  .mobile-bottom-nav {
+    display: flex;
+  }
+
+  .app-header {
+    padding: 10px 16px;
+  }
+
+  .logout-btn .label {
+    display: none; /* show only icon on very small screens */
+  }
+}
+
+
+/* ------------------------------------------------------------------ */
+/* FOOTER (REVISIÓN DE ESTILOS) */
+/* ------------------------------------------------------------------ */
+.app-footer {
+    padding: 30px 20px; /* Base: Padding normal */
+    background-color: var(--bg);
+    border-top: 1px solid var(--border);
+    margin-top: 20px; /* Separación del contenido principal */
+    text-align: center;
+}
+
+.footer-nav {
+    display: flex;
+    flex-direction: column; /* Apilado para móvil */
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.footer-link {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+}
+
+.footer-copy {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+/* Mobile (max-width: 767px) */
+@media (max-width: 767px) {
+    .app-footer {
+        /* Se añade el padding extra de 80px en la parte inferior para que la nav móvil fija no lo oculte */
+        padding-bottom: 80px; 
+    }
+}
+
+/* Desktop/Tablet (min-width: 768px) */
+@media (min-width: 768px) {
+    .app-footer {
+        padding: 30px 40px; /* Más padding horizontal y eliminación del padding extra inferior */
+        margin-top: 40px; /* Más separación en desktop */
+    }
+    
+    .footer-nav {
+        flex-direction: row; /* Horizontal para desktop */
+        justify-content: center;
+        gap: 30px;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* ESTILOS ADICIONALES PARA PÁGINAS DE INFORMACIÓN LEGAL Y CORPORATIVA */
+/* ------------------------------------------------------------------ */
+
+/* 1. Ajuste de Layout cuando no hay Sidebar (Desktop) */
+/* Si la sidebar está oculta, el contenido debe ocupar todo el ancho. */
+@media (min-width: 768px) {
+    /* Selecciona el contenido cuando el sidebar tiene 'display: none;' */
+    .layout .sidebar[style*="display: none;"] + .content,
+    .layout .sidebar:empty + .content {
+        grid-column: 1 / -1; /* Ocupa de la columna 1 hasta el final */
+        border-left: none;  /* Elimina la línea divisoria si no hay sidebar */
+        padding-left: 30px;
+        padding-right: 30px;
+    }
+}
+
+/* 2. Estilos para texto y listas en las secciones legales/información */
+.content section p, 
+.content section ul {
+    line-height: 1.6; /* Mejora la legibilidad */
+    color: var(--text);
+}
+
+.content section ul {
+    margin-bottom: 20px;
+    list-style-type: disc; /* Reafirma el tipo de lista */
+}
+
+.content section ul li {
+    padding-left: 5px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+/* 3. Estilo para el enlace activo en el Footer */
+/* Resalta el enlace del footer que corresponde a la página actual */
+.footer-link.nav-active {
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+/* En desktop, alinear los enlaces del footer horizontalmente */
+@media (min-width: 768px) {
+    .footer-nav {
+        flex-direction: row; /* Cambia a horizontal */
+        justify-content: center;
+        gap: 30px;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* ESTILOS PARA PREGUNTAS FRECUENTES (FAQ - ACCORDION) */
+/* ------------------------------------------------------------------ */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faq-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    overflow: hidden; /* Permite la animación de apertura */
+}
+
+.faq-question {
+    padding: 15px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer; /* Indica que es clickeable */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.faq-question:hover {
+    background-color: var(--bg);
+}
+
+/* Icono de + que se convierte en - al abrirse */
+.faq-question::after {
+    content: '+'; 
+    font-size: 1.2rem;
+    font-weight: 400;
+    margin-left: 10px;
+    transition: transform 0.3s ease;
+    color: var(--primary-dark);
+}
+
+.faq-item.open .faq-question::after {
+    content: '−'; /* Usa el signo menos para un mejor look */
+}
+
+/* Ocultar la respuesta por defecto */
+.faq-answer {
+    padding: 0 15px 0 15px;
+    max-height: 0; /* Valor clave para la transición de altura */
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+    border-top: 1px solid transparent; 
+}
+
+.faq-answer p {
+    padding-bottom: 15px; 
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+/* Estilo al ABRIR la respuesta */
+.faq-item.open .faq-answer {
+    max-height: 500px; /* Altura suficiente para mostrar el contenido */
+    padding: 15px;
+    border-top: 1px solid var(--border); /* Muestra el separador */
+}
+
+/* ------------------------------------------------------------------ */
+/* 1. ADAPTACIÓN DEL GRID DE 3 COLUMNAS A UNA SOLA COLUMNA EN MÓVILES */
+/* ------------------------------------------------------------------ */
+
+/* Reglas para la clase .grid-3 */
+.grid-3 {
+    display: grid;
+    /* En escritorio (o por defecto), define el grid de 3 columnas */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+/* Media Query para Dispositivos Móviles (máximo 767px) */
+@media (max-width: 767px) {
+    .grid-3 {
+        /* En móvil, cambia a una sola columna */
+        grid-template-columns: 1fr;
+        gap: 15px; /* Reducir ligeramente el espacio entre tarjetas */
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. AJUSTES FINOS PARA TARJETAS DE INFORMACIÓN (KPI-CARD) EN MÓVILES */
+/* ------------------------------------------------------------------ */
+
+.kpi-card {
+    /* Si no tienen ya estilos base: */
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-card);
+    display: flex; /* Asegura que el contenido se apile bien */
+    flex-direction: column; 
+}
+
+.kpi-card .value {
+    /* Estilo para el título de la tarjeta (Misión, Visión, Valores) */
+    font-size: 1.1rem !important; /* Ligeramente más pequeño en móvil */
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.kpi-card .label, 
+.kpi-card ul {
+    /* Estilo para el contenido de la tarjeta */
+    font-size: 0.9rem !important;
+    line-height: 1.5;
+}
+
+/* Asegurar que la lista de Valores se ve bien */
+.kpi-card ul {
+    /* Si usas la lista dentro de .kpi-card */
+    list-style-type: disc !important; 
+    padding-left: 20px !important; 
+    margin-left: 0 !important;
+    margin-top: 5px !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. AJUSTES GENERALES DEL CONTENIDO EN MÓVILES */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 767px) {
+    /* Asegurar que el padding general del contenido es adecuado */
+    .content {
+        padding: 20px 15px; /* Menos padding lateral en móvil */
+    }
+    
+    /* Reducir el tamaño de la cabecera del contenido */
+    .content-title h1 {
+        font-size: 1.8rem;
+    }
+
+    /* Ajuste para el texto de información adicional */
+    .card p, .card ul {
+        /* Asegurar que el texto base no sea demasiado grande */
+        font-size: 0.95rem; 
+    }
+    
+    /* El div con la información de Versión/Año */
+    .mt-20[style*="font-size: 0.9rem"] {
+        font-size: 0.85rem !important;
+        padding-top: 10px !important;
+    }
+}
+
+
+
+
+/* ------------------------------------------------------------------ */
+/* ESTILOS PARA EL BOTÓN "VOLVER AL INICIO" EN EL HEADER */
+/* ------------------------------------------------------------------ */
+
+/* 1. Asegurar que el header puede alinear elementos a la derecha */
+.app-header {
+    /* Si ya tenías un 'display: flex' aquí, puedes omitir esta regla, 
+       pero es crucial para que el botón se alinee. */
+    display: flex; 
+    justify-content: space-between; /* Empuja el logo a la izquierda y el botón a la derecha */
+    align-items: center;
+    padding-right: 20px; /* Asegura espacio para el botón en el borde */
+}
+
+/* 2. Estilos del Botón/Enlace */
+.header-back-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-card);
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s, border-color 0.2s;
+    white-space: nowrap; /* Evita que el texto se rompa en dos líneas */
+    box-shadow: var(--shadow-soft);
+}
+
+.header-back-link:hover {
+    background-color: var(--bg);
+    border-color: var(--primary);
+}
+
+.header-back-link .icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+/* 3. Adaptación para Móviles */
+@media (max-width: 480px) {
+    .header-back-link {
+        /* Reducir el tamaño para no quitar espacio al logo */
+        padding: 6px 10px; 
+        font-size: 0.8rem;
+    }
+}
+/* ------------------------------------------------------------------ */
+/* ESTILOS PARA LAS PÁGINAS DE AUTENTICACIÓN (LOGIN/RECOVERY) */
+/* ------------------------------------------------------------------ */
+
+.auth-page {
+    display: flex;
+    justify-content: center; /* Centrar horizontalmente */
+    align-items: center; /* Centrar verticalmente */
+    min-height: 100vh;
+    padding: 20px;
+    /* Mantiene el fondo de gradiente ya definido en el body */
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px; /* Ancho fijo para web */
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada para un look de tarjeta */
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    position: relative; /* Necesario para el back-link absoluto */
+}
+
+.auth-content {
+    padding: 20px 0;
+}
+
+.auth-content h1 {
+    font-size: 1.6rem;
+    color: var(--primary-dark);
+    margin-bottom: 5px;
+}
+
+.auth-content .subtitle {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 25px;
+}
+
+/* Campos de entrada genéricos */
+.input-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 5px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    background-color: var(--bg);
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: #ffffff;
+}
+
+.link-muted {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    display: block;
+}
+
+.link-muted:hover {
+    color: var(--primary);
+}
+
+.credentials-info {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+/* Estilos específicos de Recuperación (Botón Volver) */
+.back-link {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+.back-link:hover {
+    color: var(--primary);
+}
+
+.recovery-note {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 20px;
+}
+
+/* Ocultar el texto de la marca dentro de la tarjeta para mantener el logo limpio */
+.auth-header-mobile .brand-text {
+    display: none; 
+}
+
+/* Footer de autenticación (Diseño simplificado dentro de la card) */
+.auth-footer {
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+.auth-footer .footer-nav {
+    flex-direction: row; /* Forzar horizontal en todas las resoluciones dentro del auth-card */
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 20px;
+        max-width: none; /* Dejar que ocupe todo el ancho disponible */
+    }
+    .back-link {
+        top: 15px;
+        left: 15px;
+    }
+}

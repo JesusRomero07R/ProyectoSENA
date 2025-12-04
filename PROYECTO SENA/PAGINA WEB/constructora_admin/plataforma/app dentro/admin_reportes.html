@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Reportes Globales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Reportes */
+    .report-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .report-kpi-card {
+        padding: 15px;
+        border-radius: var(--radius-md);
+        background: #f9fafb;
+        border: 1px solid var(--border);
+    }
+    .report-kpi-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .report-kpi-card .label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    .report-financial-card {
+        padding: 15px;
+        border-radius: var(--radius-md);
+        background: var(--primary);
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+    .financial-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .financial-detail:last-child {
+        border-bottom: none;
+    }
+    .financial-detail .label {
+        font-size: 0.85rem;
+        font-weight: 300;
+    }
+    .financial-detail .value {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+    .latest-report-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .latest-report-item {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    .latest-report-item strong {
+        display: block;
+        margin-bottom: 3px;
+    }
+    .latest-report-item span {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    /* Ajuste para mobile */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+      .report-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+ <header class="app-header">
+    <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+            <span>Constructora GG</span>
+            <span>Panel de Administración</span> 
+        </div>
+    </div>
+    <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">AD</div>
+            <div class="user-info">
+                <span>Admin User</span>
+                <span>Administrador</span>
+            </div>
+        </div>
+        <button id="logout-button-admin" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+</header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="admin_usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link" href="admin_proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="admin_inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link nav-active" href="admin_reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Generación y visualización de análisis de datos para la toma de decisiones.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Reportes Globales</h1>
+            <p>Análisis ejecutivo de métricas clave.</p>
+          </div>
+          <div class="chips-row">
+            <div class="chip chip-active">Último mes</div>
+            <div class="chip">Todos los proyectos</div>
+            <div class="chip">Financiero</div>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="card-header">
+              <h2>Métricas de Proyectos</h2>
+              <p class="card-subtitle">Estado de la cartera de proyectos.</p>
+            </div>
+            <div class="report-kpi-grid">
+              <div class="report-kpi-card">
+                <div class="value">5</div>
+                <div class="label">Total Proyectos</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value">1</div>
+                <div class="label">Completados</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value">85%</div>
+                <div class="label">Proyectos a tiempo</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value">1</div>
+                <div class="label">Materiales Críticos</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="report-financial-card" style="margin-top: 15px;">
+            <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 10px;">Resumen Financiero</div>
+            <div class="financial-detail">
+              <span class="label">Presupuesto total</span>
+              <span class="value">$ 70.000.000.000</span>
+            </div>
+            <div class="financial-detail">
+              <span class="label">Proyectos activos</span>
+              <span class="value">$ 53.500.000.000</span>
+            </div>
+            <div class="financial-detail">
+              <span class="label">Inversión promedio</span>
+              <span class="value">$ 14.000.000.000</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h2>Últimos Reportes Generados</h2>
+              <p class="card-subtitle">Novedades de avance reciente.</p>
+            </div>
+            <div class="latest-report-list">
+                <div class="latest-report-item">
+                    <strong>Edificio Residencial Torres del Sol</strong>
+                    <span>21/10/2025: Avance según lo planificado. Instalaciones eléctricas en curso.</span>
+                </div>
+                <div class="latest-report-item">
+                    <strong>Parque Industrial Las Américas</strong>
+                    <span>18/10/2025: Finalización de obra gris. Próximo paso: Fachada.</span>
+                </div>
+                <div class="latest-report-item">
+                    <strong>Centro Comercial Plaza Norte</strong>
+                    <span>15/10/2025: Retraso en entrega de estructura metálica. Impacto bajo.</span>
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+                <button class="btn-primary">Generar Nuevo Reporte</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="admin_usuarios.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Usuarios</span>
+        </a>
+        <a href="admin_proyectos.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="admin_inventario.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Inventario</span>
+        </a>
+        <a href="admin_reportes.html" class="active">
+          <span class="icon">기</span>
+          <span class="label">Reportes</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="sobre_nosotros.html" class="footer-link nav-active">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="app.js"></script>
+</body>
+</html>

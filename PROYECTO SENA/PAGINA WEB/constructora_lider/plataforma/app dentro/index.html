@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Panel del Líder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Estilos específicos para el Dashboard del Líder */
+    .kpi-lider-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 columnas para móvil */
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .kpi-lider-item {
+        background: var(--bg-card);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+    }
+    .kpi-lider-item .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .kpi-lider-item .label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    
+    .tasks-recent-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .task-recent-item {
+        padding: 10px 15px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        background: #f9fafb;
+    }
+    .task-recent-item strong {
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .task-recent-item span {
+        font-size: 0.75rem;
+        color: var(--muted);
+    }
+
+    /* Reutilizando y adaptando estilos de proyectos (admin_proyectos.html) */
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .project-main-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg-card);
+    }
+    .project-header-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .project-header-info strong {
+        font-size: 1rem;
+    }
+    .project-progress-bar {
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background-color: var(--primary);
+    }
+    .project-meta-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 5px;
+    }
+    /* Estilos para el estado del proyecto (similar a admin_usuarios.html) */
+    .status-tag-project {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background-color: #d1fae5;
+        color: #059669;
+        font-weight: 600;
+    }
+    
+    /* Ajuste para mobile (el resto de ajustes están en styles.css) */
+    @media (max-width: 768px) {
+        .content { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel del Líder</span>
+        </div>
+      </div>
+     <div class="app-header-right">
+  <div class="user-chip">
+    <div class="user-avatar" style="background-color: var(--accent);">AM</div>
+    <div class="user-info">
+      <span>Ana Martínez</span>
+      <span>Líder de Proyecto</span>
+    </div>
+  </div>
+  <button id="logout-button" class="logout-btn" type="button">
+  <span class="icon">⎋</span>
+  <span class="label">Cerrar sesión</span>
+</button>
+</div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link nav-active" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="proyectos_lider.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="tareas_lider.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="equipo_lider.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+              </a>
+            <a class="nav-link" href="materiales_lider.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Gestión y supervisión de proyectos, tareas y recursos asignados.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header" style="display: block;">
+          <div class="content-title" style="margin-bottom: 10px;">
+            <h1 style="font-size: 1.5rem;">Bienvenida, Ana</h1>
+            <p style="font-size: 0.9rem;">Tienes 2 proyectos activos y 1 tareas pendientes</p>
+          </div>
+        </header>
+
+        <section>
+            <div class="kpi-lider-grid">
+                <div class="kpi-lider-item">
+                    <span class="value">2</span>
+                    <span class="label">Proyectos activos</span>
+                </div>
+                <div class="kpi-lider-item">
+                    <span class="value">0</span>
+                    <span class="label">Tareas completadas</span>
+                </div>
+                <div class="kpi-lider-item">
+                    <span class="value">2</span>
+                    <span class="label">Tareas en curso</span>
+                </div>
+                <div class="kpi-lider-item">
+                    <span class="value" style="color: #dc2626;">1</span>
+                    <span class="label">Tareas pendientes</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Mis Proyectos</h2>
+                    <a href="proyectos_lider.html" class="card-subtitle">Ver todos ›</a>
+                </div>
+                
+                <div class="project-list">
+                    <div class="project-main-card">
+                        <div class="project-header-info">
+                            <strong>Edificio Residencial Torres del Sol</strong>
+                            <span class="status-tag-project">Activo</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 5px;">Bogotá, Colombia</p>
+                        <div class="project-header-info">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--muted);">Avance</span>
+                            <span style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">65%</span>
+                        </div>
+                        <div class="project-progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                        </div>
+                        <div class="project-meta-info">
+                            <span>Inicio: 14/01/2024</span>
+                            <span>Fin: 29/06/2025</span>
+                        </div>
+                        <div style="text-align: right; margin-top: 5px;">
+                            <button class="btn-outline btn-small-muted">Ver Detalles</button>
+                        </div>
+                    </div>
+
+                    <div class="project-main-card">
+                        <div class="project-header-info">
+                            <strong>Centro Comercial Plaza Norte</strong>
+                            <span class="status-tag-project">Activo</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 5px;">Medellín, Colombia</p>
+                        <div class="project-header-info">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: var(--muted);">Avance</span>
+                            <span style="font-size: 1.1rem; font-weight: bold; color: var(--primary);">42%</span>
+                        </div>
+                        <div class="project-progress-bar">
+                            <div class="progress-fill" style="width: 42%;"></div>
+                        </div>
+                        <div class="project-meta-info">
+                            <span>Inicio: 29/02/2024</span>
+                            <span>Fin: 14/12/2025</span>
+                        </div>
+                        <div style="text-align: right; margin-top: 5px;">
+                            <button class="btn-outline btn-small-muted">Ver Detalles</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 15px;">
+                <div class="card-header">
+                    <h2>Tareas Recientes</h2>
+                    <a href="tareas_lider.html" class="card-subtitle">Ver todas ›</a>
+                </div>
+                <div class="tasks-recent-list">
+                    <div class="task-recent-item">
+                        <strong>Instalación eléctrica piso 5</strong>
+                        <span>Edificio Residencial Torres del Sol</span>
+                    </div>
+                    <div class="task-recent-item">
+                        <strong>Acabados interiores piso 3</strong>
+                        <span>Edificio Residencial Torres del Sol</span>
+                    </div>
+                    <div class="task-recent-item">
+                        <strong>Estructura metálica área comercial</strong>
+                        <span>Centro Comercial Plaza Norte</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="active">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="proyectos_lider.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="tareas_lider.html" class="">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="equipo_lider.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Equipo</span>
+        </a>
+        <a href="materiales_lider.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Materiales</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+  <footer class="app-footer">
+        <div class="footer-nav">
+          <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+          <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+          <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

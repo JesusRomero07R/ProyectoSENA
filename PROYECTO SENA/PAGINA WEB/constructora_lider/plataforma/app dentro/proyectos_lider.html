@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Proyectos Asignados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Proyectos del Líder */
+    .project-list-lider {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .project-lider-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg-card);
+    }
+    .project-lider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .project-lider-title {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .project-lider-title strong {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+    .project-lider-title span {
+        font-size: 0.75rem;
+        color: var(--muted);
+    }
+    /* Estilos para el estado del proyecto (reutilizado) */
+    .status-tag-project {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background-color: #d1fae5;
+        color: #059669;
+        font-weight: 600;
+        align-self: flex-start;
+    }
+    .status-tag-finalizado {
+        background-color: #f3f4f6;
+        color: var(--muted);
+    }
+    .project-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 0.85rem;
+        border-top: 1px dashed var(--border);
+        padding-top: 10px;
+        margin-top: 5px;
+    }
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .meta-item .label {
+        font-weight: 600;
+        color: var(--muted);
+        font-size: 0.75rem;
+    }
+    .meta-item .value {
+        font-weight: 700;
+        color: var(--text);
+    }
+    .progress-section {
+        margin-top: 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .progress-section span {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--muted);
+    }
+    .project-progress-bar {
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background-color: var(--primary);
+    }
+
+    /* Ajuste para mobile */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel del Líder</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+       <div class="app-header-right">
+  <div class="user-chip">
+    <div class="user-avatar" style="background-color: var(--accent);">AM</div>
+    <div class="user-info">
+      <span>Ana Martínez</span>
+      <span>Líder de Proyecto</span>
+    </div>
+  </div>
+  <button id="logout-button" class="logout-btn" type="button">
+  <span class="icon">⎋</span>
+  <span class="label">Cerrar sesión</span>
+</button>
+</div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link nav-active" href="proyectos_lider.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="tareas_lider.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="equipo_lider.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+              </a>
+            <a class="nav-link" href="materiales_lider.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+            Gestión y supervisión de proyectos, tareas y recursos asignados.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Mis Proyectos</h1>
+            <p>3 Proyectos asignados.</p>
+          </div>
+          <div class="chips-row">
+            <div class="chip chip-active">Todos (3)</div>
+            <div class="chip">Activos (2)</div>
+            <div class="chip">Finalizados (1)</div>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" class="input-search" placeholder="Buscar proyecto (Nombre, Estado, Ubicación...)" style="flex-grow: 1;">
+                <button class="btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                    <span class="icon">+</span>
+                    <span>Nuevo Informe</span>
+                </button>
+            </div>
+            
+            <div class="project-list-lider">
+                <div class="project-lider-card">
+                    <div class="project-lider-header">
+                        <div class="project-lider-title">
+                            <strong>Edificio Residencial Torres del Sol</strong>
+                            <span>Bogotá, Colombia</span>
+                        </div>
+                        <span class="status-tag-project">Activo</span>
+                    </div>
+
+                    <div class="progress-section">
+                        <span>Avance: 65%</span>
+                        <div class="project-progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-meta-grid">
+                        <div class="meta-item">
+                            <span class="label">Presupuesto</span>
+                            <span class="value" style="color: var(--primary);">$12.500.000.000 </span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Fechas</span>
+                            <span class="value">14/01/2024 - 29/06/2025</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Tareas Pendientes</span>
+                            <span class="value">2</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Equipo Asignado</span>
+                            <span class="value">5 Personas</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles ›</button>
+                    </div>
+                </div>
+
+                <div class="project-lider-card">
+                    <div class="project-lider-header">
+                        <div class="project-lider-title">
+                            <strong>Centro Comercial Plaza Norte</strong>
+                            <span>Medellín, Colombia</span>
+                        </div>
+                        <span class="status-tag-project">Activo</span>
+                    </div>
+
+                    <div class="progress-section">
+                        <span>Avance: 42%</span>
+                        <div class="project-progress-bar">
+                            <div class="progress-fill" style="width: 42%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-meta-grid">
+                        <div class="meta-item">
+                            <span class="label">Presupuesto</span>
+                            <span class="value" style="color: var(--primary);">$8.300.000.000</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Fechas</span>
+                            <span class="value">29/02/2024 - 14/12/2025</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Tareas Pendientes</span>
+                            <span class="value">1</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Equipo Asignado</span>
+                            <span class="value">3 Personas</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles ›</button>
+                    </div>
+                </div>
+                
+                <div class="project-lider-card">
+                    <div class="project-lider-header">
+                        <div class="project-lider-title">
+                            <strong>Renovación Edificio Histórico</strong>
+                            <span>Cartagena, Colombia</span>
+                        </div>
+                        <span class="status-tag-project status-tag-finalizado">Finalizado</span>
+                    </div>
+
+                    <div class="progress-section">
+                        <span>Avance: 100%</span>
+                        <div class="project-progress-bar">
+                            <div class="progress-fill" style="width: 100%; background-color: #059669;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-meta-grid">
+                        <div class="meta-item">
+                            <span class="label">Presupuesto</span>
+                            <span class="value" style="color: var(--muted);">$4.000.000.000</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Fechas</span>
+                            <span class="value">30/04/2023 - 14/10/2024</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Tareas Totales</span>
+                            <span class="value">25</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="label">Equipo Asignado</span>
+                            <span class="value">2 Personas</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 10px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles ›</button>
+                    </div>
+                </div>
+            </div>
+
+       ...
+        </section>
+      </section>
+
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="proyectos_lider.html" class="active">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="tareas_lider.html" class="">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="equipo_lider.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Equipo</span>
+        </a>
+        <a href="materiales_lider.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Materiales</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+      <footer class="app-footer">
+        <div class="footer-nav">
+           <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+            <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="app.js"></script>
+</body>
+</html>

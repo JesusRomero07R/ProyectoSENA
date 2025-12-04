@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Proyectos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Proyectos */
+    .project-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .project-main-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--bg-card);
+    }
+    .project-header-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .project-header-info strong {
+        font-size: 1rem;
+    }
+    .project-progress-bar {
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background-color: var(--primary);
+    }
+    .project-meta-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--muted);
+    }
+
+    /* Ajuste para mobile */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+<header class="app-header">
+    <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+            <span>Constructora GG</span>
+            <span>Panel de Administración</span> 
+        </div>
+    </div>
+    <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">AD</div>
+            <div class="user-info">
+                <span>Admin User</span>
+                <span>Administrador</span>
+            </div>
+        </div>
+        <button id="logout-button-admin" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+</header>
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="admin_usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link nav-active" href="admin_proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="admin_inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link" href="admin_reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Supervisión de avance, presupuesto y equipo asignado a cada proyecto.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Gestión de Proyectos</h1>
+            <p>Listado de todos los proyectos activos e históricos.</p>
+          </div>
+          <div class="chips-row">
+            <div class="chip chip-active">Todos</div>
+            <div class="chip">En Ejecución (3)</div>
+            <div class="chip">Completados (2)</div>
+            <div class="chip">Retrasados (0)</div>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" class="input-search" placeholder="Buscar proyecto (Nombre, Líder, Estado...)" style="flex-grow: 1;">
+                <button class="btn-primary">
+                    <span class="icon">+</span>
+                    <span>Nuevo Proyecto</span>
+                </button>
+            </div>
+            
+            <div class="project-list">
+                <div class="project-main-card">
+                    <div class="project-header-info">
+                        <strong>Edificio Residencial Torres del Sol</strong>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">65%</span>
+                    </div>
+                    <div class="project-progress-bar">
+                        <div class="progress-fill" style="width: 65%;"></div>
+                    </div>
+                    <div class="project-meta-info">
+                        <span>Líder: Ana Martínez</span>
+                        <span>Inicio: 15/01/2025</span>
+                    </div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles</button>
+                    </div>
+                </div>
+
+                <div class="project-main-card">
+                    <div class="project-header-info">
+                        <strong>Centro Comercial Plaza Norte</strong>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">42%</span>
+                    </div>
+                    <div class="project-progress-bar">
+                        <div class="progress-fill" style="width: 42%;"></div>
+                    </div>
+                    <div class="project-meta-info">
+                        <span>Líder: Ana Martínez</span>
+                        <span>Inicio: 01/04/2025</span>
+                    </div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles</button>
+                    </div>
+                </div>
+                
+                <div class="project-main-card">
+                    <div class="project-header-info">
+                        <strong>Parque Industrial Las Américas</strong>
+                        <span style="font-size: 1.2rem; font-weight: bold; color: var(--primary);">88%</span>
+                    </div>
+                    <div class="project-progress-bar">
+                        <div class="progress-fill" style="width: 88%;"></div>
+                    </div>
+                    <div class="project-meta-info">
+                        <span>Líder: Pedro García</span>
+                        <span>Inicio: 10/02/2025</span>
+                    </div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        <button class="btn-outline btn-small-muted">Ver Detalles</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-ghost">Cargar proyectos finalizados</button>
+            </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="admin_usuarios.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Usuarios</span>
+        </a>
+        <a href="admin_proyectos.html" class="active">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="admin_inventario.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Inventario</span>
+        </a>
+        <a href="admin_reportes.html" class="">
+          <span class="icon">기</span>
+          <span class="label">Reportes</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="sobre_nosotros.html" class="footer-link nav-active">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="app.js"></script>
+</body>
+</html>

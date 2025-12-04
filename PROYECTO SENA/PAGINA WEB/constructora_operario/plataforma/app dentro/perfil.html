@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Perfil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel de operario</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">JL</div>
+            <div class="user-info">
+                <span>Juan López</span>
+                <span>Operario</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="tareas.html">
+              <span class="icon">✓</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="avances.html">
+              <span class="icon">↗</span>
+              <span class="label">Avances</span>
+            </a>
+            <a class="nav-link" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <a class="nav-link nav-active" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Mi perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Consulta tus datos personales y tu rendimiento como operario.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Mi perfil</h1>
+            <p>Consulta tu información y tu rendimiento.</p>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="profile-header">
+              <div class="profile-avatar">JL</div>
+              <div>
+                <div class="profile-name">Juan López</div>
+                <div class="profile-role">Operario · Miembro activo</div>
+                <div class="profile-badges">
+                  <span class="badge">Activo</span>
+                  <span class="badge badge-secondary">Construcción</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-grid">
+              <!-- Info personal -->
+              <div class="profile-info-list">
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Email</span>
+                  <span>juan@constructoragg.com</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Teléfono</span>
+                  <span>+57 317 456 7089</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Ubicación</span>
+                  <span>Bogotá, Colombia</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Ingreso</span>
+                  <span>15 de marzo, 2023</span>
+                </div>
+              </div>
+
+              <!-- Estadísticas -->
+              <div class="profile-kpis">
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label">Tareas asignadas</span>
+                  <span class="profile-kpi-value">2</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label">Completadas</span>
+                  <span class="profile-kpi-value">0</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label">Proyectos activos</span>
+                  <span class="profile-kpi-value">2</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label">Rendimiento</span>
+                  <span class="profile-kpi-value">95%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-footer">
+              <span>
+                ¡Buen trabajo, Juan! Has completado el
+                <span class="profile-highlight">0%</span> de tus tareas asignadas.
+              </span>
+              <div>
+                <button class="btn-ghost">Configuración de cuenta</button>
+                <button class="btn-ghost">Cerrar sesión</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+      <a href="tareas.html" class="">
+        <span class="icon">✓</span>
+        <span class="label">Tareas</span>
+      </a>
+      <a href="avances.html" class="">
+        <span class="icon">↗</span>
+        <span class="label">Avances</span>
+      </a>
+      <a href="materiales.html" class="">
+        <span class="icon">📦</span>
+        <span class="label">Materiales</span>
+      </a>
+      <a href="perfil.html" class="active">
+        <span class="icon">👤</span>
+        <span class="label">Perfil</span>
+      </a>
+    </nav>
+    
+  </main>
+  </div>
+   <footer class="app-footer">
+        <div class="footer-nav">
+                <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

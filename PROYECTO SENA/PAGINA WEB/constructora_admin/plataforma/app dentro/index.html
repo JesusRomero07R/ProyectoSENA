@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Panel de Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista Admin (Se podría mover a styles.css) */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .project-card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .project-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      padding: 10px;
+      border-radius: var(--radius-md);
+      background: #f9fafb;
+      border: 1px solid var(--border);
+    }
+    .project-title { font-weight: 600; font-size: 0.9rem; }
+    .project-leader { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .project-progress-value { font-weight: 700; font-size: 1.2rem; color: var(--primary); align-self: center; }
+    .material-status-list { display: flex; flex-direction: column; gap: 10px; }
+    .material-status-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) auto auto;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      font-size: 0.85rem;
+    }
+    .material-name-info { font-weight: 600; }
+    .status-ok { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; padding: 4px 8px; border-radius: 999px; font-size: 0.75rem; }
+    .status-low { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; padding: 4px 8px; border-radius: 999px; font-size: 0.75rem; }
+    .status-critical { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; padding: 4px 8px; border-radius: 999px; font-size: 0.75rem; }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .material-status-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; }
+      .material-qty { grid-column: 1 / 2; font-size: 0.8rem; color: var(--muted); }
+      .material-status-row > :last-child { grid-column: 2 / 3; grid-row: 1 / 3; align-self: center; justify-self: end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+<header class="app-header">
+    <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+            <span>Constructora GG</span>
+            <span>Panel de Administración</span> 
+        </div>
+    </div>
+    <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">AD</div>
+            <div class="user-info">
+                <span>Admin User</span>
+                <span>Administrador</span>
+            </div>
+        </div>
+        <button id="logout-button-admin" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+</header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link nav-active" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="admin_usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link" href="admin_proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="admin_inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link" href="admin_reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Gestión completa de usuarios, proyectos, inventario y reportes globales.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Panel de Control</h1>
+            <p>Resumen global de la constructora.</p>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="card-header">
+              <h2>Indicadores Clave</h2>
+              <p class="card-subtitle">Métricas principales de rendimiento.</p>
+            </div>
+            <div class="grid-4">
+              <div class="kpi-card">
+                <span class="kpi-label">Usuarios activos</span>
+                <span class="kpi-value">8</span>
+                <span class="kpi-tag">de 9 total</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Proyectos en Ejecución</span>
+                <span class="kpi-value">3</span>
+                <span class="kpi-tag">de 5 total</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Materiales disponibles</span>
+                <span class="kpi-value">4</span>
+                <span class="kpi-tag">de 5 total</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Avance Promedio Global</span>
+                <span class="kpi-value">65%</span>
+                <span class="kpi-tag">Objetivo: 75%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h2>Proyectos Destacados</h2>
+              <p class="card-subtitle">Estado de avance de proyectos activos.</p>
+            </div>
+            <div class="project-card-list">
+              <div class="project-item">
+                <div>
+                  <div class="project-title">Edificio Residencial Torres del Sol</div>
+                  <div class="project-leader">Líder: Ana Martínez</div>
+                </div>
+                <div class="project-progress-value">65%</div>
+              </div>
+              <div class="project-item">
+                <div>
+                  <div class="project-title">Centro Comercial Plaza Norte</div>
+                  <div class="project-leader">Líder: Ana Martínez</div>
+                </div>
+                <div class="project-progress-value">42%</div>
+              </div>
+              <div class="project-item">
+                <div>
+                  <div class="project-title">Parque Industrial Las Américas</div>
+                  <div class="project-leader">Líder: Pedro García</div>
+                </div>
+                <div class="project-progress-value">88%</div>
+              </div>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="admin_proyectos.html" class="btn-small-muted">Ver todos los proyectos</a>
+            </div>
+          </div>
+          
+          <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h2>Estado de Materiales</h2>
+              <p class="card-subtitle">Inventario con estados Bajo o Crítico.</p>
+            </div>
+            <div class="material-status-list">
+              <div class="material-status-row">
+                <span class="material-name-info">Cemento Portland</span>
+                <span class="material-qty">850 sacos</span>
+                <span class="status-ok">Bien</span>
+              </div>
+              <div class="material-status-row">
+                <span class="material-name-info">Varillas de acero 12mm</span>
+                <span class="material-qty">320 unidades</span>
+                <span class="status-low">Bajo</span>
+              </div>
+              <div class="material-status-row">
+                <span class="material-name-info">Cable eléctrico 2.5mm</span>
+                <span class="material-qty">45 metros</span>
+                <span class="status-critical">Crítico</span>
+              </div>
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+                <a href="admin_inventario.html" class="btn-small-muted">Gestión de Inventario</a>
+            </div>
+          </div>
+        </section>
+        
+        <div class="card" style="margin-top: 15px;">
+            <div class="card-header">
+              <h2>Reportes Globales</h2>
+              <p class="card-subtitle">Acceso a análisis de rendimiento.</p>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 10px;">Genera reportes de avance, financieros y de eficiencia operativa.</p>
+            <a href="admin_reportes.html" class="btn-outline">
+                <span>Ver análisis completo</span> <span>›</span>
+            </a>
+        </div>
+      </section>
+    
+     <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+
+  <a href="index.html" class="active"> <span class="icon">Π</span>
+    <span class="label">Inicio</span>
+  </a>
+  <a href="admin_usuarios.html" class=""> <span class="icon">👤</span>
+    <span class="label">Usuarios</span>
+  </a>
+  <a href="admin_proyectos.html" class="">
+    <span class="icon">✓</span>
+    <span class="label">Proyectos</span>
+  </a>
+  <a href="admin_inventario.html" class="">
+    <span class="icon">📦</span>
+    <span class="label">Inventario</span>
+  </a>
+  <a href="admin_reportes.html" class="">
+    <span class="icon">기</span>
+    <span class="label">Reportes</span>
+  </a>
+</nav>
+    </main>
+  </div>
+
+   <footer class="app-footer">
+        <div class="footer-nav">
+          <a href="sobre_nosotros.html" class="footer-link nav-active">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Avances</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel de operario</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">JL</div>
+            <div class="user-info">
+                <span>Juan López</span>
+                <span>Operario</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="tareas.html">
+              <span class="icon">✓</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link nav-active" href="avances.html">
+              <span class="icon">↗</span>
+              <span class="label">Avances</span>
+            </a>
+            <a class="nav-link" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <a class="nav-link" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Mi perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Reporta tus avances con detalles y fotos para mantener actualizado al equipo.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Reportar avance</h1>
+            <p>Actualiza el progreso de tu trabajo en pocos pasos.</p>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Nuevo reporte</h2>
+                <p class="card-subtitle">Completa los campos y envía tu actualización.</p>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <!-- Formulario -->
+              <div>
+                <div class="form-group">
+                  <label for="tareaSelect">Tarea</label>
+                  <select id="tareaSelect">
+                    <option value="">Selecciona una tarea</option>
+                    <option>Instalación eléctrica piso 5</option>
+                    <option>Estructura metálica área comercial</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="progresoRange">Progreso completado</label>
+                  <div class="form-range-wrapper">
+                    <input type="range" id="progresoRange" min="0" max="100" value="0" />
+                    <span id="progresoLabel">0%</span>
+                  </div>
+                  <p class="form-hint">Avance actual de la tarea.</p>
+                </div>
+
+                <div class="form-group">
+                  <label for="observaciones">Observaciones</label>
+                  <textarea
+                    id="observaciones"
+                    maxlength="300"
+                    placeholder="Describe el trabajo realizado, materiales usados, dificultades encontradas..."
+                  ></textarea>
+                  <div class="form-hint">
+                    <span id="charCounter">0</span>/300 caracteres
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="fotoInput">Añadir foto (opcional)</label>
+                  <input type="file" id="fotoInput" accept="image/*" />
+                  <p class="form-hint">Adjunta evidencia del avance si es necesario.</p>
+                </div>
+
+                <button class="btn-primary" id="btnEnviarReporte">
+                  <span class="icon">⬆</span>
+                  <span>Enviar reporte</span>
+                </button>
+              </div>
+
+              <!-- Tips + listado -->
+              <div>
+                <p class="form-hint" style="font-weight: 600; margin-bottom: 4px;">Consejos para reportar</p>
+                <ul class="tips-list">
+                  <li>Sé específico sobre el trabajo realizado.</li>
+                  <li>Reporta cualquier problema o material faltante.</li>
+                  <li>Incluye fotos cuando sea posible.</li>
+                </ul>
+
+                <div style="margin-top: 14px;">
+                  <p class="form-hint" style="font-weight: 600;">Reportes enviados hoy</p>
+                  <div class="reports-list" id="reportsList">
+                    <div class="report-item">
+                      <div class="report-main">
+                        <span class="report-title">Instalación eléctrica piso 5</span>
+                        <span class="report-meta">09:30 AM · Hoy</span>
+                      </div>
+                      <span class="report-progress">60%</span>
+                    </div>
+
+                    <div class="report-item">
+                      <div class="report-main">
+                        <span class="report-title">Estructura metálica área comercial</span>
+                        <span class="report-meta">14:15 PM · Hoy</span>
+                      </div>
+                      <span class="report-progress">40%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+      <a href="tareas.html" class="">
+        <span class="icon">✓</span>
+        <span class="label">Tareas</span>
+      </a>
+      <a href="avances.html" class="active">
+        <span class="icon">↗</span>
+        <span class="label">Avances</span>
+      </a>
+      <a href="materiales.html" class="">
+        <span class="icon">📦</span>
+        <span class="label">Materiales</span>
+      </a>
+      <a href="perfil.html" class="">
+        <span class="icon">👤</span>
+        <span class="label">Perfil</span>
+      </a>
+    </nav>
+    
+  </main>
+  </div>
+   <footer class="app-footer">
+        <div class="footer-nav">
+                <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

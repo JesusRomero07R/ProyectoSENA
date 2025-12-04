@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Materiales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel de operario</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">JL</div>
+            <div class="user-info">
+                <span>Juan López</span>
+                <span>Operario</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="tareas.html">
+              <span class="icon">✓</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="avances.html">
+              <span class="icon">↗</span>
+              <span class="label">Avances</span>
+            </a>
+            <a class="nav-link nav-active" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <a class="nav-link" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Mi perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Consulta el stock disponible y detecta materiales que están por agotarse.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Materiales asignados</h1>
+            <p>Consulta el stock disponible en tus proyectos.</p>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Materiales</h2>
+                <p class="card-subtitle">Filtra por nombre o revisa el listado completo.</p>
+              </div>
+            </div>
+
+            <div class="materials-header-row">
+              <span class="form-hint">Materiales disponibles</span>
+              <input
+                type="text"
+                id="searchMateriales"
+                class="search-input"
+                placeholder="Buscar material..."
+              />
+            </div>
+
+            <div class="materials-list" id="materialsList">
+              <!-- Cemento -->
+              <div class="material-item" data-name="cemento portland">
+                <div>
+                  <div class="material-name">Cemento Portland</div>
+                  <div class="material-tag">Material base</div>
+                </div>
+                <div class="material-stock">
+                  <span class="label">Stock:</span><span>850 sacos</span>
+                  <span class="label">Mínimo:</span><span>500 sacos</span>
+                </div>
+                <div class="status-pill status-ok">Disponible</div>
+              </div>
+
+              <!-- Varillas -->
+              <div class="material-item" data-name="varillas de acero 12mm">
+                <div>
+                  <div class="material-name">Varillas de acero 12mm</div>
+                  <div class="material-tag">Estructura</div>
+                </div>
+                <div class="material-stock">
+                  <span class="label">Stock:</span><span>320 unidades</span>
+                  <span class="label">Mínimo:</span><span>300 unidades</span>
+                </div>
+                <div class="status-pill status-low">Stock bajo</div>
+              </div>
+
+              <!-- Ladrillos -->
+              <div class="material-item" data-name="ladrillos huecos">
+                <div>
+                  <div class="material-name">Ladrillos huecos</div>
+                  <div class="material-tag">Albañilería</div>
+                </div>
+                <div class="material-stock">
+                  <span class="label">Stock:</span><span>1500 unidades</span>
+                  <span class="label">Mínimo:</span><span>1000 unidades</span>
+                </div>
+                <div class="status-pill status-ok">Disponible</div>
+              </div>
+
+              <!-- Cable -->
+              <div class="material-item" data-name="cable eléctrico 2.5mm">
+                <div>
+                  <div class="material-name">Cable eléctrico 2.5mm</div>
+                  <div class="material-tag">Instalaciones</div>
+                </div>
+                <div class="material-stock">
+                  <span class="label">Stock:</span><span>45 metros</span>
+                  <span class="label">Mínimo:</span><span>200 metros</span>
+                </div>
+                <div class="status-pill status-none">No disponible</div>
+              </div>
+
+              <!-- Pintura -->
+              <div class="material-item" data-name="pintura blanca interior">
+                <div>
+                  <div class="material-name">Pintura blanca interior</div>
+                  <div class="material-tag">Acabados</div>
+                </div>
+                <div class="material-stock">
+                  <span class="label">Stock:</span><span>180 litros</span>
+                  <span class="label">Mínimo:</span><span>100 litros</span>
+                </div>
+                <div class="status-pill status-ok">Disponible</div>
+              </div>
+            </div>
+
+            <p class="materials-footer">
+              ¿Necesitas materiales adicionales? Contacta a tu líder de proyecto para solicitar reposición o nuevos insumos.
+            </p>
+          </div>
+        </section>
+      </section>
+    
+    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+      <a href="tareas.html" class="">
+        <span class="icon">✓</span>
+        <span class="label">Tareas</span>
+      </a>
+      <a href="avances.html" class="">
+        <span class="icon">↗</span>
+        <span class="label">Avances</span>
+      </a>
+      <a href="materiales.html" class="active">
+        <span class="icon">📦</span>
+        <span class="label">Materiales</span>
+      </a>
+      <a href="perfil.html" class="">
+        <span class="icon">👤</span>
+        <span class="label">Perfil</span>
+      </a>
+    </nav>
+    
+  </main>
+  </div>
+   <footer class="app-footer">
+        <div class="footer-nav">
+                <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

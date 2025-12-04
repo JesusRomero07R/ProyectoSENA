@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Constructora GG – Inicio Público</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <style>
+        /* ================================================================== */
+        /* VARIABLES BASE */
+        /* ================================================================== */
+        :root {
+            --primary: #007bff;          /* Azul de énfasis (Base) */
+            --primary-dark: #0056b3;     /* Azul oscuro para hover/active */
+            --accent-blue: #0059b3;      /* NUEVO: Azul intermedio para el botón principal */
+            --accent-blue-dark: #00458a; /* Hover para el botón intermedio */
+            --heading: #1a202c;          /* Negro/Gris muy oscuro para títulos fuertes */
+            --text: #495057;             /* Gris para texto principal */
+            --muted: #6c757d;            /* Gris para texto secundario */
+            --bg: #f8f9fa;               /* Fondo general (Gris muy claro) */
+            --bg-card: #ffffff;          /* Fondo de tarjetas/elementos */
+            --border: #dee2e6;           /* Color de bordes/líneas */
+            --radius-md: 8px;            /* Radio de borde medio */
+            --radius-lg: 12px;           /* Radio de borde grande */
+            
+            /* Sombra Fuerte para el recuadro */
+            --shadow-strong: 0 15px 40px rgba(0, 0, 0, 0.2); 
+            --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ================================================================== */
+        /* ESTILOS GENERALES / UTILS                         */
+        /* ================================================================== */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg); 
+            color: var(--text);
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        .mt-30 { margin-top: 30px; }
+
+        /* Estilos del nuevo botón azul intermedio */
+        .btn-strong-blue {
+            background-color: var(--accent-blue);
+            color: white; 
+            border: none;
+            padding: 14px 25px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            font-size: 1.15rem; 
+            letter-spacing: 0.5px;
+        }
+
+        .btn-strong-blue:hover {
+            background-color: var(--accent-blue-dark);
+        }
+
+        .btn-full-width {
+            width: 100%;
+            display: block;
+        }
+
+        /* Brand (Estilo del Logo) */
+        .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .brand-logo {
+            background-color: var(--primary);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+        }
+        .auth-header-mobile .brand-text {
+            display: none; 
+        }
+
+        /* ================================================================== */
+        /* ESTILOS DE LA TARJETA (RECUADRO CON SOMBRAS)         */
+        /* ================================================================== */
+
+        .auth-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-strong); 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .auth-content {
+            padding: 10px 0;
+            flex-grow: 1; 
+        }
+
+        .auth-content h1 {
+            font-size: 2.1rem; 
+            color: var(--heading);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 15px;
+        }
+
+        .auth-content .subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+
+        /* Ajustes Responsive (Móvil) */
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 25px;
+                max-width: none;
+                box-shadow: var(--shadow-soft); 
+                border: 1px solid var(--border);
+            }
+            .auth-content h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header-mobile">
+            <div class="brand">
+                <div class="brand-logo">GG</div>
+            </div>
+        </div>
+
+        <section class="auth-content">
+            <h1>Sistema de gestión y control de proyectos de construcción</h1>
+            <p class="subtitle">Gestión eficiente, resultados sólidos.</p>
+            
+            <a href="plataforma/index.html" class="btn-strong-blue btn-full-width mt-30">
+                Iniciar Sesión
+            </a>
+            
+        </section>
+        
+    </div>
+</body>
+</html>

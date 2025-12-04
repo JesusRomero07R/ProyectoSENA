@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Control de Materiales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Materiales del Líder (Adaptado de admin_inventario) */
+    .material-list-lider {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .material-item-lider {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) 1fr auto; 
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-card);
+    }
+    .material-name-info-lider {
+        display: flex;
+        flex-direction: column;
+    }
+    .material-name {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .material-tag {
+        font-size: 0.75rem;
+        color: var(--muted);
+    }
+    .material-stock-lider {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.85rem;
+        text-align: right;
+    }
+    .material-stock-lider .label {
+        color: var(--muted);
+    }
+    .material-stock-lider .value {
+        font-weight: 700;
+        color: var(--text);
+    }
+    .material-status-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: flex-end;
+    }
+    
+    /* Estados de materiales (Reutilizados de admin_inventario.html) */
+    .status-pill {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .status-ok { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; }
+    .status-low { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; }
+    .status-critical { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; }
+
+    /* Medidor de Consumo (Nuevo para líder) */
+    .consumption-meter {
+        width: 100%;
+        height: 5px;
+        background-color: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+    .consumption-fill {
+        height: 100%;
+        background-color: #fca5a5; /* Color rojo suave para consumo, o azul para stock alto */
+    }
+
+    /* Ajuste para mobile (Adaptado de admin_inventario.html) */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+      .material-item-lider {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto auto auto;
+        gap: 5px;
+        padding-bottom: 55px; 
+        position: relative;
+      }
+      .material-name-info-lider {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+      }
+      .material-stock-lider {
+        grid-column: 1 / 3;
+        grid-row: 2 / 3;
+        text-align: left;
+        flex-direction: row;
+        gap: 10px;
+        font-size: 0.8rem;
+      }
+      .material-status-actions {
+        grid-column: 1 / 3;
+        grid-row: 3 / 4;
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+      .status-pill {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel del Líder</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+       <div class="app-header-right">
+  <div class="user-chip">
+    <div class="user-avatar" style="background-color: var(--accent);">AM</div>
+    <div class="user-info">
+      <span>Ana Martínez</span>
+      <span>Líder de Proyecto</span>
+    </div>
+  </div>
+  <button id="logout-button" class="logout-btn" type="button">
+  <span class="icon">⎋</span>
+  <span class="label">Cerrar sesión</span>
+</button>
+</div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="proyectos_lider.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link" href="tareas_lider.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="equipo_lider.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+              </a>
+            <a class="nav-link nav-active" href="materiales_lider.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+            Gestión y supervisión de proyectos, tareas y recursos asignados.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Control de Materiales</h1>
+            <p>5 tipos diferentes, Inventario disponible.</p>
+          </div>
+          <div class="chips-row">
+            <div class="chip chip-active">Todos (4)</div>
+            <div class="chip">Stock Bajo (1)</div>
+            <div class="chip">Crítico (1)</div>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" class="input-search" placeholder="Buscar material (Nombre, Categoría...)" style="flex-grow: 1;">
+                <button class="btn-primary">
+                    <span class="icon">✔</span>
+                    <span>Solicitar Reabastecimiento</span>
+                </button>
+            </div>
+            
+            <div class="material-list-lider">
+                <div class="material-item-lider">
+                    <div class="material-name-info-lider">
+                        <div class="material-name">Cemento Portland </div>
+                        <div class="material-tag">Material base </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="label">Consumo estimado:</span>
+                        <div class="consumption-meter"><div class="consumption-fill" style="width: 57%; background-color: #3b82f6;"></div></div>
+                    </div>
+                    <span class="status-pill status-ok"></span>
+                    <div class="material-stock-lider">
+                        <span class="label">Stock disponible:</span>
+                        <span class="value">850 sacos </span>
+                    </div>
+                    <div class="material-status-actions">
+                        <button class="btn-outline btn-small-muted">Solicitar material</button>
+                    </div>
+                </div>
+
+                <div class="material-item-lider">
+                    <div class="material-name-info-lider">
+                        <div class="material-name">Varillas de acero 12mm </div>
+                        <div class="material-tag">Estructura </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="label">Consumo estimado:</span>
+                        <div class="consumption-meter"><div class="consumption-fill" style="width: 31%;"></div></div>
+                    </div>
+                    <span class="status-pill status-low"></span>
+                    <div class="material-stock-lider">
+                        <span class="label">Stock disponible:</span>
+                        <span class="value">320 unidades </span>
+                    </div>
+                    <div class="material-status-actions">
+                        <button class="btn-primary btn-small-muted" style="background-color: #ffb300; border-color: #ffb300;">Solicitar Urgente</button>
+                        <button class="btn-outline btn-small-muted">Ver Uso</button>
+                    </div>
+                </div>
+                
+                <div class="material-item-lider">
+                    <div class="material-name-info-lider">
+                        <div class="material-name">Ladrillos huecos </div>
+                        <div class="material-tag">Albañilería </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="label">Consumo estimado:</span>
+                        <div class="consumption-meter"><div class="consumption-fill" style="width: 15%; background-color: #3b82f6;"></div></div>
+                    </div>
+                    <span class="status-pill status-ok"></span>
+                    <div class="material-stock-lider">
+                        <span class="label">Stock disponible:</span>
+                        <span class="value">1500 unidades </span>
+                    </div>
+                    <div class="material-status-actions">
+                        <button class="btn-outline btn-small-muted">Solicitar material</button>
+                    </div>
+                </div>
+
+                <div class="material-item-lider">
+                    <div class="material-name-info-lider">
+                        <div class="material-name">Cable eléctrico 2.5mm </div>
+                        <div class="material-tag">Instalaciones </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="label">Consumo estimado:</span>
+                        <div class="consumption-meter"><div class="consumption-fill" style="width: 90%; background-color: #dc2626;"></div></div>
+                    </div>
+                    <span class="status-pill status-critical"></span>
+                    <div class="material-stock-lider">
+                        <span class="label">Stock disponible:</span>
+                        <span class="value">45 metros </span>
+                    </div>
+                    <div class="material-status-actions">
+                        <button class="btn-primary btn-small-muted" style="background-color: #dc2626; border-color: #dc2626;">Solicitar Urgente</button>
+                        <button class="btn-outline btn-small-muted">Ver Uso</button>
+                    </div>
+                </div>
+            </div>
+
+            ...
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-ghost">Ver historial de solicitudes</button>
+            </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="proyectos_lider.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="tareas_lider.html" class="">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="equipo_lider.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Equipo</span>
+        </a>
+        <a href="materiales_lider.html" class="active">
+          <span class="icon">📦</span>
+          <span class="label">Materiales</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+  
+   <footer class="app-footer">
+        <div class="footer-nav">
+           <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+            <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

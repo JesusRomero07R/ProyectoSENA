@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Tareas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel de operario</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar">JL</div>
+            <div class="user-info">
+                <span>Juan López</span>
+                <span>Operario</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link nav-active" href="tareas.html">
+              <span class="icon">✓</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="avances.html">
+              <span class="icon">↗</span>
+              <span class="label">Avances</span>
+            </a>
+            <a class="nav-link" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <a class="nav-link" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Mi perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+          Revisa tus tareas, reporta avances y controla materiales desde un solo lugar.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Mis tareas</h1>
+            <p>Revisa lo que tienes pendiente y en curso.</p>
+          </div>
+
+          <div class="chips-row">
+            <button class="chip-pill chip-active" id="chipAll">Todas</button>
+            <button class="chip-pill" id="chipInProgress">En curso</button>
+            <button class="chip-pill" id="chipPending">Pendientes</button>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h2>Resumen de tareas</h2>
+                <p class="card-subtitle">Tienes <strong>0 tareas pendientes</strong> y 2 en curso.</p>
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="kpi-card">
+                <span class="kpi-label">Pendientes</span>
+                <span class="kpi-value">0</span>
+                <span class="kpi-tag">Por iniciar</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">En curso</span>
+                <span class="kpi-value">2</span>
+                <span class="kpi-tag">Trabajo activo</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-label">Finalizadas</span>
+                <span class="kpi-value">0</span>
+                <span class="kpi-tag">Aún por completar</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 10px;">
+            <div class="tasks-header">
+              <div>
+                <h2>Mis tareas</h2>
+                <p class="card-subtitle">Tareas del día en tus proyectos activos.</p>
+              </div>
+            </div>
+
+            <div class="tasks-list" id="tasksList">
+              <!-- Tarea 1 -->
+              <article class="task-card" data-status="en-curso">
+                <div>
+                  <div class="task-title">Instalación eléctrica piso 5</div>
+                  <p class="task-desc">Completar cableado y cajas de conexión.</p>
+                  <p class="task-project">
+                    Proyecto: <strong>Edificio Residencial Torres del Sol</strong>
+                  </p>
+                  <div class="task-tags">
+                    <span class="tag tag-status">En curso</span>
+                    <span class="tag tag-urgent">Urgente</span>
+                    <span class="tag tag-date">Vence: 14/11/2025</span>
+                  </div>
+                  <div class="task-details">
+                    <p><strong>Objetivo:</strong> Finalizar el cableado general y dejar listas las cajas de conexión del piso 5.</p>
+                    <p><strong>Notas:</strong> Coordinar con el equipo de estructura para evitar interferencias en horarios de carga.</p>
+                  </div>
+                </div>
+                <div class="task-actions">
+                  <button class="btn-outline btn-ver-detalles">
+                    <span>Ver detalles</span> <span>›</span>
+                  </button>
+                  <button class="btn-small-muted">Marcar como finalizada</button>
+                </div>
+              </article>
+
+              <!-- Tarea 2 -->
+              <article class="task-card" data-status="en-curso">
+                <div>
+                  <div class="task-title">Estructura metálica área comercial</div>
+                  <p class="task-desc">Montaje de vigas principales.</p>
+                  <p class="task-project">
+                    Proyecto: <strong>Centro Comercial Plaza Norte</strong>
+                  </p>
+                  <div class="task-tags">
+                    <span class="tag tag-status">En curso</span>
+                    <span class="tag tag-urgent">Urgente</span>
+                    <span class="tag tag-date">Vence: 09/11/2025</span>
+                  </div>
+                  <div class="task-details">
+                    <p><strong>Objetivo:</strong> Montar vigas principales del área comercial siguiendo el plano estructural.</p>
+                    <p><strong>Seguridad:</strong> Uso obligatorio de arnés y línea de vida en todo momento.</p>
+                  </div>
+                </div>
+                <div class="task-actions">
+                  <button class="btn-outline btn-ver-detalles">
+                    <span>Ver detalles</span> <span>›</span>
+                  </button>
+                  <button class="btn-small-muted">Marcar como finalizada</button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+    <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+      <a href="tareas.html" class="active">
+        <span class="icon">✓</span>
+        <span class="label">Tareas</span>
+      </a>
+      <a href="avances.html" class="">
+        <span class="icon">↗</span>
+        <span class="label">Avances</span>
+      </a>
+      <a href="materiales.html" class="">
+        <span class="icon">📦</span>
+        <span class="label">Materiales</span>
+      </a>
+      <a href="perfil.html" class="">
+        <span class="icon">👤</span>
+        <span class="label">Perfil</span>
+      </a>
+    </nav>
+    
+  </main>
+  </div>
+   <footer class="app-footer">
+        <div class="footer-nav">
+                <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

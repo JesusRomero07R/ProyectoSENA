@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Tareas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Tareas del Líder/Operario (adaptada) */
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .task-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .task-title {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .task-meta {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .task-project {
+        font-weight: 600;
+        color: var(--primary-dark);
+        font-size: 0.8rem;
+    }
+    /* Estados de tarea */
+    .status-pill-task {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .status-pendiente { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; }
+    .status-en-curso { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; }
+    .status-completada { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; }
+
+    .task-details {
+        margin-top: 5px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+        font-size: 0.8rem;
+        display: none; /* Se controla con JS */
+    }
+    .task-details strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+    .task-details p {
+        margin-bottom: 5px;
+    }
+    .task-details ul {
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 5px;
+    }
+    .task-details li {
+        padding: 2px 0;
+        color: var(--muted);
+    }
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    /* Ajuste para mobile */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Panel del Líder</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+         <div class="app-header-right">
+        <div class="user-chip">
+       <div class="user-avatar" style="background-color: var(--accent);">AM</div>
+        <div class="user-info">
+        <span>Ana Martínez</span>
+       <span>Líder de Proyecto</span>
+       </div>
+  </div>
+  <button id="logout-button" class="logout-btn" type="button">
+  <span class="icon">⎋</span>
+  <span class="label">Cerrar sesión</span>
+</button>
+</div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" aria-label="Navegación principal">
+            <a class="nav-link" href="index.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <a class="nav-link" href="proyectos_lider.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos</span>
+            </a>
+            <a class="nav-link nav-active" href="tareas_lider.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link" href="equipo_lider.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+              </a>
+            <a class="nav-link" href="materiales_lider.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint">
+            Gestión y supervisión de proyectos, tareas y recursos asignados.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Gestión de Tareas</h1>
+            <p>3 tareas en total, 1 pendiente.</p>
+          </div>
+          <div class="chips-row">
+            <div class="chip chip-active">Todos (3)</div>
+            <div class="chip">Pendientes (1)</div>
+            <div class="chip">En curso (2)</div>
+            <div class="chip">Completadas (0)</div>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" class="input-search" placeholder="Buscar tarea (Título, Responsable, Proyecto...)" style="flex-grow: 1;">
+                <button class="btn-primary">
+                    <span class="icon">+</span>
+                    <span>Nueva Tarea</span>
+                </button>
+            </div>
+            
+            <div class="tasks-list" id="tasksList">
+                <div class="task-card" data-status="pendiente">
+                    <div class="task-header">
+                        <span class="task-project">Edificio Residencial Torres del Sol</span>
+                        <span class="status-pill-task status-pendiente">Pendiente</span>
+                    </div>
+                    <div class="task-title">Revisión de planos estructurales final</div>
+                    <div class="task-meta">
+                        <span>Responsable: Juan López (Operario)</span>
+                        <span>Fecha límite: 05/12/2025</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-outline btn-small-muted btn-ver-detalles">
+                            <span>Ver detalles</span>
+                        </button>
+                        <button class="btn-primary btn-small-muted" style="background-color: #ffb300; border-color: #ffb300;">Asignar</button>
+                    </div>
+
+                    <div class="task-details">
+                        <strong>Descripción:</strong>
+                        <p>Verificar que los planos de la fase final de la estructura de concreto armado cumplan con las normas de seguridad y presupuesto.</p>
+                        <strong>Detalles:</strong>
+                        <ul>
+                            <li>Prioridad: Alta</li>
+                            <li>Horas Estimadas: 8 hrs</li>
+                            <li>Materiales: Ninguno</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="task-card" data-status="en-curso">
+                    <div class="task-header">
+                        <span class="task-project">Centro Comercial Plaza Norte</span>
+                        <span class="status-pill-task status-en-curso">En Curso</span>
+                    </div>
+                    <div class="task-title">Instalación eléctrica piso 5</div>
+                    <div class="task-meta">
+                        <span>Responsable: Luis Fernández (Soldador)</span>
+                        <span>Fecha límite: 20/11/2025</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-outline btn-small-muted btn-ver-detalles">
+                            <span>Ver detalles</span>
+                        </button>
+                        <button class="btn-primary btn-small-muted">Terminar</button>
+                    </div>
+
+                    <div class="task-details">
+                        <strong>Descripción:</strong>
+                        <p>Tirar el cableado principal y secundario en el piso 5 del ala este del Centro Comercial.</p>
+                        <strong>Detalles:</strong>
+                        <ul>
+                            <li>Prioridad: Media</li>
+                            <li>Horas Estimadas: 16 hrs</li>
+                            <li>Materiales: Cable eléctrico 2.5mm (Crítico)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            ...
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-ghost">Cargar más tareas</button>
+            </div>
+        </section>
+      </section>
+    
+
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="index.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="proyectos_lider.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="tareas_lider.html" class="active">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="equipo_lider.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Equipo</span>
+        </a>
+        <a href="materiales_lider.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Materiales</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <footer class="app-footer">
+        <div class="footer-nav">
+         <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="soporte_ayuda.html" class="footer-link nav-active">Soporte y ayuda</a>
+                <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="app.js"></script>
+</body>
+</html>
