@@ -1,0 +1,22 @@
+{
+  "name": "constructora-gg-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST para Constructora GG (SENA)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed-passwords": "node scripts/seed-passwords.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.0"
+  }
+}
