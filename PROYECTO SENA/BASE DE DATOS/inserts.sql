@@ -36,13 +36,13 @@ INSERT INTO categorias_material (nombre_categoria) VALUES
 -- USUARIOS
 -- (password_hash contiene valores ficticios)
 -- ============================================
-INSERT INTO usuarios 
-(nombre, apellido, correo, telefono, password_hash, id_rol_fk, id_oficio_fk) 
+INSERT INTO usuarios
+(nombre, apellido, correo, telefono, password_hash, estado, disponibilidad, id_rol_fk, id_oficio_fk)
 VALUES
-('Carlos', 'Pérez', 'carlos@gg.com', '3001111111', 'hash_admin', 1, NULL),
-('Luisa', 'Gómez', 'luisa@gg.com', '3002222222', 'hash_lider', 2, NULL),
-('Pedro', 'Rojas', 'pedro@gg.com', '3003333333', 'hash_op1', 3, 1),
-('Sofía', 'Martínez', 'sofia@gg.com', '3004444444', 'hash_op2', 3, 2);
+('Carlos', 'Pérez', 'carlos@gg.com', '3001111111', 'hash_admin', 'activo', 'disponible', 1, NULL),
+('Luisa', 'Gómez', 'luisa@gg.com', '3002222222', 'hash_lider', 'activo', 'disponible', 2, NULL),
+('Pedro', 'Rojas', 'pedro@gg.com', '3003333333', 'hash_op1', 'activo', 'ocupado', 3, 1),
+('Sofía', 'Martínez', 'sofia@gg.com', '3004444444', 'hash_op2', 'activo', 'disponible', 3, 2);
 
 -- ============================================
 -- PROYECTOS
@@ -62,12 +62,12 @@ VALUES
 -- ============================================
 -- MATERIALES
 -- ============================================
-INSERT INTO materiales (nombre, id_categoria_fk, stock_minimo) VALUES
-('Cemento gris 50kg', 1, 10),
-('Arena fina m3', 2, 5),
-('Pala metálica', 3, 2),
-('Tubo PVC 1"', 4, 20),
-('Pintura blanca galón', 5, 15);
+INSERT INTO materiales (nombre, id_categoria_fk, stock_minimo, unidad_medida) VALUES
+('Cemento gris 50kg', 1, 10, 'sacos'),
+('Arena fina m3', 2, 5, 'm3'),
+('Pala metálica', 3, 2, 'unidades'),
+('Tubo PVC 1"', 4, 20, 'unidades'),
+('Pintura blanca galón', 5, 15, 'galones');
 
 -- ============================================
 -- INVENTARIO GLOBAL
@@ -126,6 +126,15 @@ VALUES
 (1, 1, NULL, 'entrada', 30),
 (2, 2, 1, 'salida', 5),
 (5, 2, 1, 'salida', 3);
+
+-- ============================================
+-- ARCHIVOS PROYECTO (EJEMPLOS)
+-- ============================================
+INSERT INTO archivos_proyecto
+(id_reporte_fk, id_usuario_fk, nombre_original, nombre_archivo, tipo_mime, ruta_url, tamanio_bytes)
+VALUES
+(1, 3, 'foto_avance_1.jpg', '2025-03-10_reporte_1.jpg', 'image/jpeg', '/uploads/proyectos/1/foto_avance_1.jpg', 2048000),
+(2, 4, 'tuberia_instalada.jpg', '2025-03-15_reporte_2.jpg', 'image/jpeg', '/uploads/proyectos/1/tuberia_instalada.jpg', 1536000);
 
 -- ============================================================
 -- FIN DEL SCRIPT DE ALIMENTACIÓN

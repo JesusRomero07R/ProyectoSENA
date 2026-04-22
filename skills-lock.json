@@ -1,30 +1,45 @@
 {
   "version": 1,
   "skills": {
-    "find-skills": {
-      "source": "vercel-labs/skills",
+    "caveman": {
+      "source": "juliusbrussee/caveman",
       "sourceType": "github",
-      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+      "computedHash": "a818cdc41dcfaa50dd891c5cb5e5705968338de02e7e37949ca56e8c30ad4176"
     },
-    "insforge": {
-      "source": "insforge/agent-skills",
+    "fastapi-python": {
+      "source": "mindrally/skills",
       "sourceType": "github",
-      "computedHash": "d5a43940fec390ce65775ca94d3b49e655f8ba2052321065bff3bbdccf22c232"
+      "computedHash": "1d7346210a6690d2faeb089f074c0dc20a7056c2c83ac1062a11c1b73158be72"
     },
-    "insforge-cli": {
-      "source": "insforge/agent-skills",
+    "nodejs-backend-patterns": {
+      "source": "wshobson/agents",
       "sourceType": "github",
-      "computedHash": "9eefd32f8ed7195969d5fac788baa7ef99b452892e5ea9b00eb65e08a3ebece6"
+      "computedHash": "c6a99966c2565acc388e574039127abc770bb9a3338be761e421e16f023f702b"
     },
-    "insforge-debug": {
-      "source": "insforge/agent-skills",
+    "postman-collection-generator": {
+      "source": "patricio0312rev/skills",
       "sourceType": "github",
-      "computedHash": "f1f20f82cba657771767c563480f07efd3ab633566ccdcfccebce26039bbfce2"
+      "computedHash": "b27ca3add938151a0c528ab89bedbc4891144277c920684d33d7592ceef9e9a0"
     },
-    "insforge-integrations": {
-      "source": "insforge/agent-skills",
+    "python-backend": {
+      "source": "jiatastic/open-python-skills",
       "sourceType": "github",
-      "computedHash": "421b6eb1091930a437c223aae1d6547f3ee4d2e5cfef45e41a3e2b32a2c27f7e"
+      "computedHash": "3e05cfe0d22005cd76126b0a7d67e1b33da8a08da99d863133a37abfd47365a0"
+    },
+    "sql-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "47c930907f25d67454ac8c2d155785eae3dce72242960d0c0e9ebf2ced9cd231"
+    },
+    "sqlalchemy-alembic-expert-best-practices-code-review": {
+      "source": "wispbit-ai/skills",
+      "sourceType": "github",
+      "computedHash": "995e671e51c95c73542b48eb7372a752ba1b5f6c0d2277e07ab0d53543dd507c"
+    },
+    "sqlalchemy-code-review": {
+      "source": "existential-birds/beagle",
+      "sourceType": "github",
+      "computedHash": "72d8253bae8c7cb8bfbf676f68c71550b80d7a122fb2850f70f1a8469cb39467"
     }
   }
 }

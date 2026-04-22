@@ -1,0 +1,971 @@
+{
+	"info": {
+		"_postman_id": "2c68fe52-8f84-4225-8dc1-359cc154a773",
+		"name": "Constructora GG - API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "54176620",
+		"_collection_link": "https://chrisven97-8405291.postman.co/workspace/Cristian-Gutierrez's-Workspace~382c9634-0fae-4afe-8422-4f39af65da0f/collection/54176620-2c68fe52-8f84-4225-8dc1-359cc154a773?action=share&source=collection_link&creator=54176620"
+	},
+	"item": [
+		{
+			"name": "01.Acceso y Personal (ADMIN)",
+			"item": [
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const respuesta = pm.response.json();",
+									"pm.environment.set(\"token\", respuesta.access_token);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "admin@constructora-gg.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "admin123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8000/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "crea_usuario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\n{\n  \"nombre\": \"Tyler\",\n  \"apellido\": \"Joseph\",\n  \"correo\": \"tyler.operario@constructora-gg.com\",\n  \"telefono\": \"3207778899\",\n  \"password\": \"operario123\",\n  \"id_rol_fk\": 3,\n  \"id_oficio_fk\": 1\n}\n\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/usuarios",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_usuarios",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/usuarios",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"usuarios"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_operarios_disponibles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios?id_rol_fk=3&disponibilidad=disponible",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios"
+							],
+							"query": [
+								{
+									"key": "id_rol_fk",
+									"value": "3"
+								},
+								{
+									"key": "disponibilidad",
+									"value": "disponible"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "elimina_usuarios",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/usuarios/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"usuarios",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02.Inicio de Obra y Equipos (ADMIN)",
+			"item": [
+				{
+					"name": "crea_proyecto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Edificio Torre de obsidiana\",\n  \"descripcion\": \"Torre de 10 pisos con parqueadero\",\n  \"ciudad\": \"Cali\",\n  \"direccion\": \"Calle 52 #2-15\",\n  \"presupuesto\": 15000002000.00,\n  \"fecha_inicio\": \"2024-05-01\",\n  \"id_lider_fk\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proyectos/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "configurar_equipo",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_proyecto\": 3,\n  \"id_usuarios\": [3] \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proyectos/configurar-equipo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"configurar-equipo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_proyectos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_equipos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/valida-equipos",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"valida-equipos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "modifica_proyecto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proyectos/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "elimina_proyecto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Valida_proyectos_activos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos?estado=activo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos"
+							],
+							"query": [
+								{
+									"key": "estado",
+									"value": "activo"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03.Logistia de Suministros (ADMIN -> LIDER)",
+			"item": [
+				{
+					"name": "crea_categorias",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre_categoria\": \"Materiales Pesados\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/categorias",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"categorias"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "crea_materiales",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Bulto de Cemento Gris\",\n  \"id_categoria_fk\": 1,\n  \"stock_minimo\": 5,\n  \"unidad_medida\": \"bultos\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/materiales",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"materiales"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cambia_ctdad_stock",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/inventario/actualizar-stock/1?nuevo_stock=50",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"inventario",
+								"actualizar-stock",
+								"1"
+							],
+							"query": [
+								{
+									"key": "nuevo_stock",
+									"value": "50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "trasladar_a_obra",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_proyecto\": 1,\n  \"id_material\": 1,\n  \"cantidad\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/proyectos/trasladar-material",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"trasladar-material"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_inventario_global",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventario",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_inventario_proyecto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/inventario/proyecto/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"inventario",
+								"proyecto",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04.Gestion de Tareas (LIDER)",
+			"item": [
+				{
+					"name": "asignar_tarea",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"titulo\": \"Pintar techo\",\n  \"descripcion\": \"Aplicar dos capas de pintura impermeabilizante color Negro\",\n  \"id_proyecto_fk\": 1,\n  \"id_operarios\": [4] \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tareas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tareas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "valida_tareas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/1/tareas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1",
+								"tareas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "asigna_operarios_tareas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_operarios\": [3]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/tareas/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tareas",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "elimina_tarea",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tareas/4",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tareas",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ocupacion_operarios",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/1/estado-equipo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1",
+								"estado-equipo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "operarios_libres",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/1/operarios-libres",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1",
+								"operarios-libres"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "finalizar_proyecto",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proyectos/1/finalizar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"proyectos",
+								"1",
+								"finalizar"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05.Ejecucion y Reportes (OPERARIO)",
+			"item": [
+				{
+					"name": "valida_tareas_operario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tareas/mis-tareas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"tareas",
+								"mis-tareas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reporte_avance",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id_tarea_fk\": 2,\n  \"porcentaje\": 100,\n  \"observaciones\": \"todo ok\",\n  \"horas_trabajadas\": 4.5,\n  \"materiales_usados\": [\n    {\n      \"id_material\": 1, \n      \"cantidad\": 2\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/reportes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reportes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer"
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
