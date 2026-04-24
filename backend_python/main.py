@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -6,6 +6,9 @@ from typing import List, Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from pydantic_settings import BaseSettings
+import os
+import shutil
 
 # Importaciones locales
 import models
@@ -13,16 +16,28 @@ import schemas
 import database
 from database import engine, get_db
 
+# --- Configuración desde .env ---
+class Settings(BaseSettings):
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+
 app = FastAPI(title="Constructora GG - API Python")
 
-# Crear tablas en SQLite automáticamente al iniciar (Mantenido después de instanciar app)
+# Asegurar carpeta de uploads
+UPLOAD_DIR = "uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+# Crear tablas en SQLite automáticamente al iniciar
 models.Base.metadata.create_all(bind=engine)
 
 # --- Seguridad ---
-SECRET_KEY = "super_secret_key_constructora_gg" # En producción usar variable de entorno
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -34,9 +49,9 @@ def get_password_hash(password):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 # --- Dependencias de Seguridad ---
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -46,15 +61,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
-        if email is None:
+        role_id: int = payload.get("role")
+        if email is None or role_id is None:
             raise credentials_exception
-        token_data = schemas.TokenData(email=email)
+        token_data = schemas.TokenData(email=email, role=role_id)
     except JWTError:
         raise credentials_exception
     
-    user = db.query(models.Usuario).filter(models.Usuario.correo == token_data.email).first()
+    user = db.query(models.Usuario).filter(models.Usuario.correo == token_data.email, models.Usuario.activo == True).first()
     if user is None:
         raise credentials_exception
     return user
@@ -74,9 +90,12 @@ def require_role(allowed_roles: List[int]):
 
 @app.post("/auth/login", response_model=schemas.Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(models.Usuario).filter(models.Usuario.correo == form_data.username).first()
+    user = db.query(models.Usuario).filter(
+        models.Usuario.correo == form_data.username,
+        models.Usuario.activo == True
+    ).first()
     if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=400, detail="Correo o contraseña incorrectos")
+        raise HTTPException(status_code=400, detail="Correo o contraseña incorrectos o cuenta desactivada")
     
     access_token = create_access_token(data={"sub": user.correo, "role": user.id_rol_fk})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -148,11 +167,71 @@ async def delete_usuario(
     if not db_usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    db.delete(db_usuario)
+    # 1. Borrado lógico
+    db_usuario.activo = False
+    db_usuario.disponibilidad = "disponible"
+
+    # 2. Desvincular de Proyectos (Tabla proyectos_usuarios)
+    db.execute(
+        models.proyectos_usuarios.delete().where(models.proyectos_usuarios.c.id_usuario == id_usuario)
+    )
+
+    # 3. Desvincular de Tareas (Tabla tareas_operarios)
+    db.execute(
+        models.tareas_operarios.delete().where(models.tareas_operarios.c.id_usuario == id_usuario)
+    )
+
     db.commit()
-    return {"message": f"Usuario {id_usuario} eliminado correctamente"}
+    return {"message": f"Usuario {id_usuario} desactivado y desvinculado de proyectos/tareas correctamente"}
+
+@app.patch("/usuarios/{id_usuario}/activar")
+async def activar_usuario(
+    id_usuario: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1]))
+):
+    db_usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == id_usuario).first()
+    if not db_usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    db_usuario.activo = True
+    db.commit()
+    return {"message": f"Usuario {id_usuario} reactivado correctamente"}
 
 # --- Rutas de Proyectos ---
+
+@app.post("/proyectos/{id_proyecto}/subir-archivo")
+async def upload_archivo_proyecto(
+    id_proyecto: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    
+    # Generar ruta única
+    file_name = f"proj_{id_proyecto}_{datetime.now().timestamp()}_{file.filename}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Registrar en base de datos
+    db_archivo = models.ArchivoProyecto(
+        id_proyecto_fk=id_proyecto,
+        id_usuario_fk=current_user.id_usuario,
+        nombre_original=file.filename,
+        nombre_archivo=file_name,
+        tipo_mime=file.content_type,
+        ruta_url=file_path,
+        tamanio_bytes=os.path.getsize(file_path)
+    )
+    db.add(db_archivo)
+    db.commit()
+    
+    return {"message": "Archivo subido exitosamente", "path": file_path}
 
 @app.get("/proyectos", response_model=List[schemas.Proyecto])
 async def get_proyectos(
@@ -755,13 +834,31 @@ async def create_categoria(
 
 # --- Rutas de Materiales ---
 
-@app.get("/materiales", response_model=List[schemas.Material])
+@app.get("/materiales", response_model=List[schemas.MaterialDetailed])
 async def list_materiales(
+    categoria_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(require_role([1, 2]))
 ):
-    # Nota: Para incluir el nombre de la categoría se podría hacer un join
-    return db.query(models.Material).all()
+    query = db.query(models.Material).options(joinedload(models.Material.categoria))
+    
+    if categoria_id is not None:
+        query = query.filter(models.Material.id_categoria_fk == categoria_id)
+        
+    materiales = query.all()
+    
+    # Mapeo manual para asegurar que el validador de pydantic reciba lo que espera o usar alias
+    resultado = []
+    for m in materiales:
+        resultado.append({
+            "id_material": m.id_material,
+            "nombre": m.nombre,
+            "id_categoria_fk": m.id_categoria_fk,
+            "stock_minimo": m.stock_minimo,
+            "unidad_medida": m.unidad_medida,
+            "categoria_nombre": m.categoria.nombre_categoria if m.categoria else "Sin categoría"
+        })
+    return resultado
 
 @app.post("/materiales", response_model=schemas.Material)
 async def create_material(
@@ -774,22 +871,78 @@ async def create_material(
     if db_mat:
         raise HTTPException(status_code=400, detail="El material ya existe")
     
+    # 0. Lógica de Categoría automática
+    id_cat = material.id_categoria_fk
+    if id_cat is None:
+        cat_default = db.query(models.CategoriaMaterial).filter(
+            models.CategoriaMaterial.nombre_categoria == "Por Confirmar"
+        ).first()
+        if not cat_default:
+            cat_default = models.CategoriaMaterial(nombre_categoria="Por Confirmar")
+            db.add(cat_default)
+            db.commit()
+            db.refresh(cat_default)
+        id_cat = cat_default.id_categoria
+
     # 1. Crear el material
-    db_material = models.Material(**material.dict())
+    material_data = material.dict(exclude={"stock", "id_categoria_fk"})
+    db_material = models.Material(**material_data, id_categoria_fk=id_cat)
     db.add(db_material)
     db.commit()
     db.refresh(db_material)
     
-    # 2. Crear automáticamente registro en InventarioGlobal
+    # 2. Crear automáticamente registro en InventarioGlobal con el stock inicial
     db_inventario = models.InventarioGlobal(
         id_material_fk=db_material.id_material,
-        stock_actual=0,
+        stock_actual=material.stock,
         unidad_medida=db_material.unidad_medida
     )
     db.add(db_inventario)
     db.commit()
     
     return db_material
+
+@app.put("/materiales/{id_material}/categoria", response_model=schemas.Material)
+async def update_material_categoria(
+    id_material: int,
+    nueva_categoria_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1]))
+):
+    db_material = db.query(models.Material).filter(models.Material.id_material == id_material).first()
+    if not db_material:
+        raise HTTPException(status_code=404, detail="Material no encontrado")
+    
+    db_cat = db.query(models.CategoriaMaterial).filter(
+        models.CategoriaMaterial.id_categoria == nueva_categoria_id
+    ).first()
+    if not db_cat:
+        raise HTTPException(status_code=400, detail="La categoría especificada no existe")
+    
+    db_material.id_categoria_fk = nueva_categoria_id
+    db.commit()
+    db.refresh(db_material)
+    return db_material
+
+@app.delete("/materiales/{id_material}")
+async def delete_material(
+    id_material: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1]))
+):
+    db_material = db.query(models.Material).filter(models.Material.id_material == id_material).first()
+    if not db_material:
+        raise HTTPException(status_code=404, detail="Material no encontrado")
+    
+    # Nota: El borrado de material puede fallar si hay registros en inventario o reportes
+    # por restricciones de FK. En una implementación real, se consideraría borrado lógico.
+    try:
+        db.delete(db_material)
+        db.commit()
+        return {"message": f"Material {id_material} eliminado correctamente"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="No se puede eliminar el material porque tiene registros asociados.")
 
 # --- Rutas de Inventario Global ---
 
@@ -807,32 +960,52 @@ async def get_inventario_proyecto(
     if current_user.id_rol_fk != 1 and proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permisos para ver el inventario de este proyecto")
 
-    # Obtener inventario con nombres de materiales
+    # Obtener inventario con nombres de materiales y categorías
     inventario = db.query(
         models.InventarioProyecto.id_material_fk,
         models.Material.nombre.label("nombre_material"),
         models.InventarioProyecto.stock_actual,
-        models.InventarioProyecto.unidad_medida
+        models.InventarioProyecto.unidad_medida,
+        models.CategoriaMaterial.nombre_categoria.label("categoria_nombre")
     ).join(
         models.Material, 
         models.InventarioProyecto.id_material_fk == models.Material.id_material
+    ).join(
+        models.CategoriaMaterial,
+        models.Material.id_categoria_fk == models.CategoriaMaterial.id_categoria
     ).filter(
         models.InventarioProyecto.id_proyecto_fk == id_proyecto
     ).all()
 
     return inventario
 
-@app.get("/inventario", response_model=List[schemas.InventarioGlobal])
+@app.get("/inventario", response_model=List[schemas.InventarioGlobalDetailed])
 async def list_inventario(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(require_role([1, 2]))
 ):
-    return db.query(models.InventarioGlobal).all()
+    # Unimos con Material y Categoria para obtener nombres
+    inventario = db.query(
+        models.InventarioGlobal.id_inventario,
+        models.InventarioGlobal.id_material_fk,
+        models.InventarioGlobal.stock_actual,
+        models.InventarioGlobal.unidad_medida,
+        models.Material.nombre.label("nombre_material"),
+        models.CategoriaMaterial.nombre_categoria.label("categoria_nombre")
+    ).join(
+        models.Material,
+        models.InventarioGlobal.id_material_fk == models.Material.id_material
+    ).join(
+        models.CategoriaMaterial,
+        models.Material.id_categoria_fk == models.CategoriaMaterial.id_categoria
+    ).all()
+    
+    return inventario
 
-@app.put("/inventario/actualizar-stock/{id_material}", response_model=schemas.InventarioGlobal)
+@app.put("/materiales/{id_material}/stock", response_model=schemas.InventarioGlobal)
 async def update_stock_manual(
     id_material: int,
-    nuevo_stock: int,
+    nueva_cantidad: int,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(require_role([1]))
 ):
@@ -841,9 +1014,9 @@ async def update_stock_manual(
     ).first()
     
     if not db_inventario:
-        raise HTTPException(status_code=404, detail="Registro de inventario no encontrado")
+        raise HTTPException(status_code=404, detail="Material o registro de inventario no encontrado")
     
-    db_inventario.stock_actual = nuevo_stock
+    db_inventario.stock_actual = nueva_cantidad
     db.commit()
     db.refresh(db_inventario)
     return db_inventario

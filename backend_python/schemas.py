@@ -32,11 +32,13 @@ class UsuarioUpdate(BaseModel):
     id_oficio_fk: Optional[int] = None
     estado: Optional[UserStatus] = None
     disponibilidad: Optional[UserAvailability] = None
+    activo: Optional[bool] = None
 
 class Usuario(UsuarioBase):
     id_usuario: int
     estado: UserStatus
     disponibilidad: UserAvailability
+    activo: bool
 
     class Config:
         from_attributes = True
@@ -203,15 +205,16 @@ class CategoriaMaterial(CategoriaMaterialBase):
 
 class MaterialBase(BaseModel):
     nombre: str
-    id_categoria_fk: int
     stock_minimo: int = 0
-    unidad_medida: str = "unidades"
+    unidad_medida: str # Obligatorio
 
 class MaterialCreate(MaterialBase):
-    pass
+    id_categoria_fk: Optional[int] = None # Opcional para asignar automática
+    stock: int # Obligatorio para inicializar
 
 class Material(MaterialBase):
     id_material: int
+    id_categoria_fk: int # Siempre presente en la respuesta
     class Config:
         from_attributes = True
 
@@ -225,15 +228,29 @@ class InventarioGlobal(InventarioGlobalBase):
     class Config:
         from_attributes = True
 
+class InventarioGlobalDetailed(InventarioGlobal):
+    nombre_material: Optional[str] = None
+    categoria_nombre: Optional[str] = None
+
 class InventarioProyecto(BaseModel):
     id_material_fk: int
     nombre_material: Optional[str] = None
     stock_actual: int
     unidad_medida: str
+    categoria_nombre: Optional[str] = None
 
     class Config:
         from_attributes = True
 
-# Esquema para listar materiales con su categoría (requiere relación en models)
+# Esquema para listar materiales con su categoría
 class MaterialDetailed(Material):
     categoria_nombre: Optional[str] = None
+
+    @field_validator("categoria_nombre", mode="before")
+    @classmethod
+    def get_categoria_nombre(cls, v, info):
+        # Si estamos validando desde un objeto SQLAlchemy con relación 'categoria'
+        data = info.data
+        if "categoria" in data and data["categoria"]:
+            return data["categoria"].nombre_categoria
+        return v

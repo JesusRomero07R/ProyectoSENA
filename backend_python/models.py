@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Date, DateTime, Numeric, Float, Enum, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, Date, DateTime, Numeric, Float, Enum, Table, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -72,7 +72,8 @@ class Usuario(Base):
     password_hash = Column(String(255), nullable=False)
     estado = Column(String(50), default="activo")
     disponibilidad = Column(String(50), default="disponible")
-    id_rol_fk = Column(Integer, ForeignKey("roles.id_rol"))
+    activo = Column(Boolean, default=True) # Campo para borrado lógico
+    id_rol_fk = Column(Integer, ForeignKey("roles.id_rol"), nullable=False)
     id_oficio_fk = Column(Integer, ForeignKey("oficios.id_oficio"), nullable=True)
 
     rol = relationship("Rol")
@@ -90,7 +91,7 @@ class Proyecto(Base):
     fecha_fin = Column(Date)
     avance_general = Column(Float, default=0.0)
     estado = Column(String(50), default="activo")
-    id_lider_fk = Column(Integer, ForeignKey("usuarios.id_usuario"))
+    id_lider_fk = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
 
     lider = relationship("Usuario")
     operarios = relationship("Usuario", secondary=proyectos_usuarios)
@@ -135,16 +136,18 @@ class Material(Base):
     __tablename__ = "materiales"
     id_material = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False)
-    id_categoria_fk = Column(Integer, ForeignKey("categorias_material.id_categoria"))
+    id_categoria_fk = Column(Integer, ForeignKey("categorias_material.id_categoria"), nullable=False)
     stock_minimo = Column(Integer, default=0)
-    unidad_medida = Column(String(20), default="unidades")
+    unidad_medida = Column(String(20), nullable=False) # Obligatorio
+
+    categoria = relationship("CategoriaMaterial")
 
 class InventarioGlobal(Base):
     __tablename__ = "inventario_global"
     id_inventario = Column(Integer, primary_key=True, index=True)
     id_material_fk = Column(Integer, ForeignKey("materiales.id_material"))
     stock_actual = Column(Integer, default=0)
-    unidad_medida = Column(String(20))
+    unidad_medida = Column(String(20), nullable=False) # Obligatorio
 
 class InventarioProyecto(Base):
     __tablename__ = "inventario_proyecto"
@@ -155,14 +158,6 @@ class InventarioProyecto(Base):
     unidad_medida = Column(String(20))
 
     material = relationship("Material")
-
-class MaterialAsignado(Base):
-    __tablename__ = "materiales_asignados"
-    id_asignacion = Column(Integer, primary_key=True, index=True)
-    id_material_fk = Column(Integer, ForeignKey("materiales.id_material"))
-    id_proyecto_fk = Column(Integer, ForeignKey("proyectos.id_proyecto"))
-    cantidad_asignada = Column(Integer, nullable=False)
-    cantidad_usada = Column(Integer, default=0)
 
 class SolicitudMaterial(Base):
     __tablename__ = "solicitudes_material"
