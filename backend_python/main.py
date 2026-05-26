@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
@@ -28,6 +29,15 @@ class Settings(BaseSettings):
 settings = Settings()
 
 app = FastAPI(title="Constructora GG - API Python")
+
+# --- Configuración de CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Asegurar carpeta de uploads
 UPLOAD_DIR = "uploads"
@@ -90,12 +100,29 @@ def require_role(allowed_roles: List[int]):
 
 @app.post("/auth/login", response_model=schemas.Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # 1. Buscar usuario por correo (insensible a mayúsculas) y que esté activo
     user = db.query(models.Usuario).filter(
-        models.Usuario.correo == form_data.username,
+        models.Usuario.correo == form_data.username.lower(),
         models.Usuario.activo == True
     ).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=400, detail="Correo o contraseña incorrectos o cuenta desactivada")
+    
+    # 2. Validar existencia del usuario
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Correo no registrado o cuenta desactivada"
+        )
+    
+    # DEBUG - Información recibida
+    print(f'DEBUG - Username recibido: {form_data.username}')
+    print(f'DEBUG - Password recibido: {form_data.password}')
+
+    # 3. Validar contraseña
+    if not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Contraseña incorrecta"
+        )
     
     access_token = create_access_token(data={"sub": user.correo, "role": user.id_rol_fk})
     return {"access_token": access_token, "token_type": "bearer"}

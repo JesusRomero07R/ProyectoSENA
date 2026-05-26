@@ -1,304 +1,142 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // ------------------------------------------------------------------
-  // 1. LÓGICA GENERAL (APLICA A OPERARIO Y ADMINISTRADOR)
-  // ------------------------------------------------------------------
+// Configuración Global de la API
+const API_URL = "http://localhost:8000";
 
-  // --- TAREAS: Mostrar/Ocultar detalles (APLICA A OPERARIO) ---
-  document.querySelectorAll(".btn-ver-detalles").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const taskCard = btn.closest(".task-card");
-      const details = taskCard.querySelector(".task-details");
-      const label = btn.querySelector("span:first-child");
+// Ayudante para obtener headers con Token (Bearer)
+const getAuthHeaders = () => {
+    const token = localStorage.getItem("access_token");
+    return {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+    };
+};
 
-      details.style.display = details.style.display === "block" ? "none" : "block";
-      label.textContent = details.style.display === "block" ? "Ocultar detalles" : "Ver detalles";
+// Función para configurar la UI dinámicamente según el rol
+const setupUI = (roleId) => {
+    console.log('Configurando UI para Rol:', roleId);
+    
+    // 1. Definir nombres de roles
+    const roleMap = {
+        1: { name: "Administrador", label: "Panel de Administración", hint: "Gestión global de la constructora." },
+        2: { name: "Líder", label: "Panel del Líder", hint: "Gestión de proyectos y tareas asignadas." },
+        3: { name: "Operario", label: "Panel de Operario", hint: "Reporte de avances y tareas diarias." }
+    };
+
+    const currentRole = roleMap[roleId] || { name: "Usuario", label: "Panel", hint: "" };
+
+    // 2. Actualizar textos de cabecera y sidebar
+    const roleDisplayName = document.getElementById('role-display-name');
+    const userRoleLabel = document.getElementById('user-role-label');
+    const roleHint = document.getElementById('role-hint');
+    const welcomeTitle = document.getElementById('welcome-title');
+
+    if (roleDisplayName) roleDisplayName.textContent = currentRole.label;
+    if (userRoleLabel) userRoleLabel.textContent = currentRole.name;
+    if (roleHint) roleHint.textContent = currentRole.hint;
+    if (welcomeTitle) welcomeTitle.textContent = `Bienvenido, ${currentRole.name}`;
+
+    // 3. Mostrar/Ocultar elementos según clases de rol
+    const roleClasses = ['role-admin', 'role-lider', 'role-operario'];
+    const currentClass = `role-${currentRole.name.toLowerCase().replace('í', 'i')}`;
+
+    // Primero ocultamos todos los que tengan alguna clase de rol
+    roleClasses.forEach(cls => {
+        document.querySelectorAll(`.${cls}`).forEach(el => {
+            el.style.display = 'none';
+        });
     });
-  });
 
-  // --- TAREAS: Filtros chips (APLICA A OPERARIO) ---
-  const tasksList = document.getElementById("tasksList");
-  const chipAll = document.getElementById("chipAll");
-  const chipInProgress = document.getElementById("chipInProgress");
-  const chipPending = document.getElementById("chipPending");
+    // Luego mostramos los que correspondan al rol actual
+    document.querySelectorAll(`.${currentClass}`).forEach(el => {
+        // Restaurar display según tipo de elemento
+        if (el.tagName === 'A') {
+            el.style.display = 'flex'; // Los enlaces nav-link suelen ser flex
+        } else if (el.classList.contains('card')) {
+            el.style.display = 'block';
+        } else {
+            el.style.display = ''; // Valor por defecto del CSS
+        }
+    });
+};
 
-  if (tasksList && chipAll && chipInProgress && chipPending) {
-    const chips = [chipAll, chipInProgress, chipPending];
-    const taskItems = Array.from(tasksList.children);
+// Asegurar que el DOM esté listo antes de ejecutar cualquier lógica
+window.onload = () => {
+    console.log('Script app.js: DOM cargado correctamente');
 
-    function setActiveChip(activeChip) {
-      chips.forEach((chip) => chip.classList.remove("chip-active"));
-      activeChip.classList.add("chip-active");
+    // --- DECODIFICAR TOKEN Y CONFIGURAR UI ---
+    const token = localStorage.getItem("access_token");
+    if (token && (document.getElementById('unified-nav') || document.querySelector('.role-section'))) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            setupUI(payload.role);
+            
+            // Actualizar nombre en el User Chip si existe en el payload
+            const userFullName = document.getElementById('user-full-name');
+            const userInitials = document.getElementById('user-initials');
+            if (userFullName && payload.sub) {
+                userFullName.textContent = payload.sub;
+                userInitials.textContent = payload.sub.substring(0, 2).toUpperCase();
+            }
+        } catch (e) {
+            console.error('Error al decodificar token en onload:', e);
+        }
     }
 
-    // Mostrar todas por defecto (o al hacer clic en 'Todas')
-    const filterTasks = (status) => {
-      setActiveChip(status === 'all' ? chipAll : (status === 'en-curso' ? chipInProgress : chipPending));
-      
-      taskItems.forEach((task) => {
-        const taskStatus = task.dataset.status;
-        let shouldDisplay = true;
+    // ------------------------------------------------------------------
+    // 0. LÓGICA DE INICIO DE SESIÓN (UNIFICADA)
+    // ------------------------------------------------------------------
+    const loginForm = document.querySelector('.auth-form') || document.getElementById('login-form');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            if (!emailInput || !passwordInput) return;
 
-        if (status === 'en-curso') {
-          shouldDisplay = taskStatus === 'en-curso';
-        } else if (status === 'pendiente') {
-          shouldDisplay = taskStatus === 'pendiente'; // No hay tareas pendientes visibles en el HTML de ejemplo, pero el filtro está preparado.
-        } else if (status === 'all') {
-          shouldDisplay = true;
-        }
+            const formData = new URLSearchParams();
+            formData.append('username', emailInput.value);
+            formData.append('password', passwordInput.value);
 
-        task.style.display = shouldDisplay ? "" : "none";
-      });
-    };
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
 
-    chipAll.addEventListener("click", () => filterTasks('all'));
-    chipInProgress.addEventListener("click", () => filterTasks('en-curso'));
-    chipPending.addEventListener("click", () => filterTasks('pendiente'));
+                const data = await response.json();
 
-    // Inicializar el filtro en "Todas"
-    filterTasks('all'); 
-  }
-
-  // --- AVANCES: Contador de caracteres y rango de progreso (APLICA A OPERARIO) ---
-  const observaciones = document.getElementById("observaciones");
-  const charCounter = document.getElementById("charCounter");
-  const progresoRange = document.getElementById("progreso");
-  const progresoLabel = document.getElementById("progresoLabel");
-  const formAvances = document.getElementById("formAvances");
-  const reportsList = document.getElementById("reportsList");
-
-  if (observaciones && charCounter) {
-    observaciones.addEventListener("input", () => {
-      charCounter.textContent = observaciones.value.length;
-    });
-  }
-
-  if (progresoRange && progresoLabel) {
-    progresoRange.addEventListener("input", () => {
-      progresoLabel.textContent = `${progresoRange.value}%`;
-    });
-  }
-
-  // --- AVANCES: Manejo del envío del formulario (simulación) (APLICA A OPERARIO) ---
-  if (formAvances && reportsList) {
-    formAvances.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const tareaSelect = document.getElementById("tarea");
-      const tarea = tareaSelect.options[tareaSelect.selectedIndex].text;
-      const progreso = progresoRange.value;
-
-      // Creación del nuevo reporte
-      const now = new Date();
-      const hours = now.getHours().toString().padStart(2, "0");
-      const minutes = now.getMinutes().toString().padStart(2, "0");
-      const timeLabel = `${hours}:${minutes} · Hoy`;
-
-      const reportItem = document.createElement("div");
-      reportItem.className = "report-item";
-      reportItem.innerHTML = `
-        <div class="report-main">
-          <span class="report-title">${tarea}</span>
-          <span class="report-meta">${timeLabel}</span>
-        </div>
-        <span class="report-progress">${progreso}%</span>
-      `;
-
-      // Añadir al inicio de la lista
-      reportsList.prepend(reportItem);
-
-      // Limpiar formulario y mostrar alerta
-      observaciones.value = "";
-      charCounter.textContent = "0";
-      progresoRange.value = "0";
-      progresoLabel.textContent = "0%";
-      tareaSelect.value = "";
-      alert("Reporte de avance enviado correctamente.");
-    });
-  }
-
-  // ----- MATERIALES: Buscador (APLICA A OPERARIO y ADMINISTRADOR) -----
-  const searchMateriales = document.getElementById("searchMateriales");
-  const materialsList = document.getElementById("materialsList"); 
-  const materialsListAdmin = document.getElementById("materialsListAdmin"); 
-
-  const handleSearch = (list) => {
-    if (!list) return;
-
-    const input = list.previousElementSibling.querySelector('.search-input, .input-search'); 
-    if (!input) return;
-
-    const materialItems = list.querySelectorAll(".material-item, .material-item-admin");
-
-    input.addEventListener("input", () => {
-      const term = input.value.toLowerCase().trim();
-      materialItems.forEach((item) => {
-        // Se asume que el nombre está en el dataset 'data-name' para los de Operario
-        // o en el texto del elemento con clase .material-name para los de Admin
-        let name = item.dataset.name || item.querySelector('.material-name')?.textContent || '';
-        name = name.toLowerCase();
-
-        if (!term || name.includes(term)) {
-          item.style.display = "";
-        } else {
-          item.style.display = "none";
-        }
-      });
-    });
-  };
-
-  // Inicializar buscador en la lista de operario (si existe)
-  if (materialsList) {
-    handleSearch(materialsList);
-  }
-  // Inicializar buscador en la lista de administrador (si existe)
-  if (materialsListAdmin) {
-    handleSearch(materialsListAdmin);
-  }
-
-  // ------------------------------------------------------------------
-  // 2. LÓGICA ESPECÍFICA DE ADMINISTRADOR (admin_proyectos.html)
-  // ------------------------------------------------------------------
-
-  // --- PROYECTOS: Manejo de la barra de progreso ---
-  const projectList = document.getElementById("projectList");
-
-  if (projectList) {
-    // Función para simular el progreso
-    const updateProgressBars = () => {
-      document.querySelectorAll('.project-main-card').forEach(card => {
-        // Obtener el porcentaje (simulado)
-        const progressFill = card.querySelector('.progress-fill');
-        const metaInfo = card.querySelector('.project-meta-info');
-
-        // Asumiendo que el progreso está en un atributo data-progress
-        let progress = parseInt(card.dataset.progress) || 0; 
-        
-        // Si no tiene data-progress, usar un valor por defecto o leer de un elemento
-        if (progress === 0) {
-             const progressText = metaInfo ? metaInfo.querySelector('span:first-child')?.textContent : '0%';
-             progress = parseInt(progressText.replace('%', '').trim()) || 0;
-        }
-
-        progressFill.style.width = `${progress}%`;
-        progressFill.textContent = `${progress}%`; // opcional, si la barra fuera ancha
-      });
-    };
-
-    updateProgressBars();
-  }
-
-
-  // ------------------------------------------------------------------
-  // 3. LÓGICA ESPECÍFICA DE ADMINISTRADOR (admin_inventario.html)
-  // ------------------------------------------------------------------
-
-  // --- INVENTARIO: Botones de Entrada/Salida (Simulación de Modales) ---
-  document.querySelectorAll('.btn-entrada, .btn-salida').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      const action = button.classList.contains('btn-entrada') ? 'Entrada (Reposición)' : 'Salida (Consumo)';
-      const materialName = button.closest('.material-item-admin').querySelector('.material-name').textContent;
-      
-      // Simulación de un modal
-      alert(`Simulación de ${action} para:\n\nMaterial: ${materialName}\n\nAquí se abriría un modal para ingresar la cantidad.`);
-    });
-  });
-
-  document.querySelectorAll('.btn-actualizar').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      const materialName = button.closest('.material-item-admin').querySelector('.material-name').textContent;
-      alert(`Abriendo formulario de edición para ${materialName}.`);
-    });
-  });
-
-});
-
-// ===================================================================
-    // 5. LÓGICA DE TOGGLE PARA PREGUNTAS FRECUENTES (FAQ)
-    // ===================================================================
-
-    const handleFaqToggle = (e) => {
-        const question = e.currentTarget;
-        const faqItem = question.closest('.faq-item');
-        
-        // Cierra todos los demás FAQ's abiertos (comportamiento de Acordeón)
-        document.querySelectorAll('.faq-item.open').forEach(item => {
-            if (item !== faqItem) {
-                item.classList.remove('open');
+                if (response.ok) {
+                    localStorage.setItem("access_token", data.access_token);
+                    alert('¡Acceso concedido! Redirigiendo al Dashboard Unificado...');
+                    // REDIRECCIÓN UNIFICADA (Desde plataforma/index.html)
+                    window.location.href = 'app dentro/dashboard.html';
+                } else {
+                    alert(`Error: ${data.detail || 'Credenciales inválidas'}`);
+                }
+            } catch (error) {
+                alert('Error técnico: ' + error.message);
             }
         });
-        
-        // Abre o cierra el FAQ clickeado
-        faqItem.classList.toggle('open');
-    };
+    }
 
-    // Asignar el evento click a todas las preguntas
-    document.querySelectorAll('.faq-question').forEach(question => {
-        question.addEventListener('click', handleFaqToggle);
-    });
-
-       // ===================================================================
-// 6. LÓGICA DE INICIO DE SESIÓN Y RECUPERACIÓN (LOGIN)
-// ===================================================================
-
-// Manejar el formulario de Login
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        
-        if (username === 'paujity' && password === 'leader') { 
-            // Notificación de éxito
-            alert('¡Acceso concedido! Bienvenido Líder de Proyecto.'); 
-            // 👇 RUTA DE REDIRECCIÓN ACTUALIZADA 👇
-            window.location.href = 'app dentro/index.html'; 
-        } else {
-            // Notificación de error (ajustada para mantener la referencia a 'leader/leader')
-            alert('Error: Usuario o contraseña incorrectos. Intenta con leader / leader.');
-        }
-    });
-}
-
-// Manejar el formulario de Recuperación de Contraseña
-const recoveryForm = document.getElementById('recovery-form');
-if (recoveryForm) {
-    recoveryForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        
-        // Simulación de envío de correo
-        alert(`Instrucciones de recuperación enviadas a:\n\n${email}\n\nRevisa tu bandeja de entrada y spam.`);
-        
-        // Opcional: Redirigir de vuelta al login después de la alerta
-        // window.location.href = 'login.html'; 
-    });
-}
-
-// Asegúrate de que este código se ejecute cuando el DOM esté cargado.
-document.addEventListener("DOMContentLoaded", () => {
+    // ------------------------------------------------------------------
+    // 2. LÓGICA DE UI Y LOGOUT
+    // ------------------------------------------------------------------
     
-    // ... (Tu código de inicio de sesión existente) ...
-
-    // ===================================================================
-    // 7. LÓGICA DE CIERRE DE SESIÓN (Admin/Líder)
-    // ===================================================================
-    const logoutButtonAdmin = document.getElementById('logout-button-admin');
-
-    if (logoutButtonAdmin) {
-        logoutButtonAdmin.addEventListener('click', () => {
-            // Opcional: limpiar cualquier token de sesión/almacenamiento aquí.
-            
-            alert('Has cerrado tu sesión. Redirigiendo a la página de inicio de sesión.');
-            
-            // Redirige a login.html (un nivel arriba de /app dentro/)
+    // Cierre de sesión unificado
+    const logoutBtn = document.getElementById('logout-button-unified') || document.getElementById('logout-button-admin') || document.getElementById('logout-button');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem("access_token");
+            alert('Sesión cerrada.');
             window.location.href = '../index.html'; 
         });
     }
 
-    // ... (El resto de tu código JS) ...
-
-}); // Cierre de DOMContentLoaded
+    // El resto de la lógica de carga de usuarios, etc., se mantiene para cuando el Admin acceda...
+    const userListContainer = document.getElementById("userList");
+    if (userListContainer) cargarUsuarios();
+};

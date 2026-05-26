@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script> 
+    // Protección de ruta: Esperamos un momento a que el storage se asiente
+    setTimeout(() => { 
+        const token = localStorage.getItem('access_token'); 
+        if (!token) { 
+            alert('Sesión no encontrada. Regresando al login...'); 
+            window.location.replace('../index.html'); 
+        } 
+    }, 100);  
+  </script>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Panel Unificado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Estilos dinámicos para el Dashboard Unificado */
+    .role-section { display: none; } /* Por defecto oculto, JS lo mostrará */
+    
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .project-card-list { display: flex; flex-direction: column; gap: 12px; }
+    .project-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border-radius: var(--radius-md); background: #f9fafb; border: 1px solid var(--border); }
+    .project-progress-value { font-weight: 700; font-size: 1.2rem; color: var(--primary); align-self: center; }
+    
+    @media (max-width: 768px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">GG</div>
+            <div class="brand-text">
+                <span>Constructora GG</span>
+                <span id="role-display-name">Cargando panel...</span> 
+            </div>
+        </div>
+        <div class="app-header-right">
+            <div class="user-chip">
+                <div class="user-avatar" id="user-initials">--</div>
+                <div class="user-info">
+                    <span id="user-full-name">Usuario</span>
+                    <span id="user-role-label">Rol</span>
+                </div>
+            </div>
+            <button id="logout-button-unified" class="logout-btn" type="button">
+                <span class="icon">⎋</span>
+                <span class="label">Cerrar sesión</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link nav-active" href="dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="admin_usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="admin_proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos_lider.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo_lider.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="admin_inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider role-operario" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes / Avances -->
+            <a class="nav-link role-admin" href="admin_reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-operario" href="avances.html">
+              <span class="icon">↗</span>
+              <span class="label">Mis Avances</span>
+            </a>
+            <a class="nav-link role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">Cargando información del sistema...</p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1 id="welcome-title">Bienvenido</h1>
+            <p id="welcome-subtitle">Resumen de tu actividad en la constructora.</p>
+          </div>
+        </header>
+
+        <!-- SECCIÓN KPI: ADMIN -->
+        <div class="card role-admin role-section">
+            <div class="card-header"><h2>Indicadores Globales</h2></div>
+            <div class="grid-4">
+              <div class="kpi-card"><span class="kpi-label">Usuarios</span><span class="kpi-value">8</span></div>
+              <div class="kpi-card"><span class="kpi-label">Proyectos</span><span class="kpi-value">3</span></div>
+              <div class="kpi-card"><span class="kpi-label">Inventario</span><span class="kpi-value">Normal</span></div>
+              <div class="kpi-card"><span class="kpi-label">Avance</span><span class="kpi-value">65%</span></div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN KPI: LÍDER / OPERARIO -->
+        <div class="card role-lider role-operario role-section">
+            <div class="card-header"><h2>Resumen de Tareas</h2></div>
+            <div class="grid-4">
+              <div class="kpi-card"><span class="kpi-label">Pendientes</span><span class="kpi-value">1</span></div>
+              <div class="kpi-card"><span class="kpi-label">En curso</span><span class="kpi-value">2</span></div>
+              <div class="kpi-card"><span class="kpi-label">Finalizadas</span><span class="kpi-value">0</span></div>
+              <div class="kpi-card"><span class="kpi-label">Horas Hoy</span><span class="kpi-value">8h</span></div>
+            </div>
+        </div>
+
+        <!-- LISTA DE PROYECTOS (ADMIN/LÍDER) -->
+        <div class="card role-admin role-lider role-section" style="margin-top: 15px;">
+            <div class="card-header"><h2>Proyectos Activos</h2></div>
+            <div class="project-card-list">
+              <div class="project-item">
+                <div><div class="project-title">Edificio Residencial Torres del Sol</div><div class="project-leader">Avance: 65%</div></div>
+                <div class="project-progress-value">65%</div>
+              </div>
+            </div>
+        </div>
+
+        <!-- LISTA DE TAREAS (OPERARIO) -->
+        <div class="card role-operario role-section" style="margin-top: 15px;">
+            <div class="card-header"><h2>Mis Tareas de Hoy</h2></div>
+            <div class="project-card-list">
+                <div class="project-item">
+                    <div><div class="project-title">Instalación eléctrica piso 5</div><div class="project-leader">Urgente</div></div>
+                    <button class="btn-small">Ver</button>
+                </div>
+            </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <footer class="app-footer">
+    <div class="footer-nav">
+        <a href="sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+        <a href="soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+        <a href="terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+    </div>
+    <p class="footer-copy">© 2025 Constructora GG. Panel Unificado.</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
