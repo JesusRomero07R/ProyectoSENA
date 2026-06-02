@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Mi Perfil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Perfil */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .profile-role {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .profile-badges {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .badge-secondary {
+        background: #f3f4f6;
+        color: var(--muted);
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+    .profile-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .profile-info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-info-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .profile-kpis {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .profile-kpi-item {
+      padding: 15px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .profile-kpi-value {
+      display: block;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .profile-kpi-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .profile-footer {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    .profile-highlight {
+        color: var(--primary);
+        font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Mi Perfil</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar" id="header-avatar">JL</div>
+            <div class="user-info">
+                <span id="header-username">Juan López</span>
+                <span id="header-userrole">Operario</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario nav-active" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">
+          Configuración de cuenta y datos personales del trabajador.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Mi perfil</h1>
+            <p>Consulta tu información y tu rendimiento.</p>
+          </div>
+        </header>
+
+        <section>
+          <div class="card">
+            <div class="profile-header">
+              <div class="profile-avatar" id="profile-avatar-large">JL</div>
+              <div>
+                <div class="profile-name" id="profile-name">Juan López</div>
+                <div class="profile-role" id="profile-role">Operario · Miembro activo</div>
+                <div class="profile-badges">
+                  <span class="badge">Activo</span>
+                  <span class="badge badge-secondary" id="profile-dept">Construcción</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-grid">
+              <!-- Info personal -->
+              <div class="profile-info-list">
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Email</span>
+                  <span id="profile-email">juan@constructoragg.com</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Teléfono</span>
+                  <span id="profile-phone">+57 317 456 7089</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Ubicación</span>
+                  <span id="profile-location">Bogotá, Colombia</span>
+                </div>
+                <div class="profile-info-row">
+                  <span class="profile-info-label">Ingreso</span>
+                  <span id="profile-join-date">15 de marzo, 2023</span>
+                </div>
+              </div>
+
+              <!-- Estadísticas -->
+              <div class="profile-kpis">
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label" id="label-kpi-tasks">Tareas Totales</span>
+                  <span class="profile-kpi-value" id="kpi-tasks">--</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label" id="label-kpi-completed">Completadas</span>
+                  <span class="profile-kpi-value" id="kpi-completed">--</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label" id="label-kpi-projects">Proyectos en curso</span>
+                  <span class="profile-kpi-value" id="kpi-projects">--</span>
+                </div>
+                <div class="profile-kpi-item">
+                  <span class="profile-kpi-label" id="label-kpi-performance" title="Eficiencia operativa">Rendimiento (KPI)</span>
+                  <span class="profile-kpi-value" id="kpi-performance">--%</span>
+                  <small style="font-size: 0.6rem; color: var(--muted); display: block; margin-top: 4px;" id="kpi-desc">Tareas completadas vs totales</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-footer" id="profile-footer-actions">
+              <span id="motivational-msg">
+                ¡Buen trabajo! Has completado el
+                <span class="profile-highlight" id="footer-percentage">0%</span> de tus tareas asignadas.
+              </span>
+              <div id="self-actions-container">
+                <button class="btn-ghost" id="btnEditProfile">Configuración de cuenta</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="../dashboard.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="tareas.html" class="">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="perfil.html" class="active">
+          <span class="icon">👤</span>
+          <span class="label">Perfil</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+
+  <!-- Modal para Editar Perfil -->
+  <div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Editar Mi Información</h2>
+            <span class="close-modal" id="closeEditProfileModal">&times;</span>
+        </div>
+        <form id="editProfileForm">
+            <div class="input-group">
+                <label for="edit_nombre">Nombre</label>
+                <input type="text" id="edit_nombre" name="nombre" required>
+            </div>
+            <div class="input-group">
+                <label for="edit_apellido">Apellido</label>
+                <input type="text" id="edit_apellido" name="apellido" required>
+            </div>
+            <div class="input-group">
+                <label for="edit_telefono">Teléfono</label>
+                <input type="text" id="edit_telefono" name="telefono">
+            </div>
+            <div class="input-group">
+                <label for="edit_password">Nueva Contraseña (dejar en blanco para no cambiar)</label>
+                <input type="password" id="edit_password" name="password" autocomplete="new-password">
+            </div>
+            <div class="input-group">
+                <label for="edit_password_confirm">Confirmar Nueva Contraseña</label>
+                <input type="password" id="edit_password_confirm" autocomplete="new-password">
+            </div>
+            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+                Nota: Tu correo y rol solo pueden ser cambiados por un administrador.
+            </p>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Guardar Cambios</button>
+        </form>
+    </div>
+  </div>
+
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="../app.js"></script>
+</body>
+</html>

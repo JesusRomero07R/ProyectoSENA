@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Reportes Globales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Reportes */
+    .report-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .report-kpi-card {
+        padding: 15px;
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        text-align: center;
+    }
+    .report-kpi-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .report-kpi-card .label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    .report-financial-card {
+        padding: 20px;
+        border-radius: var(--radius-md);
+        background: var(--primary);
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+    .financial-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .financial-detail:last-child {
+        border-bottom: none;
+    }
+    .financial-detail .label {
+        font-size: 0.85rem;
+        font-weight: 300;
+    }
+    .financial-detail .value {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .latest-report-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .latest-report-item {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        background: var(--bg-card);
+    }
+    .latest-report-item strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+    .latest-report-item span {
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body class="role-admin">
+  <div class="app">
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-logo">GG</div>
+            <div class="brand-text">
+                <span>Constructora GG</span>
+                <span>Panel de Administración</span> 
+            </div>
+        </div>
+        <div class="app-header-right">
+            <div class="user-chip">
+                <div class="user-avatar" id="header-avatar">AD</div>
+                <div class="user-info">
+                    <span id="header-username">Admin User</span>
+                    <span id="header-userrole">Administrador</span>
+                </div>
+            </div>
+            <button id="logout-button" class="logout-btn" type="button">
+                <span class="icon">⎋</span>
+                <span class="label">Cerrar sesión</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin nav-active" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">
+          Análisis de datos, rendimiento de proyectos y estadísticas generales.
+        </p>
+      </aside>
+
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Reportes Globales</h1>
+            <p>Análisis ejecutivo de métricas clave.</p>
+          </div>
+          <div class="chips-row" id="reportFilters">
+            <div class="chip chip-active" data-period="all">Todos los proyectos</div>
+            <div class="chip" data-period="financial">Financiero</div>
+          </div>
+        </header>
+
+        <section>
+          <div class="report-kpi-grid">
+              <div class="report-kpi-card">
+                <div class="value" id="valTotalProyectos">--</div>
+                <div class="label">Total Proyectos</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value" id="valCompletados">--</div>
+                <div class="label">Completados</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value" id="valAvancePromedio">--%</div>
+                <div class="label">Avance Promedio</div>
+              </div>
+              <div class="report-kpi-card">
+                <div class="value" id="valMaterialesCriticos">--</div>
+                <div class="label">Materiales Críticos</div>
+              </div>
+          </div>
+
+          <div class="report-financial-card" id="financialSection">
+            <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 15px;">Resumen Financiero</div>
+            <div class="financial-detail">
+              <span class="label">Presupuesto total</span>
+              <span class="value" id="valPresupuestoTotal">$ 0</span>
+            </div>
+            <div class="financial-detail">
+              <span class="label">Proyectos activos</span>
+              <span class="value" id="valProyectosActivos">$ 0</span>
+            </div>
+            <div class="financial-detail">
+              <span class="label">Inversión promedio</span>
+              <span class="value" id="valInversionPromedio">$ 0</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 15px;" id="reportsSection">
+            <div class="card-header">
+              <h2>Últimos Reportes Generados</h2>
+              <p class="card-subtitle">Novedades de avance reciente.</p>
+            </div>
+            <div class="latest-report-list" id="latestReportsList">
+                <!-- Se cargará dinámicamente -->
+            </div>
+            <div style="margin-top: 15px; text-align: right;">
+                <button class="btn-primary" onclick="window.location.href='tareas.html'">Generar Nuevo Reporte</button>
+            </div>
+          </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="../dashboard.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="usuarios.html" class="">
+          <span class="icon">👤</span>
+          <span class="label">Usuarios</span>
+        </a>
+        <a href="proyectos.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="inventario.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Inventario</span>
+        </a>
+        <a href="reportes.html" class="active">
+          <span class="icon">기</span>
+          <span class="label">Reportes</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+      </footer>
+  <script src="../app.js"></script>
+</body>
+</html>

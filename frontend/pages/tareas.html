@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Tareas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* CSS Consolidado para la vista de Tareas */
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .task-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .task-title {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .task-meta {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .task-project {
+        font-weight: 600;
+        color: var(--primary-dark);
+        font-size: 0.8rem;
+    }
+    .status-pill-task {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .status-pendiente { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; }
+    .status-en-curso { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; }
+    .status-completada { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; }
+
+    .task-details {
+        margin-top: 5px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+        font-size: 0.8rem;
+        display: none;
+    }
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    /* KPI Cards from Operario View */
+    .grid-kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .kpi-card {
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .kpi-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .kpi-label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body class="role-lider">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span class="role-lider-only">Panel del Líder</span>
+          <span class="role-operario-only">Panel de Operario</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar" id="header-avatar">AM</div>
+            <div class="user-info">
+                <span id="header-username">Ana Martínez</span>
+                <span id="header-userrole">Líder de Proyecto</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario nav-active" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">
+            Gestión y reporte de tareas asignadas.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1 class="role-admin">Gestión de Tareas</h1>
+            <h1 class="role-lider">Gestión de Tareas</h1>
+            <h1 class="role-operario">Mis Tareas</h1>
+            <p>Revisa y gestiona las actividades de obra.</p>
+          </div>
+          
+          <div class="filter-group" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+              <div class="project-selector-wrapper" id="projectSelectorWrapper">
+                  <label for="projectFilterSelect" style="font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; display: block;">PROYECTO SELECCIONADO:</label>
+                  <select id="projectFilterSelect" class="input-search" style="width: 100%; max-width: 400px; padding: 12px; font-weight: 600;">
+                      <option value="all">-- Todos los Proyectos --</option>
+                  </select>
+              </div>
+
+              <div class="chips-row" id="taskFilters">
+                <div class="chip chip-active" data-status="all">Todas</div>
+                <div class="chip" data-status="pendiente">Pendientes</div>
+                <div class="chip" data-status="en_progreso">En curso</div>
+                <div class="chip" data-status="finalizada">Completadas</div>
+              </div>
+          </div>
+        </header>
+
+        <section>
+            <div class="grid-kpis">
+                <div class="kpi-card">
+                    <span class="kpi-label">Pendientes</span>
+                    <span class="kpi-value" id="valTareasPendientes">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">En curso</span>
+                    <span class="kpi-value" id="valTareasEnCurso">0</span>
+                </div>
+                <div class="kpi-card">
+                    <span class="kpi-label">Finalizadas</span>
+                    <span class="kpi-value" id="valTareasFinalizadas">0</span>
+                </div>
+            </div>
+
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" id="taskInputSearch" class="input-search" placeholder="Buscar tarea..." style="flex-grow: 1;">
+                <button class="btn-primary role-admin role-lider" id="btnNewTask" style="white-space: nowrap;">
+                    <span class="icon">+</span>
+                    <span>Nueva Tarea</span>
+                </button>
+            </div>
+            
+            <div class="tasks-list" id="tasksList">
+                <!-- Se cargará dinámicamente -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-ghost">Cargar más tareas</button>
+            </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="../dashboard.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="proyectos.html" class="role-lider-only">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="tareas.html" class="active">
+          <span class="icon">✍</span>
+          <span class="label">Tareas</span>
+        </a>
+        <a href="inventario.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Inventario</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+        </footer>
+
+        <!-- Modal para Reportar Avance de Tarea -->
+        <div id="reportModal" class="modal">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h2>Reportar Avance Diario</h2>
+                  <span class="close-modal" id="closeReportModal">&times;</span>
+              </div>
+              <form id="reportForm">
+                  <input type="hidden" id="report_task_id">
+                  <div class="input-group">
+                      <label>Título de la Tarea</label>
+                      <input type="text" id="report_task_title" disabled style="background: var(--bg);">
+                  </div>
+                  <div class="input-group">
+                      <label for="report_percentage">Nuevo Porcentaje de Avance (0-100)</label>
+                      <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="number" id="report_percentage" name="porcentaje" min="0" max="100" required style="flex: 1;">
+                        <span id="current_progress_badge" style="background: var(--primary); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">Actual: 0%</span>
+                      </div>
+                      <p class="form-hint" id="percentage_hint">El nuevo avance debe ser mayor o igual al actual.</p>
+                  </div>
+                  <div class="input-group">
+                      <label for="report_hours">Horas Trabajadas Hoy</label>
+                      <input type="number" id="report_hours" name="horas_trabajadas" step="0.5" min="0" required>
+                  </div>
+                  <div class="input-group">
+                      <label for="report_obs">Observaciones / Novedades</label>
+                      <textarea id="report_obs" name="observaciones" placeholder="Escribe qué se hizo hoy..."></textarea>
+                  </div>
+                  <div class="input-group" style="border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-md); background: #f9fafb;">
+                      <label style="font-weight: 700; margin-bottom: 10px; display: block;">Materiales Usados</label>
+                      <div id="modalMaterialsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                        <!-- Se cargarán dinámicamente -->
+                      </div>
+                      <button type="button" class="btn-outline btn-small-muted" id="btnModalAddMaterial" style="width: 100%;">
+                        <span class="icon">+</span> Añadir Material
+                      </button>
+                  </div>
+                  <button type="submit" class="btn-primary" style="width: 100%; height: 45px; margin-top: 10px;">Enviar Reporte de Avance</button>
+              </form>
+          </div>
+        </div>
+
+        <!-- Modal para Ver Detalles e Historial de Tarea -->
+        <div id="taskDetailModal" class="modal">
+          <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+              <div class="modal-header">
+                  <h2 id="detail_task_title_h2">Detalles de Tarea</h2>
+                  <span class="close-modal" id="closeTaskDetailModal">&times;</span>
+              </div>
+              
+              <!-- Resumen de Uso -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                  <div class="kpi-card" style="padding: 10px; border-left: 4px solid var(--primary);">
+                      <span class="kpi-label">Tiempo Total</span>
+                      <span class="kpi-value" id="detail_total_hours" style="font-size: 1.2rem;">0h</span>
+                  </div>
+                  <div class="kpi-card" style="padding: 10px; border-left: 4px solid var(--accent);">
+                      <span class="kpi-label">Progreso</span>
+                      <span class="kpi-value" id="detail_progress" style="font-size: 1.2rem;">0%</span>
+                  </div>
+              </div>
+
+              <!-- Materiales Acumulados -->
+              <div class="card" style="margin-bottom: 20px; background: #f8fafc;">
+                  <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text);">Materiales Utilizados</h3>
+                  <div id="detail_materials_summary" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                      <!-- Se cargará dinámicamente -->
+                  </div>
+              </div>
+
+              <!-- Historial de Reportes -->
+              <div class="card">
+                  <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text);">Historial de Actividad</h3>
+                  <div id="detail_reports_history" style="display: flex; flex-direction: column; gap: 12px;">
+                      <!-- Se cargará dinámicamente -->
+                  </div>
+              </div>
+          </div>
+        </div>
+
+        <!-- Modal para Crear Nueva Tarea -->
+        <div id="newTaskModal" class="modal">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h2>Crear Nueva Tarea</h2>
+                  <span class="close-modal" id="closeNewTaskModal">&times;</span>
+              </div>
+              <form id="newTaskForm">
+                  <div class="input-group">
+                      <label for="task_project_id">Proyecto</label>
+                      <select id="task_project_id" name="id_proyecto_fk" required>
+                          <option value="">Selecciona un proyecto</option>
+                      </select>
+                  </div>
+                  <div class="input-group">
+                      <label for="task_title">Título de la Tarea</label>
+                      <input type="text" id="task_title" name="titulo" placeholder="Ej: Excavación para cimientos" required>
+                  </div>
+                  <div class="input-group">
+                      <label for="task_desc">Descripción</label>
+                      <textarea id="task_desc" name="descripcion" placeholder="Detalles de la actividad..."></textarea>
+                  </div>
+                  <div class="input-group">
+                      <label for="task_priority">Prioridad</label>
+                      <select id="task_priority" name="prioridad" required>
+                          <option value="baja">Baja</option>
+                          <option value="media" selected>Media</option>
+                          <option value="alta">Alta</option>
+                      </select>
+                  </div>
+                  <div class="input-group">
+                      <label for="task_deadline">Fecha Límite</label>
+                      <input type="date" id="task_deadline" name="fecha_limite" required>
+                  </div>
+                  <div class="input-group">
+                      <label>Asignar Operarios (del Proyecto)</label>
+                      <div id="taskOperatorsList" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px;">
+                          <p style="font-size: 0.8rem; color: var(--muted); text-align: center;">Primero selecciona un proyecto</p>
+                      </div>
+                  </div>
+                  <button type="submit" class="btn-primary" style="width: 100%; height: 45px; margin-top: 10px;">Crear y Asignar Tarea</button>
+              </form>
+          </div>
+        </div>
+
+        <script src="../app.js"></script>
+        </body>
+        </html>

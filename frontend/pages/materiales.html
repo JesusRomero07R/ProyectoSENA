@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Suministros y Materiales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .materials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .project-section {
+        margin-bottom: 30px;
+    }
+    .project-header-title {
+        background: var(--bg);
+        padding: 10px 15px;
+        border-radius: var(--radius-md);
+        margin-bottom: 15px;
+        border-left: 4px solid var(--primary);
+        font-weight: 700;
+    }
+    .material-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      background: var(--bg-card);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .material-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    .stock-badge {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: var(--bg-card);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-soft);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .input-group input, .input-group select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body class="role-lider">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Materiales de Obra</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar" id="header-avatar">--</div>
+            <div class="user-info">
+                <span id="header-username">Cargando...</span>
+                <span id="header-userrole">Rol</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario Global</span>
+            </a>
+            <a class="nav-link role-lider nav-active" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Materiales en Obra</h1>
+            <p>Existencias disponibles en los proyectos asignados.</p>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 20px;">
+                <input type="text" id="matInputSearch" class="input-search" placeholder="Buscar material..." style="flex-grow: 1;">
+                <button class="btn-primary role-lider" id="btnRequestGlobal">
+                    <span class="icon">📥</span>
+                    <span>Pedir a Almacén Central</span>
+                </button>
+                <button class="btn-primary role-operario" id="btnRequestTask">
+                    <span class="icon">📋</span>
+                    <span>Pedir para mi Tarea</span>
+                </button>
+            </div>
+            
+            <div id="projectMaterialsContainer">
+                <p style="text-align: center; padding: 40px; color: var(--muted);">Cargando materiales del proyecto...</p>
+            </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal para Traslado de Material (Líder) -->
+  <div id="transferModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Solicitar a Almacén Central</h2>
+            <span class="close-modal" id="closeTransferModal">&times;</span>
+        </div>
+        <form id="transferForm">
+            <div class="input-group">
+                <label for="trans_project">Proyecto Destino</label>
+                <select id="trans_project" name="id_proyecto" required>
+                    <option value="">Selecciona un proyecto</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="trans_material">Material a Solicitar</label>
+                <select id="trans_material" name="id_material" required>
+                    <option value="">Selecciona un material</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="trans_qty">Cantidad</label>
+                <input type="number" id="trans_qty" name="cantidad" min="1" required>
+            </div>
+            <p id="globalStockHint" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+                Stock disponible en almacén central: <span id="valGlobalStock">--</span>
+            </p>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Confirmar Solicitud</button>
+        </form>
+    </div>
+  </div>
+
+  <!-- Modal para Pedir para Tarea (Operario) -->
+  <div id="taskRequestModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Pedir para mi Tarea</h2>
+            <span class="close-modal" id="closeTaskRequestModal">&times;</span>
+        </div>
+        <form id="taskRequestForm">
+            <div class="input-group">
+                <label for="req_task">Mi Tarea Actual</label>
+                <select id="req_task" name="id_tarea" required>
+                    <option value="">Selecciona tarea</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="req_material">Material de Obra</label>
+                <select id="req_material" name="id_material" required>
+                    <option value="">Selecciona material</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="req_qty">Cantidad</label>
+                <input type="number" id="req_qty" name="cantidad" min="1" required>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Confirmar Pedido</button>
+        </form>
+    </div>
+  </div>
+
+  <script src="../app.js"></script>
+</body>
+</html>

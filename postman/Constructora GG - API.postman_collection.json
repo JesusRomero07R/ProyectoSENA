@@ -48,12 +48,10 @@
 							]
 						},
 						"url": {
-							"raw": "http://localhost:8000/auth/login",
-							"protocol": "http",
+							"raw": "{{base_url}}/auth/login",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
-							"port": "8000",
 							"path": [
 								"auth",
 								"login"
@@ -241,7 +239,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nombre\": \"Edificio Torre de obsidiana\",\n  \"descripcion\": \"Torre de 10 pisos con parqueadero\",\n  \"ciudad\": \"Cali\",\n  \"direccion\": \"Calle 52 #2-15\",\n  \"presupuesto\": 15000002000.00,\n  \"fecha_inicio\": \"2024-05-01\",\n  \"id_lider_fk\": 4\n}",
+							"raw": "{\n  \"nombre\": \"Edificio Torre de obsidiana\",\n  \"descripcion\": \"Torre de 10 pisos con parqueadero\",\n  \"ciudad\": \"Cali\",\n  \"direccion\": \"Calle 52 #2-15\",\n  \"presupuesto\": 15000002000.00,\n  \"fecha_inicio\": \"2024-05-01\",\n  \"id_lider_fk\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -249,13 +247,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/proyectos/",
+							"raw": "{{base_url}}/proyectos",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"proyectos",
-								""
+								"proyectos"
 							]
 						}
 					},
@@ -1098,6 +1095,13 @@
 					""
 				]
 			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
 		}
 	]
 }

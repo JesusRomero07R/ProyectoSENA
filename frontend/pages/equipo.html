@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Constructora GG – Mi Equipo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+        /* CSS Adicional para la vista de Equipo */
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .user-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-card);
+            position: relative;
+        }
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.9rem;
+        }
+        .user-details strong {
+            font-weight: 600;
+        }
+        .user-details span {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .user-status-tasks {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+        }
+        .role-tag {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        .status-tag-disponible {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #d1fae5;
+            color: #059669;
+        }
+        .status-tag-ocupado {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #fffbeb;
+            color: #9d5000;
+        }
+        .status-tag-baja {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #f3f4f6;
+            color: var(--muted);
+        }
+
+        @media (max-width: 768px) {
+            .layout { grid-template-columns: 1fr; padding: 10px; }
+            .sidebar { display: none; }
+            .user-card {
+                grid-template-columns: auto 1fr;
+                grid-template-rows: auto auto;
+                padding-bottom: 50px; 
+            }
+            .user-details {
+                grid-row: 1 / 2;
+                grid-column: 2 / 3;
+            }
+            .user-status-tasks {
+                grid-row: 2 / 3;
+                grid-column: 1 / 3;
+                align-items: flex-start;
+                flex-direction: row;
+                gap: 10px;
+                margin-top: 5px;
+            }
+            .user-actions {
+                position: absolute;
+                bottom: 10px;
+                right: 15px;
+                display: flex;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body class="role-lider">
+    <div class="app">
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo">GG</div>
+                <div class="brand-text">
+                    <span>Constructora GG</span>
+                    <span>Panel del Líder</span>
+                </div>
+            </div>
+            <div class="app-header-right">
+                <div class="user-chip">
+                    <div class="user-avatar" id="header-avatar">AM</div>
+                    <div class="user-info">
+                        <span id="header-username">Ana Martínez</span>
+                        <span id="header-userrole">Líder de Proyecto</span>
+                    </div>
+                </div>
+                <button id="logout-button" class="logout-btn" type="button">
+                    <span class="icon">⎋</span>
+                    <span class="label">Cerrar sesión</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider nav-active" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">
+            Gestión y supervisión de proyectos, tareas y recursos asignados.
+        </p>
+      </aside>
+
+            <section class="content">
+                <header class="content-header">
+                    <div class="content-title">
+                        <h1>Mi Equipo</h1>
+                        <p id="teamSummary">Cargando personal...</p>
+                    </div>
+                    <div class="chips-row" id="teamFilters">
+                        <div class="chip chip-active" data-status="all">Todos</div>
+                        <div class="chip" data-status="disponible">Disponibles</div>
+                        <div class="chip" data-status="ocupado">Ocupados</div>
+                    </div>
+                </header>
+
+                <section>
+                    <div class="action-bar" style="margin-bottom: 15px;">
+                        <input type="text" id="teamInputSearch" class="input-search" placeholder="Buscar miembro por nombre o correo..." style="flex-grow: 1;">
+                    </div>
+                    
+                    <div class="user-list" id="teamListContainer">
+                        <!-- Se cargará dinámicamente -->
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn-ghost">Cargar más miembros</button>
+                    </div>
+                </section>
+            </section>
+        
+            <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+                <a href="../dashboard.html" class="">
+                    <span class="icon">Π</span>
+                    <span class="label">Inicio</span>
+                </a>
+                <a href="proyectos.html" class="">
+                    <span class="icon">✓</span>
+                    <span class="label">Proyectos</span>
+                </a>
+                <a href="tareas.html" class="">
+                    <span class="icon">✍</span>
+                    <span class="label">Tareas</span>
+                </a>
+                <a href="equipo.html" class="active">
+                    <span class="icon">👤</span>
+                    <span class="label">Equipo</span>
+                </a>
+                <a href="inventario.html" class="">
+                    <span class="icon">📦</span>
+                    <span class="label">Inventario</span>
+                </a>
+            </nav>
+        </main>
+    </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+    </footer>
+    <script src="../app.js"></script>
+</body>
+</html>

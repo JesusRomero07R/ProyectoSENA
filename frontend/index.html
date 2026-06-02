@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Constructora GG – Iniciar Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header-mobile">
+            <div class="brand">
+                <div class="brand-logo">GG</div>
+                <div class="brand-text">
+                    <span>Constructora GG</span>
+                    <span>Plataforma de Gestión</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="auth-content">
+            <h1>Inicia sesión para continuar</h1>
+            <p class="subtitle">Gestión eficiente, resultados sólidos.</p>
+
+            <form id="login-form" class="auth-form">
+                <div class="input-group">
+                    <label for="username">Usuario Corporativo</label>
+                    <input type="text" id="username" name="username" placeholder="ej: nombre.apellido"
+                        required />
+                    <p style="font-size: 0.7rem; color: var(--muted); margin-top: 4px;">Se añadirá @constructora-gg.com automáticamente.</p>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required />
+                </div>
+
+                <button type="submit" class="btn-primary btn-full-width mt-20">Acceder</button>
+            </form>
+
+            <a href="shared/recuperar_contrasena.html" class="link-muted mt-20">¿Olvidaste tu contraseña?</a>
+
+            <div class="credentials-info">
+                <strong>Accesos Rápidos:</strong><br>
+                <span>Admin: <b>admin</b> / admin123</span><br>
+                <span>Líder: <b>david.lider</b> / lider123</span><br>
+                <span>Operario: <b>pedro.operario</b> / operario123</span>
+            </div>
+        </section>
+
+        <footer class="auth-footer">
+            <div class="footer-nav">
+                <a href="shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+                <a href="shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+                <a href="shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+            </div>
+            <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

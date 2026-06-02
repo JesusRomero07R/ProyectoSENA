@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Detalles del Proyecto</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    .details-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+    .project-header-detail {
+        background: var(--bg-card);
+        padding: 25px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 20px;
+    }
+    .project-header-detail h1 {
+        margin-bottom: 10px;
+        color: var(--primary);
+    }
+    .project-header-detail p {
+        color: var(--muted);
+        line-height: 1.6;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .stat-card {
+        background: var(--bg);
+        padding: 15px;
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+    .stat-card span {
+        display: block;
+        font-size: 0.8rem;
+        color: var(--muted);
+        margin-bottom: 5px;
+    }
+    .stat-card strong {
+        font-size: 1.2rem;
+        color: var(--primary);
+    }
+    .tab-container {
+        margin-top: 20px;
+    }
+    .tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+    .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-weight: 600;
+        color: var(--muted);
+    }
+    .tab.active {
+        border-bottom-color: var(--primary);
+        color: var(--primary);
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    .list-item {
+        background: var(--bg-card);
+        padding: 15px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    @media (max-width: 768px) {
+        .details-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: var(--bg-card);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-soft);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .close-modal:hover {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body class="role-admin">
+  <div class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+          <span>Constructora GG</span>
+          <span>Detalles del Proyecto</span>
+        </div>
+      </div>
+      <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar" id="header-avatar">--</div>
+            <div class="user-info">
+                <span id="header-username">Cargando...</span>
+                <span id="header-userrole">Rol</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin nav-active" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider nav-active" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <div style="margin-top: auto; padding: 20px;">
+            <button class="btn-outline" onclick="history.back()" style="width: 100%;">
+                <span class="icon">←</span>
+                <span>Volver</span>
+            </button>
+        </div>
+      </aside>
+
+      <section class="content">
+        <div id="projectDetailContent">
+            <div class="project-header-detail">
+                <h1 id="detNombre">Cargando proyecto...</h1>
+                <p id="detDescripcion">Por favor espera un momento.</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span>Estado</span>
+                        <strong id="detEstado">--</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Avance</span>
+                        <strong id="detAvance">0%</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Ciudad</span>
+                        <strong id="detCiudad">--</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Líder</span>
+                        <strong id="detLider">--</strong>
+                    </div>
+                    <div class="stat-card">
+                        <span>Presupuesto</span>
+                        <strong id="detPresupuesto">--</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-container">
+                <div class="tabs">
+                    <div class="tab active" data-tab="tareas">Tareas</div>
+                    <div class="tab" data-tab="equipo">Equipo</div>
+                    <div class="tab" data-tab="inventario">Inventario</div>
+                </div>
+
+                <div id="tareas" class="tab-content active">
+                    <div id="listadoTareas">Cargando tareas...</div>
+                </div>
+                <div id="equipo" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">Personal Asignado</h3>
+                        <button class="btn-primary role-admin" id="btnManageTeam" style="font-size: 0.8rem; padding: 6px 12px;">+ Asignar Operarios</button>
+                    </div>
+                    <div id="listadoEquipo">Cargando equipo...</div>
+                </div>
+                <div id="inventario" class="tab-content">
+                    <div id="listadoInventario">Cargando inventario...</div>
+                </div>
+            </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <!-- Modal para Gestionar Equipo -->
+  <div id="teamModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Asignar Operarios al Proyecto</h2>
+            <span class="close-modal" id="closeTeamModal">&times;</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">
+            Selecciona los operarios disponibles. Recuerda que un operario solo puede estar en un proyecto activo a la vez.
+        </p>
+        <form id="teamForm">
+            <div id="availableOperatorsList" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px; margin-bottom: 15px;">
+                <p style="text-align: center; color: var(--muted);">Buscando operarios disponibles...</p>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Confirmar Asignación</button>
+        </form>
+    </div>
+  </div>
+
+  <script src="../app.js"></script>
+</body>
+</html>

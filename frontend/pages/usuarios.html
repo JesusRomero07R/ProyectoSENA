@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Constructora GG – Gestión de Usuarios</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* CSS Adicional para la vista de Usuarios */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .user-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      position: relative;
+    }
+    .user-avatar-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    .user-details strong {
+      font-weight: 600;
+    }
+    .user-details span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .user-role-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+    .role-tag {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.8rem;
+    }
+    .status-tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      margin-top: 4px;
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: var(--bg-card);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-soft);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .close-modal:hover {
+      color: var(--text);
+    }
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .input-group input, .input-group select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+    }
+
+    /* Email Input with Suffix */
+    .input-email-wrapper {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: white;
+        overflow: hidden;
+    }
+    .input-email-wrapper input {
+        border: none !important;
+        flex-grow: 1;
+        border-radius: 0 !important;
+    }
+    .email-suffix {
+        padding: 0 12px;
+        background: var(--bg);
+        color: var(--muted);
+        font-size: 0.85rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        border-left: 1px solid var(--border);
+        white-space: nowrap;
+    }
+
+    /* Ajuste para mobile */
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .sidebar { display: none; }
+      .user-card {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+        padding-bottom: 50px; /* Espacio para el botón */
+      }
+      .user-details {
+        grid-row: 1 / 2;
+        grid-column: 2 / 3;
+      }
+      .user-role-status {
+        grid-row: 2 / 3;
+        grid-column: 1 / 3;
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 10px;
+        margin-top: 5px;
+      }
+      .user-role-status .role-tag {
+        border-right: 1px solid var(--border);
+        padding-right: 10px;
+      }
+      .user-actions {
+        position: absolute;
+        bottom: 10px;
+        right: 15px;
+      }
+    }
+  </style>
+</head>
+<body class="role-admin">
+  <div class="app">
+   <header class="app-header">
+    <div class="brand">
+        <div class="brand-logo">GG</div>
+        <div class="brand-text">
+            <span>Constructora GG</span>
+            <span>Panel de Administración</span> 
+        </div>
+    </div>
+    <div class="app-header-right">
+        <div class="user-chip">
+            <div class="user-avatar" id="header-avatar">AD</div>
+            <div class="user-info">
+                <span id="header-username">Admin User</span>
+                <span id="header-userrole">Administrador</span>
+            </div>
+        </div>
+        <button id="logout-button" class="logout-btn" type="button">
+            <span class="icon">⎋</span>
+            <span class="label">Cerrar sesión</span>
+        </button>
+    </div>
+</header>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Menú</div>
+          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
+            <!-- Inicio (Común) -->
+            <a class="nav-link" href="../dashboard.html">
+              <span class="icon">Π</span>
+              <span class="label">Inicio</span>
+            </a>
+            <!-- Admin -->
+            <a class="nav-link role-admin nav-active" href="usuarios.html">
+              <span class="icon">👤</span>
+              <span class="label">Usuarios</span>
+            </a>
+            <a class="nav-link role-admin" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Proyectos Globales</span>
+            </a>
+            <!-- Líder -->
+            <a class="nav-link role-lider" href="proyectos.html">
+              <span class="icon">✓</span>
+              <span class="label">Mis Proyectos</span>
+            </a>
+            <!-- Líder y Operario -->
+            <a class="nav-link role-lider role-operario" href="tareas.html">
+              <span class="icon">✍</span>
+              <span class="label">Tareas</span>
+            </a>
+            <a class="nav-link role-lider" href="equipo.html">
+                <span class="icon">👤</span>
+                <span class="label">Equipo</span>
+            </a>
+            <!-- Inventario / Materiales -->
+            <a class="nav-link role-admin" href="inventario.html">
+              <span class="icon">📦</span>
+              <span class="label">Inventario</span>
+            </a>
+            <a class="nav-link role-lider" href="materiales.html">
+              <span class="icon">📦</span>
+              <span class="label">Materiales</span>
+            </a>
+            <!-- Admin / Reportes -->
+            <a class="nav-link role-admin" href="reportes.html">
+              <span class="icon">기</span>
+              <span class="label">Reportes</span>
+            </a>
+            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
+              <span class="icon">👤</span>
+              <span class="label">Perfil</span>
+            </a>
+          </nav>
+        </div>
+        <p class="sidebar-hint" id="role-hint">
+          Administra la lista de personal, roles y accesos a la plataforma.
+        </p>
+      </aside>
+
+      <section class="content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1>Gestión de Usuarios</h1>
+            <p>Listado completo y control de accesos.</p>
+          </div>
+          <div class="chips-row" id="roleFilters">
+            <div class="chip chip-active" data-role="all">Todos los roles</div>
+            <div class="chip" data-role="1">Administradores</div>
+            <div class="chip" data-role="2">Líderes</div>
+            <div class="chip" data-role="3">Operarios</div>
+          </div>
+        </header>
+
+        <section>
+            <div class="action-bar" style="margin-bottom: 15px;">
+                <input type="text" id="userInputSearch" class="input-search" placeholder="Buscar usuario (Nombre, Correo, Rol...)" style="flex-grow: 1;">
+                <button class="btn-primary" id="btnAddUser">
+                    <span class="icon">+</span>
+                    <span>Agregar usuario</span>
+                </button>
+            </div>
+            
+            <div class="user-list" id="userList">
+                <!-- Los usuarios se cargarán dinámicamente aquí -->
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-ghost">Cargar más usuarios</button>
+            </div>
+        </section>
+      </section>
+    
+      <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+        <a href="../dashboard.html" class="">
+          <span class="icon">Π</span>
+          <span class="label">Inicio</span>
+        </a>
+        <a href="usuarios.html" class="active">
+          <span class="icon">👤</span>
+          <span class="label">Usuarios</span>
+        </a>
+        <a href="proyectos.html" class="">
+          <span class="icon">✓</span>
+          <span class="label">Proyectos</span>
+        </a>
+        <a href="inventario.html" class="">
+          <span class="icon">📦</span>
+          <span class="label">Inventario</span>
+        </a>
+        <a href="reportes.html" class="">
+          <span class="icon">기</span>
+          <span class="label">Reportes</span>
+        </a>
+      </nav>
+    </main>
+  </div>
+    <footer class="app-footer">
+        <div class="footer-nav">
+            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
+            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
+            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
+        </div>
+        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
+        </footer>
+
+        <!-- Modal para Agregar Usuario -->
+        <div id="userModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h2>Agregar Nuevo Usuario</h2>
+              <span class="close-modal" id="closeUserModal">&times;</span>
+          </div>
+          <form id="userForm">
+              <div class="input-group">
+                  <label for="nombre">Nombre</label>
+                  <input type="text" id="nombre" name="nombre" required>
+              </div>
+              <div class="input-group">
+                  <label for="apellido">Apellido</label>
+                  <input type="text" id="apellido" name="apellido" required>
+              </div>
+              <div class="input-group">
+                  <label for="correo">Correo Electrónico (Usuario)</label>
+                  <div class="input-email-wrapper">
+                      <input type="text" id="correo" name="correo_prefix" placeholder="ejemplo.nombre" required>
+                      <span class="email-suffix">@constructora-gg.com</span>
+                  </div>
+              </div>
+              <div class="input-group">
+                  <label for="telefono">Teléfono</label>
+                  <input type="text" id="telefono" name="telefono">
+              </div>
+              <div class="input-group">
+                  <label for="id_rol_fk">Rol</label>
+                  <select id="id_rol_fk" name="id_rol_fk" required>
+                      <option value="1">Administrador</option>
+                      <option value="2">Líder</option>
+                      <option value="3">Operario</option>
+                  </select>
+              </div>
+              <div class="input-group">
+                  <label for="password">Contraseña</label>
+                  <input type="password" id="password" name="password" required>
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px; height: 45px;">Guardar Usuario</button>
+          </form>
+        </div>
+        </div>
+
+        <!-- Modal para Editar Usuario y Restablecer Contraseña -->
+        <div id="editUserModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h2>Editar Usuario / Reset Pass</h2>
+              <span class="close-modal" id="closeEditUserModal">&times;</span>
+          </div>
+          <form id="editUserForm">
+              <input type="hidden" id="edit_user_id">
+              <div class="input-group">
+                  <label for="edit_u_nombre">Nombre</label>
+                  <input type="text" id="edit_u_nombre" name="nombre" required>
+              </div>
+              <div class="input-group">
+                  <label for="edit_u_apellido">Apellido</label>
+                  <input type="text" id="edit_u_apellido" name="apellido" required>
+              </div>
+              <div class="input-group">
+                  <label for="edit_u_telefono">Teléfono</label>
+                  <input type="text" id="edit_u_telefono" name="telefono">
+              </div>
+              <div class="input-group">
+                  <label for="edit_u_rol">Rol</label>
+                  <select id="edit_u_rol" name="id_rol_fk" required>
+                      <option value="1">Administrador</option>
+                      <option value="2">Líder</option>
+                      <option value="3">Operario</option>
+                  </select>
+              </div>
+              <div class="input-group" style="background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fef3c7;">
+                  <label for="edit_u_password" style="color: #92400e;">Nueva Contraseña (Reset)</label>
+                  <input type="password" id="edit_u_password" name="password" placeholder="Solo si desea cambiarla">
+                  <p style="font-size: 0.7rem; color: #b45309; margin-top: 4px;">Escribe una nueva contraseña para el usuario aquí.</p>
+              </div>
+              <button type="submit" class="btn-primary" style="width: 100%; margin-top: 15px; height: 45px;">Guardar Cambios</button>
+          </form>
+        </div>
+        </div>
+
+        <script src="../app.js"></script>
+        </body>
+        </html>
