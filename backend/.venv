@@ -1,4 +1,0 @@
-env
-SECRET_KEY=super_secret_key_constructora_gg_2026
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
