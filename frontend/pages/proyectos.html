@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Gestión de Proyectos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
   <style>
     /* CSS Consolidado para la vista de Proyectos */
     .project-list {
@@ -272,8 +272,8 @@
         </header>
 
         <section>
-            <div class="action-bar" style="margin-bottom: 15px;">
-                <input type="text" id="projectInputSearch" class="input-search" placeholder="Buscar proyecto (Nombre, Ciudad, Líder...)" style="flex-grow: 1;">
+            <div class="action-bar" >
+                <input type="text" id="projectInputSearch" class="input-search" placeholder="Buscar proyecto (Nombre, Ciudad, Líder...)" >
                 <button class="btn-primary role-admin" id="btnNewProject">
                     <span class="icon">+</span>
                     <span>Nuevo Proyecto</span>
@@ -284,8 +284,8 @@
                 <!-- Los proyectos se cargarán dinámicamente aquí -->
             </div>
 
-            <div style="margin-top: 20px; text-align: center;">
-                <button class="btn-ghost">Cargar más proyectos</button>
+            <div class="flex-row" style="justify-content: center; margin-top: 20px;">
+                <button class="btn-small-muted">Cargar más proyectos</button>
             </div>
         </section>
       </section>
@@ -366,6 +366,6 @@
         </div>
         </div>
 
-        <script src="../app.js"></script>
+        <script src="../app.js?v=1.0.1"></script>
         </body>
         </html>

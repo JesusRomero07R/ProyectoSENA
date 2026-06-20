@@ -205,6 +205,28 @@ async def create_usuario(
     db.refresh(db_usuario)
     return db_usuario
 
+@app.get("/usuarios/operarios-disponibles", response_model=List[schemas.Usuario])
+async def get_operarios_disponibles(
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1]))
+):
+    """
+    Obtiene todos los operarios (Rol 3) que están activos y NO están 
+    vinculados a ningún proyecto que tenga el estado 'activo'.
+    """
+    # Subconsulta: IDs de usuarios en proyectos activos
+    ocupados_subquery = db.query(models.proyectos_usuarios.c.id_usuario).join(
+        models.Proyecto, models.proyectos_usuarios.c.id_proyecto == models.Proyecto.id_proyecto
+    ).filter(models.Proyecto.estado == "activo").subquery()
+
+    disponibles = db.query(models.Usuario).filter(
+        models.Usuario.id_rol_fk == 3,
+        models.Usuario.activo == True,
+        ~models.Usuario.id_usuario.in_(ocupados_subquery)
+    ).all()
+    
+    return disponibles
+
 @app.get("/usuarios/me", response_model=schemas.UsuarioDetallado)
 async def get_my_user_detalle(
     db: Session = Depends(get_db),
@@ -449,9 +471,34 @@ async def get_valida_equipos(
 
     return resultado
 
+def format_proyecto(p: models.Proyecto, db: Session):
+    # Calcular avance_general
+    tareas = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == p.id_proyecto).all()
+    avance = 0.0
+    if tareas:
+        total = sum(t.avance for t in tareas)
+        avance = round(total / len(tareas), 1)
+
+    # Mapear a dict compatible con schemas.Proyecto
+    return {
+        "id_proyecto": p.id_proyecto,
+        "nombre": p.nombre,
+        "descripcion": p.descripcion,
+        "ciudad": p.ciudad,
+        "direccion": p.direccion,
+        "presupuesto": float(p.presupuesto),
+        "fecha_inicio": p.fecha_inicio,
+        "fecha_fin": p.fecha_fin,
+        "estado": p.estado,
+        "id_lider_fk": p.id_lider_fk,
+        "avance_general": avance,
+        "lider": p.lider,
+        "id_operarios": [o.id_usuario for o in p.operarios]
+    }
+
 @app.post("/proyectos", response_model=schemas.Proyecto)
 async def create_proyecto(
-    proyecto: schemas.ProyectoCreate, 
+    proyecto: schemas.ProyectoCreate,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(require_role([1]))
 ):
@@ -475,7 +522,7 @@ async def create_proyecto(
         db.add(db_proyecto)
         db.commit()
         db.refresh(db_proyecto)
-        return db_proyecto
+        return format_proyecto(db_proyecto, db)
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -493,22 +540,25 @@ async def update_proyecto(
     db_proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
     if not db_proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-    
+
     # REGLA DE SEGURIDAD: Si es Líder, solo puede editar su propio proyecto
     if current_user.id_rol_fk == 2 and db_proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permisos para editar este proyecto")
 
     # Si se está marcando como FINALIZADO, ejecutamos la lógica especial
+    # Pero ahora nos aseguramos de que devuelva el objeto formateado correcto
     if proyecto_update.estado == "finalizado" and db_proyecto.estado != "finalizado":
-        return await finalizar_proyecto(id_proyecto=id_proyecto, db=db, current_user=current_user)
+        await finalizar_proyecto_logic(id_proyecto=id_proyecto, db=db, current_user=current_user)
+        db.refresh(db_proyecto)
+        return format_proyecto(db_proyecto, db)
 
     update_data = proyecto_update.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_proyecto, key, value)
-    
+
     db.commit()
     db.refresh(db_proyecto)
-    return db_proyecto
+    return format_proyecto(db_proyecto, db)
 
 @app.get("/proyectos/{id_proyecto}", response_model=schemas.Proyecto)
 async def get_proyecto(
@@ -519,21 +569,8 @@ async def get_proyecto(
     p = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
     if not p:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-    
-    # Calcular avance_general
-    tareas = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == p.id_proyecto).all()
-    avance = 0.0
-    if tareas:
-        total = sum(t.avance for t in tareas)
-        avance = round(total / len(tareas), 1)
 
-    # Mapear a dict
-    p_dict = {c.name: getattr(p, c.name) for c in p.__table__.columns}
-    p_dict["avance_general"] = avance
-    p_dict["lider"] = p.lider
-    p_dict["id_operarios"] = [o.id_usuario for o in p.operarios]
-    
-    return p_dict
+    return format_proyecto(p, db)
 
 @app.delete("/proyectos/{id_proyecto}")
 async def delete_proyecto(
@@ -544,28 +581,20 @@ async def delete_proyecto(
     db_proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
     if not db_proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-    
+
     # LIBERAR OPERARIOS: Antes de borrar, poner a todos los operarios asignados como 'disponible'
     for operario in db_proyecto.operarios:
         operario.disponibilidad = "disponible"
-    
+
     db.delete(db_proyecto)
     db.commit()
     return {"message": f"Proyecto {id_proyecto} eliminado correctamente"}
 
-@app.post("/proyectos/{id_proyecto}/finalizar")
-async def finalizar_proyecto(
-    id_proyecto: int,
-    db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1, 2]))
-):
-    # 1. Validar existencia y permisos
+async def finalizar_proyecto_logic(id_proyecto: int, db: Session, current_user: models.Usuario):
+    # 1. Validar existencia y permisos (ya hecho en el llamador, pero por seguridad)
     proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
-    
-    if current_user.id_rol_fk != 1 and proyecto.id_lider_fk != current_user.id_usuario:
-        raise HTTPException(status_code=403, detail="No tienes permisos para finalizar este proyecto")
 
     try:
         # 2. Cambiar estado del proyecto
@@ -592,16 +621,25 @@ async def finalizar_proyecto(
                 ).first()
                 if inv_global:
                     inv_global.stock_actual += item.stock_actual
-                
+
                 # Vaciar la bodega del proyecto
                 item.stock_actual = 0
 
         db.commit()
-        return {"message": "Proyecto finalizado exitosamente. Personal liberado e inventario devuelto al global."}
+        return True
 
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error en la transacción: {str(e)}")
+
+@app.post("/proyectos/{id_proyecto}/finalizar")
+async def finalizar_proyecto_endpoint(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1, 2]))
+):
+    await finalizar_proyecto_logic(id_proyecto, db, current_user)
+    return {"message": "Proyecto finalizado exitosamente. Personal liberado e inventario devuelto al global."}
 
 @app.get("/proyectos/{id_proyecto}/estado-equipo", response_model=List[schemas.OperarioEstado])
 async def get_estado_equipo(
@@ -688,28 +726,6 @@ async def get_operarios_libres(
     ).all()
 
     return operarios_libres
-
-@app.get("/usuarios/operarios-disponibles", response_model=List[schemas.Usuario])
-async def get_operarios_disponibles(
-    db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1]))
-):
-    """
-    Obtiene todos los operarios (Rol 3) que están activos y NO están 
-    vinculados a ningún proyecto que tenga el estado 'activo'.
-    """
-    # Subconsulta: IDs de usuarios en proyectos activos
-    ocupados_subquery = db.query(models.proyectos_usuarios.c.id_usuario).join(
-        models.Proyecto, models.proyectos_usuarios.c.id_proyecto == models.Proyecto.id_proyecto
-    ).filter(models.Proyecto.estado == "activo").subquery()
-
-    disponibles = db.query(models.Usuario).filter(
-        models.Usuario.id_rol_fk == 3,
-        models.Usuario.activo == True,
-        ~models.Usuario.id_usuario.in_(ocupados_subquery)
-    ).all()
-    
-    return disponibles
 
 @app.post("/proyectos/configurar-equipo")
 async def configurar_equipo(

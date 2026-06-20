@@ -14,7 +14,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Panel Unificado</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1.0.1" />
   <style>
     /* Estilos dinámicos para el Dashboard Unificado */
     .role-section { display: none; } /* Por defecto oculto, JS lo mostrará */
@@ -122,19 +122,19 @@
         <div class="card role-admin role-section">
             <div class="card-header"><h2>Indicadores Globales</h2></div>
             <div class="grid-4">
-              <div class="kpi-card" id="kpi-usuarios" style="cursor: pointer; transition: transform 0.2s;">
+              <div class="kpi-card clickable-card" id="kpi-usuarios">
                 <span class="kpi-label">Usuarios</span>
                 <span class="kpi-value" id="val-usuarios">--</span>
               </div>
-              <div class="kpi-card" id="kpi-proyectos" style="cursor: pointer; transition: transform 0.2s;">
+              <div class="kpi-card clickable-card" id="kpi-proyectos">
                 <span class="kpi-label">Proyectos</span>
                 <span class="kpi-value" id="val-proyectos">--</span>
               </div>
-              <div class="kpi-card" id="kpi-inventario" style="cursor: pointer; transition: transform 0.2s;">
+              <div class="kpi-card clickable-card" id="kpi-inventario">
                 <span class="kpi-label">Inventario</span>
                 <span class="kpi-value" id="val-inventario">--</span>
               </div>
-              <div class="kpi-card" id="kpi-avance" style="cursor: pointer; transition: transform 0.2s;" title="Promedio de avance de todos los proyectos activos">
+              <div class="kpi-card clickable-card" id="kpi-avance" title="Promedio de avance de todos los proyectos activos">
                 <span class="kpi-label">Avance Global</span>
                 <span class="kpi-value" id="val-avance">--%</span>
               </div>
@@ -154,18 +154,18 @@
 
 
         <!-- ALERTAS Y NOTIFICACIONES (ADMIN) -->
-        <div class="card role-admin role-section" style="margin-top: 15px; border-left: 4px solid #ef4444;">
+        <div class="card role-admin role-section" style="border-left: 4px solid var(--danger);">
             <div class="card-header">
                 <h2>Alertas del Sistema</h2>
-                <span class="badge" id="adminAlertBadge" style="background:#fee2e2; color:#ef4444; display:none;">Acción requerida</span>
+                <span class="badge" id="adminAlertBadge" style="display:none; background:var(--danger-light); color:var(--danger);">Acción requerida</span>
             </div>
-            <div id="adminNotificationsList" style="padding: 10px;">
-                <p style="text-align:center; color:var(--muted); font-size:0.85rem;">No hay alertas pendientes.</p>
+            <div id="adminNotificationsList">
+                <p class="text-subtle-italic" style="border-top: none;">No hay alertas pendientes.</p>
             </div>
         </div>
 
         <!-- LISTA DE PROYECTOS (ADMIN/LÍDER) -->
-        <div class="card role-admin role-lider role-section" style="margin-top: 15px;">
+        <div class="card role-admin role-lider role-section">
             <div class="card-header"><h2>Proyectos Activos</h2></div>
             <div class="project-card-list" id="dashboardProjectList">
                 <!-- Se cargará dinámicamente -->
@@ -173,10 +173,10 @@
         </div>
 
         <!-- LISTA DE TAREAS (OPERARIO) -->
-        <div class="card role-operario role-section" style="margin-top: 15px;">
+        <div class="card role-operario role-section">
             <div class="card-header"><h2>Mis Tareas de Hoy</h2></div>
             <div class="project-card-list" id="operarioTodayTasks">
-                <p style="text-align:center; padding:15px; color:var(--muted);">Cargando tus tareas...</p>
+                <p class="text-subtle-italic" style="border-top: none;">Cargando tus tareas...</p>
             </div>
         </div>
 
@@ -192,6 +192,6 @@
     </div>
     <p class="footer-copy">© 2025 Constructora GG. Panel Unificado.</p>
   </footer>
-  <script src="app.js"></script>
+  <script src="app.js?v=1.0.1"></script>
 </body>
 </html>

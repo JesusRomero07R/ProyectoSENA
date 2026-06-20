@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Tareas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
   <style>
     /* CSS Consolidado para la vista de Tareas */
     .tasks-list {
@@ -225,8 +225,8 @@
                 </div>
             </div>
 
-            <div class="action-bar" style="margin-bottom: 15px;">
-                <input type="text" id="taskInputSearch" class="input-search" placeholder="Buscar tarea..." style="flex-grow: 1;">
+            <div class="action-bar" >
+                <input type="text" id="taskInputSearch" class="input-search" placeholder="Buscar tarea..." >
                 <button class="btn-primary role-admin role-lider" id="btnNewTask" style="white-space: nowrap;">
                     <span class="icon">+</span>
                     <span>Nueva Tarea</span>
@@ -237,7 +237,7 @@
                 <!-- Se cargará dinámicamente -->
             </div>
 
-            <div style="margin-top: 20px; text-align: center;">
+            <div >
                 <button class="btn-ghost">Cargar más tareas</button>
             </div>
         </section>
@@ -306,7 +306,7 @@
                       <div id="modalMaterialsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                         <!-- Se cargarán dinámicamente -->
                       </div>
-                      <button type="button" class="btn-outline btn-small-muted" id="btnModalAddMaterial" style="width: 100%;">
+                      <button type="button" class="btn-outline btn-small-muted" id="btnModalAddMaterial" >
                         <span class="icon">+</span> Añadir Material
                       </button>
                   </div>
@@ -398,6 +398,6 @@
           </div>
         </div>
 
-        <script src="../app.js"></script>
+        <script src="../app.js?v=1.0.1"></script>
         </body>
         </html>

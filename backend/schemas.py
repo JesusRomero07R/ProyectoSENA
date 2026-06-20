@@ -228,12 +228,12 @@ class CategoriaMaterial(CategoriaMaterialBase):
 
 class MaterialBase(BaseModel):
     nombre: str
-    id_categoria_fk: int
+    id_categoria_fk: Optional[int] = None
     stock_minimo: int = 0
     unidad_medida: str
 
 class MaterialCreate(MaterialBase):
-    pass
+    stock: int = 0
 
 class Material(MaterialBase):
     id_material: int

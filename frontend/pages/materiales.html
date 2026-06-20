@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Suministros y Materiales</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
   <style>
     .materials-grid {
       display: grid;
@@ -186,8 +186,8 @@
         </header>
 
         <section>
-            <div class="action-bar" style="margin-bottom: 20px;">
-                <input type="text" id="matInputSearch" class="input-search" placeholder="Buscar material..." style="flex-grow: 1;">
+            <div class="action-bar" >
+                <input type="text" id="matInputSearch" class="input-search" placeholder="Buscar material..." >
                 <button class="btn-primary role-lider" id="btnRequestGlobal">
                     <span class="icon">📥</span>
                     <span>Pedir a Almacén Central</span>
@@ -230,10 +230,10 @@
                 <label for="trans_qty">Cantidad</label>
                 <input type="number" id="trans_qty" name="cantidad" min="1" required>
             </div>
-            <p id="globalStockHint" style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+            <p id="globalStockHint" class="notification-text" style="margin-bottom: 15px;">
                 Stock disponible en almacén central: <span id="valGlobalStock">--</span>
             </p>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Confirmar Solicitud</button>
+            <button type="submit" class="btn-primary" >Confirmar Solicitud</button>
         </form>
     </div>
   </div>
@@ -262,11 +262,11 @@
                 <label for="req_qty">Cantidad</label>
                 <input type="number" id="req_qty" name="cantidad" min="1" required>
             </div>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Confirmar Pedido</button>
+            <button type="submit" class="btn-primary" >Confirmar Pedido</button>
         </form>
     </div>
   </div>
 
-  <script src="../app.js"></script>
+  <script src="../app.js?v=1.0.1"></script>
 </body>
 </html>

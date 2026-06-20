@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Gestión de Usuarios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
   <style>
     /* CSS Adicional para la vista de Usuarios */
     .user-list {
@@ -17,9 +17,9 @@
       border-radius: var(--radius-md);
       padding: 15px;
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: auto 1fr auto auto;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
       background: var(--bg-card);
       position: relative;
     }
@@ -277,8 +277,8 @@
         </header>
 
         <section>
-            <div class="action-bar" style="margin-bottom: 15px;">
-                <input type="text" id="userInputSearch" class="input-search" placeholder="Buscar usuario (Nombre, Correo, Rol...)" style="flex-grow: 1;">
+            <div class="action-bar" >
+                <input type="text" id="userInputSearch" class="input-search" placeholder="Buscar usuario (Nombre, Correo, Rol...)" >
                 <button class="btn-primary" id="btnAddUser">
                     <span class="icon">+</span>
                     <span>Agregar usuario</span>
@@ -289,7 +289,7 @@
                 <!-- Los usuarios se cargarán dinámicamente aquí -->
             </div>
 
-            <div style="margin-top: 20px; text-align: center;">
+            <div >
                 <button class="btn-ghost">Cargar más usuarios</button>
             </div>
         </section>
@@ -411,6 +411,6 @@
         </div>
         </div>
 
-        <script src="../app.js"></script>
+        <script src="../app.js?v=1.0.1"></script>
         </body>
         </html>

@@ -8,6 +8,8 @@ __pycache__/
 *$py.class
 venv/
 .venv/
+backend/.venv
+backend/.venv/
 env/
 ENV/
 build/
@@ -40,3 +42,4 @@ skills/
 .roo
 .trae
 .windsurf
+.gemini/

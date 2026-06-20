@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Gestión de Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
   <style>
     /* CSS Adicional para la vista de Inventario */
     .inventory-grid {
@@ -241,8 +241,8 @@
         </header>
 
         <section>
-            <div class="action-bar" style="margin-bottom: 20px;">
-                <input type="text" id="inventoryInputSearch" class="input-search" placeholder="Buscar material (Nombre, Categoría...)" style="flex-grow: 1;">
+            <div class="action-bar" >
+                <input type="text" id="inventoryInputSearch" class="input-search" placeholder="Buscar material (Nombre, Categoría...)" >
                 <button class="btn-primary role-admin-only" id="btnCreateMaterial">
                     <span class="icon">+</span>
                     <span>Crear Nuevo Material</span>
@@ -253,7 +253,7 @@
                 <!-- Los materiales se cargarán dinámicamente aquí -->
             </div>
 
-            <div style="margin-top: 30px; text-align: center;">
+            <div >
                 <button class="btn-ghost" id="btnDetailedReport">Ver reporte detallado de stock</button>
             </div>
         </section>
@@ -312,10 +312,10 @@
                 <label for="m_stock_inicial">Stock Inicial</label>
                 <input type="number" id="m_stock_inicial" name="stock" value="0" min="0" required>
             </div>
-            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+            <p class="notification-text" style="margin-bottom: 15px;">
                 El material se creará con una categoría por defecto para su posterior clasificación.
             </p>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Crear Material</button>
+            <button type="submit" class="btn-primary" >Crear Material</button>
         </form>
     </div>
   </div>
@@ -338,10 +338,10 @@
                 <label for="cantidad">Cantidad a Ingresar</label>
                 <input type="number" id="cantidad" name="cantidad" min="1" required>
             </div>
-            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+            <p class="notification-text" style="margin-bottom: 15px;">
                 Esta acción aumentará el stock global del material seleccionado.
             </p>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Guardar Entrada</button>
+            <button type="submit" class="btn-primary" >Guardar Entrada</button>
         </form>
     </div>
   </div>
@@ -363,14 +363,14 @@
                 <label for="adj_cantidad">Nueva Cantidad Total</label>
                 <input type="number" id="adj_cantidad" name="nueva_cantidad" min="0" required>
             </div>
-            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 15px;">
+            <p class="notification-text" style="margin-bottom: 15px;">
                 Escribe la cantidad exacta que hay actualmente en bodega.
             </p>
-            <button type="submit" class="btn-primary" style="width: 100%; height: 45px;">Actualizar Inventario</button>
+            <button type="submit" class="btn-primary" >Actualizar Inventario</button>
         </form>
     </div>
   </div>
 
-  <script src="../app.js"></script>
+  <script src="../app.js?v=1.0.1"></script>
 </body>
 </html>

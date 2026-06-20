@@ -51,9 +51,12 @@ const setupUIByRole = (roleId) => {
     document.body.classList.add(`role-${role.name}`);
 
     // Mostrar/Ocultar elementos según clases
-    const roleClasses = ['.role-admin', '.role-lider', '.role-operario'];
+    const roleClasses = ['.role-admin', '.role-lider', '.role-operario', '.role-admin-only', '.role-lider-only', '.role-operario-only'];
     document.querySelectorAll(roleClasses.join(', ')).forEach(el => el.style.display = 'none');
     document.querySelectorAll(`.role-${role.name}`).forEach(el => {
+        el.style.display = (el.tagName === 'A' ? 'flex' : 'block');
+    });
+    document.querySelectorAll(`.role-${role.name}-only`).forEach(el => {
         el.style.display = (el.tagName === 'A' ? 'flex' : 'block');
     });
 
@@ -162,7 +165,7 @@ window.onload = () => {
     // Despacho de funciones según la página actual
     const initPage = (id, fn) => { if (document.getElementById(id)) { try { fn(); } catch(e) { console.error(`Error en ${id}:`, e); } } };
 
-    initPage("userList", () => { cargarUsuarios(); setupUserPage(); });
+    initPage("userList", () => { setupUserPage(); cargarUsuarios(); });
     initPage("projectList", () => { cargarProyectos(); setupProjectPage(); });
     initPage("inventoryList", () => { cargarInventarioGlobal(); setupInventoryPage(); });
     initPage("reportTableBody", () => { generarReporteInventario(); });
@@ -195,7 +198,7 @@ async function cargarDashboardResumen() {
         container.innerHTML = projects.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No hay proyectos activos asignados.</p>";
         if (Array.isArray(projects)) {
             projects.forEach(p => {
-                container.innerHTML += `<div class="project-item" style="cursor:pointer;" onclick="window.location.href='pages/detalles_proyecto.html?id=${p.id_proyecto}'">
+                container.innerHTML += `<div class="project-item clickable-card" onclick="window.location.href='pages/detalles_proyecto.html?id=${p.id_proyecto}'">
                     <div><div class="project-title">${p.nombre}</div><div class="project-leader">Líder: ${p.lider ? p.lider.nombre : 'S/A'}</div></div><div class="project-progress-value">${p.avance_general}%</div></div>`;
             });
         }
@@ -227,16 +230,17 @@ async function cargarDashboardResumen() {
                         }
 
                         notifContainer.innerHTML += `
-                            <div style="background:#fff; border:1px solid #fee2e2; border-radius:8px; padding:12px; margin-bottom:10px; display:flex; flex-direction:column; gap:8px;">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div class="notification-card">
+                                <div class="notification-header">
                                     <div>
-                                        <strong style="color:#ef4444; font-size:0.85rem; display:block; margin-bottom:2px;">${n.titulo}</strong>
-                                        <p style="margin:0; font-size:0.8rem; color:var(--text);">${n.mensaje}</p>
+                                        <strong class="notification-title">${n.titulo}</strong>
+                                        <p class="notification-text">${n.mensaje}</p>
                                     </div>
-                                    <button onclick="marcarNotificacionLeida(${n.id_notificacion})" title="Marcar como leída" style="border:none; background:#f3f4f6; color:var(--muted); border-radius:4px; cursor:pointer; width:24px; height:24px;">✓</button>
+                                    <button onclick="marcarNotificacionLeida(${n.id_notificacion})" title="Marcar como leída" class="btn-small-muted btn-remove-icon" style="color: var(--success);">✓</button>
                                 </div>
                                 ${targetPage ? `
-                                    <button onclick="window.location.href='${targetPage}'" class="btn-outline" style="font-size:0.7rem; padding:5px; border-color:#fee2e2; color:#ef4444; width:fit-content;">
+                                    <button onclick="window.location.href='${targetPage}'" class="btn-outline btn-small" style="width:fit-content; border-color:var(--danger-light); color:var(--danger);">
+
                                         ${targetText} →
                                     </button>
                                 ` : ''}
@@ -373,7 +377,7 @@ async function setupProfilePage() {
             const selfActions = document.getElementById("self-actions-container");
 
             if (!isMyProfile) {
-                if (footerActions) footerActions.innerHTML = `<p style="font-style:italic; color:var(--muted); text-align:center; width:100%; border-top:1px solid var(--border); padding-top:15px;">Estás visualizando el perfil público del miembro del equipo.</p>`;
+                if (footerActions) footerActions.innerHTML = `<p class="text-subtle-italic">Estás visualizando el perfil público del miembro del equipo.</p>`;
             } else {
                 // Personalizar mensaje según rol
                 const msgEl = document.getElementById("motivational-msg");
@@ -389,7 +393,7 @@ async function setupProfilePage() {
                 
                 if (selfActions) {
                     selfActions.style.display = "block";
-                    selfActions.innerHTML = `<button class="btn-primary" id="btnEditProfile" style="font-size:0.8rem;">Configuración de cuenta</button>`;
+                    selfActions.innerHTML = `<button class="btn-primary" id="btnEditProfile">Configuración de cuenta</button>`;
                 }
                 
                 const btnEdit = document.getElementById("btnEditProfile");
@@ -485,7 +489,7 @@ async function cargarEquipoPagina(filterStatus = 'all', term = '') {
         container.innerHTML = members.length ? "" : "<p style='text-align:center; padding:40px;'>Sin personal asignado.</p>";
         members.forEach(m => {
             const tareasText = m.tareas_activas && m.tareas_activas.length ? `En: ${m.tareas_activas.join(", ")}` : 'Disponible';
-            container.innerHTML += `<div class="user-card"><div class="user-avatar-small">${m.nombre[0]}</div><div class="user-details"><strong>${m.nombre} ${m.apellido}</strong><span>${m.correo}</span></div><div class="user-status-tasks"><span class="role-tag">Operario</span><span class="${m.en_tarea ? 'status-tag-ocupado':'status-tag-disponible'}">${tareasText}</span></div><div class="user-actions"><button class="btn-outline btn-small-muted" onclick="window.location.href='perfil.html?id=${m.id_usuario}'">Perfil</button></div></div>`;
+            container.innerHTML += `<div class="user-card"><div class="user-avatar-small">${m.nombre[0]}</div><div class="user-details"><strong>${m.nombre} ${m.apellido}</strong><span>${m.correo}</span></div><div class="user-status-tasks"><span class="role-tag">Operario</span><span class="${m.en_tarea ? 'status-tag-ocupado':'status-tag-disponible'}">${tareasText}</span></div><div class="user-actions"><button class="btn-small-muted" onclick="window.location.href='perfil.html?id=${m.id_usuario}'">Perfil</button></div></div>`;
         });
     } catch (e) { console.error(e); }
 }
@@ -514,9 +518,40 @@ function setupProjectPage() {
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
+            console.log("projectForm: Enviando solicitud de creación...");
             const data = Object.fromEntries(new FormData(form));
-            const res = await fetch(`${API_URL}/proyectos`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ ...data, presupuesto: parseFloat(data.presupuesto), id_lider_fk: parseInt(data.id_lider_fk) }) });
-            if (res.ok) { document.getElementById("projectModal").style.display = "none"; form.reset(); cargarProyectos(); }
+            
+            // Validaciones y transformaciones
+            const payload = { 
+                ...data, 
+                presupuesto: parseFloat(data.presupuesto), 
+                id_lider_fk: parseInt(data.id_lider_fk)
+            };
+
+            if (isNaN(payload.presupuesto)) { alert("Presupuesto no válido"); return; }
+            if (isNaN(payload.id_lider_fk)) { alert("Debe seleccionar un líder"); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/proyectos`, { 
+                    method: 'POST', 
+                    headers: getAuthHeaders(), 
+                    body: JSON.stringify(payload) 
+                });
+                
+                if (res.ok) {
+                    alert("Proyecto creado exitosamente.");
+                    document.getElementById("projectModal").style.display = "none";
+                    form.reset();
+                    cargarProyectos();
+                } else {
+                    const err = await res.json();
+                    console.error("Error API Proyectos:", err);
+                    alert("Error: " + (err.detail || "No se pudo crear el proyecto"));
+                }
+            } catch (err) {
+                console.error("Error conexión:", err);
+                alert("Error de conexión con el servidor");
+            }
         };
     }
     document.querySelectorAll("#projectFilters .chip").forEach(chip => chip.onclick = () => { 
@@ -554,15 +589,45 @@ async function cargarProyectos(status = 'all', search = '') {
             // Un admin puede gestionar TODO. Un líder solo lo suyo (el backend ya filtra la lista para el líder).
             const canManage = isAdmin || isLider;
             
-            container.innerHTML += `<div class="project-card"><div class="project-header"><div class="project-title"><strong>${p.nombre}</strong><span>${p.ciudad}</span></div><span class="status-tag ${isFin ? 'status-tag-finalizado':''}">${p.estado.toUpperCase()}</span></div><div class="progress-section"><div class="progress-header"><span>Avance General</span><span class="progress-percentage">${p.avance_general}%</span></div><div class="project-progress-bar"><div class="progress-fill" style="width:${p.avance_general}%"></div></div></div><div class="project-meta-grid"><div class="meta-item"><span class="label">Presupuesto</span><span class="value">$${p.presupuesto.toLocaleString()}</span></div><div class="meta-item"><span class="label">Líder</span><span class="value">${p.lider ? p.lider.nombre : 'S/A'}</span></div></div><div class="task-actions" style="margin-top:10px;">${canManage && !isFin ? `<button class="btn-outline" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'finalizado')" style="color:#ef4444; border-color:#fecaca; font-size:0.7rem;">Finalizar Proyecto</button>` : ''}${canManage && isFin ? `<button class="btn-outline" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'activo')" style="color:#059669; border-color:#d1fae5; font-size:0.7rem;">Reactivar Proyecto</button>` : ''}<button class="btn-outline btn-small-muted" onclick="window.location.href='detalles_proyecto.html?id=${p.id_proyecto}'" style="font-size:0.7rem;">Ver Detalles</button></div></div>`;
+            container.innerHTML += `<div class="project-card"><div class="project-header"><div class="project-title"><strong>${p.nombre}</strong><span>${p.ciudad}</span></div><span class="status-tag ${isFin ? 'status-tag-finalizado':''}">${p.estado.toUpperCase()}</span></div><div class="progress-section"><div class="progress-header"><span>Avance General</span><span class="progress-percentage">${p.avance_general}%</span></div><div class="project-progress-bar"><div class="progress-fill" style="width:${p.avance_general}%"></div></div></div><div class="project-meta-grid"><div class="meta-item"><span class="label">Presupuesto</span><span class="value">$${p.presupuesto.toLocaleString()}</span></div><div class="meta-item"><span class="label">Líder</span><span class="value">${p.lider ? p.lider.nombre : 'S/A'}</span></div></div><div class="task-actions" style="margin-top:10px;">${canManage && !isFin ? `<button class="btn-danger btn-small" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'finalizado')">Finalizar Proyecto</button>` : ''}${canManage && isFin ? `<button class="btn-success btn-small" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'activo')">Reactivar Proyecto</button>` : ''}<button class="btn-small-muted" onclick="window.location.href='detalles_proyecto.html?id=${p.id_proyecto}'">Ver Detalles</button></div></div>`;
         });
     } catch (e) { console.error("Error cargando proyectos:", e); }
 }
 
 async function cambiarEstadoProyecto(id, nuevo) {
     if (confirm(`¿Cambiar estado a ${nuevo.toUpperCase()}?`)) {
-        const res = await fetch(`${API_URL}/proyectos/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ estado: nuevo }) });
-        if (res.ok) cargarProyectos();
+        try {
+            console.log(`cambiarEstadoProyecto: Cambiando proyecto ${id} a ${nuevo}`);
+            
+            let url = `${API_URL}/proyectos/${id}`;
+            let method = 'PUT';
+            let body = JSON.stringify({ estado: nuevo });
+
+            // Si es finalizar, usamos el endpoint especializado POST
+            if (nuevo === 'finalizado') {
+                url = `${API_URL}/proyectos/${id}/finalizar`;
+                method = 'POST';
+                body = null; // El endpoint no requiere body
+            }
+
+            const res = await fetch(url, { 
+                method: method, 
+                headers: getAuthHeaders(), 
+                body: body 
+            });
+            
+            if (res.ok) {
+                alert(`Proyecto marcado como ${nuevo.toUpperCase()} exitosamente.`);
+                cargarProyectos();
+            } else {
+                const err = await res.json();
+                console.error("Error al cambiar estado:", err);
+                alert("Error: " + (err.detail || "No se pudo cambiar el estado"));
+            }
+        } catch (err) {
+            console.error("Error de conexión:", err);
+            alert("Error de conexión con el servidor. Asegúrese de que el backend esté corriendo.");
+        }
     }
 }
 
@@ -601,16 +666,19 @@ async function setupTasksPage() {
     const materialsList = document.getElementById("modalMaterialsList");
     if (btnAddMat && materialsList) {
         btnAddMat.onclick = () => {
-            const div = document.createElement("div");
-            div.className = "modal-material-row";
-            div.style = "display: flex; gap: 8px; align-items: center; background: white; padding: 8px; border-radius: 6px; border: 1px solid var(--border);";
+            let div = document.createElement('div');
+            div.className = 'mat-item';
+            div.style.display = 'flex';
+            div.style.gap = '10px';
+            div.style.marginBottom = '10px';
+            div.style.alignItems = 'center';
             div.innerHTML = `
-                <select class="mat-id" style="flex-grow: 1; border: none; outline: none; font-size: 0.85rem;">
+                <select class="mat-id input-borderless" style="flex-grow: 1;">
                     <option value="">¿Qué material?</option>
                     ${modalProjectMaterials.map(m => `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`).join('')}
                 </select>
-                <input type="number" class="mat-qty" placeholder="Cant." style="width: 50px; border: none; outline: none; text-align: center;" min="1">
-                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-weight: bold;">✕</button>
+                <input type="number" class="mat-qty input-borderless" placeholder="Cant." style="width: 50px; text-align: center;" min="1">
+                <button type="button" class="btn-remove-icon" onclick="this.parentElement.remove()">✕</button>
             `;
             materialsList.appendChild(div);
         };
@@ -636,7 +704,7 @@ async function setupTasksPage() {
             const data = Object.fromEntries(new FormData(reportForm));
             
             // Recolectar materiales del modal
-            const matRows = document.querySelectorAll(".modal-material-row");
+            const matRows = document.querySelectorAll(".mat-item");
             const materiales_usados = [];
             matRows.forEach(row => {
                 const mid = row.querySelector(".mat-id").value;
@@ -678,7 +746,7 @@ async function cargarOperariosPorProyecto(projectId) {
         const res = await fetch(`${API_URL}/proyectos/${projectId}/estado-equipo`, { headers: getAuthHeaders() });
         const team = await res.json();
         container.innerHTML = team.length ? "" : "<p>No hay operarios.</p>";
-        team.forEach(op => { container.innerHTML += `<div style="display:flex; gap:10px; padding:5px;"><input type="checkbox" value="${op.id_usuario}"><span>${op.nombre} ${op.apellido}</span></div>`; });
+        team.forEach(op => { container.innerHTML += `<div class="flex-row" style="padding:5px;"><input type="checkbox" value="${op.id_usuario}"><span>${op.nombre} ${op.apellido}</span></div>`; });
     } catch (e) { console.error(e); }
 }
 
@@ -725,10 +793,10 @@ async function cargarTareas(status = 'all', search = '', projectId = 'all') {
                 <div class="task-title">${t.titulo}</div>
                 <div class="task-meta"><span>Avance: ${t.avance}% | Prioridad: ${t.prioridad}</span><span>Equipo: ${t.operarios_nombres ? t.operarios_nombres.join(", ") : 'Asignado'}</span></div>
                 <div class="task-actions">
-                    ${payload.role === 3 && t.estado !== 'finalizada' ? `<button class="btn-primary" onclick="abrirModalReporte(${t.id_tarea}, '${t.titulo}', ${t.avance}, ${t.id_proyecto_fk})" style="font-size:0.7rem;">Reportar</button>` : ''}
-                    <button class="btn-outline btn-small-muted" onclick="abrirModalDetalleTask(${t.id_tarea})" style="font-size:0.7rem;">Historial</button>
-                    ${isAdminOrLider && t.estado !== 'finalizada' ? `<button class="btn-primary" onclick="finalizarTarea(${t.id_tarea})" style="background:#059669; border-color:#059669; font-size:0.7rem;">Finalizar Tarea</button>` : ''}
-                    ${isAdminOrLider && t.estado === 'finalizada' ? `<button class="btn-outline" onclick="reactivarTarea(${t.id_tarea})" style="color:#059669; border-color:#d1fae5; font-size:0.7rem;">Reactivar</button>` : ''}
+                    ${payload.role === 3 && t.estado !== 'finalizada' ? `<button class="btn-primary btn-small" onclick="abrirModalReporte(${t.id_tarea}, '${t.titulo}', ${t.avance}, ${t.id_proyecto_fk})">Reportar</button>` : ''}
+                    <button class="btn-small-muted" onclick="abrirModalDetalleTask(${t.id_tarea})">Historial</button>
+                    ${isAdminOrLider && t.estado !== 'finalizada' ? `<button class="btn-success btn-small" onclick="finalizarTarea(${t.id_tarea})">Finalizar Tarea</button>` : ''}
+                    ${isAdminOrLider && t.estado === 'finalizada' ? `<button class="btn-success btn-small" onclick="reactivarTarea(${t.id_tarea})">Reactivar</button>` : ''}
                 </div></div>`;
                 });
                 return tasks;
@@ -756,21 +824,21 @@ async function abrirModalDetalleTask(id) {
         // Resumen de materiales
         const matSum = document.getElementById("detail_materials_summary");
         matSum.innerHTML = t.materiales_totales.length 
-            ? t.materiales_totales.map(m => `<span class="badge" style="background:#e0ebff; padding:5px 10px;">${m.nombre_material}: <strong>${m.cantidad_usada} ${m.unidad_medida}</strong></span>`).join('')
-            : "<p style='font-size:0.8rem; color:var(--muted);'>No se han reportado materiales.</p>";
+            ? t.materiales_totales.map(m => `<span class="badge badge-inline">${m.nombre_material}: <strong>${m.cantidad_usada} ${m.unidad_medida}</strong></span>`).join('')
+            : '<span style="font-size:0.8rem; color:var(--muted);">Sin materiales</span>';
 
         // Historial de reportes
         const histCont = document.getElementById("detail_reports_history");
         histCont.innerHTML = t.historial_reportes.length
             ? t.historial_reportes.map(r => `
-                <div style="border-bottom:1px solid #edf2f7; padding-bottom:10px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                        <strong style="font-size:0.85rem; color:var(--primary);">${new Date(r.fecha_reporte).toLocaleDateString()} ${new Date(r.fecha_reporte).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
-                        <span style="font-weight:700; font-size:0.85rem;">Avance: ${r.porcentaje}%</span>
+                <div class="report-item">
+                    <div class="report-item-header">
+                        <strong class="report-date">${new Date(r.fecha_reporte).toLocaleDateString()} ${new Date(r.fecha_reporte).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
+                        <span class="report-percentage">Avance: ${r.porcentaje}%</span>
                     </div>
-                    <p style="font-size:0.8rem; color:var(--text); margin-bottom:5px;">${r.observaciones || 'Sin observaciones'}</p>
+                    <p class="notification-text" style="margin-bottom:5px;">${r.observaciones || 'Sin observaciones'}</p>
                     <div style="font-size:0.75rem; color:var(--muted);">
-                        <span>Horas: ${r.horas_trabajadas}h</span>
+                        Horas: <strong>${r.horas_trabajadas}</strong>
                         ${r.materiales_detalles.length ? ` | <span style="color:var(--text);">Materiales: ${r.materiales_detalles.map(md => `${md.nombre_material} (${md.cantidad_usada})`).join(', ')}</span>` : ''}
                     </div>
                 </div>
@@ -817,19 +885,36 @@ async function abrirModalReporte(id, titulo, actual, projectId) {
 }
 
 // --- DETALLES ---
+// --- DETALLES ---
 async function setupProjectDetailPage() {
     const id = new URLSearchParams(window.location.search).get("id");
     if (!id) return;
     const btn = document.getElementById("btnManageTeam");
-    if (btn) btn.onclick = async () => { document.getElementById("teamModal").style.display = "block"; await cargarOperariosDisponibles(); };
+    if (btn) btn.onclick = async () => { 
+        document.getElementById("teamModal").style.display = "block"; 
+        await cargarOperariosDisponibles(id); 
+    };
     if (document.getElementById("closeTeamModal")) document.getElementById("closeTeamModal").onclick = () => document.getElementById("teamModal").style.display = "none";
     const form = document.getElementById("teamForm");
     if (form) {
         form.onsubmit = async (e) => {
             e.preventDefault();
             const ids = Array.from(document.getElementById("availableOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
-            const res = await fetch(`${API_URL}/proyectos/configurar-equipo`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ id_proyecto: parseInt(id), id_usuarios: ids }) });
-            if (res.ok) { alert("Equipo actualizado"); document.getElementById("teamModal").style.display = "none"; cargarEquipoProyecto(id); }
+            try {
+                const res = await fetch(`${API_URL}/proyectos/configurar-equipo`, { 
+                    method: 'POST', 
+                    headers: getAuthHeaders(), 
+                    body: JSON.stringify({ id_proyecto: parseInt(id), id_usuarios: ids }) 
+                });
+                if (res.ok) { 
+                    alert("Equipo actualizado correctamente."); 
+                    document.getElementById("teamModal").style.display = "none"; 
+                    cargarEquipoProyecto(id); 
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.detail || "No se pudo actualizar el equipo"));
+                }
+            } catch (err) { alert("Error de conexión"); }
         };
     }
     document.querySelectorAll(".tab").forEach(tab => tab.onclick = () => {
@@ -838,6 +923,11 @@ async function setupProjectDetailPage() {
         tab.classList.add("active");
         document.getElementById(tab.dataset.tab).classList.add("active");
     });
+
+    await refrescarDetallesProyecto(id);
+}
+
+async function refrescarDetallesProyecto(id) {
     try {
         const res = await fetch(`${API_URL}/proyectos/${id}`, { headers: getAuthHeaders() });
         const p = await res.json();
@@ -866,7 +956,9 @@ async function cargarTareasProyecto(id) {
         tCont.innerHTML = tasks.length ? "" : "<p>No hay tareas.</p>";
         tasks.forEach(t => {
             const isFin = t.estado === 'finalizada';
-            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small></div><div style="display:flex; align-items:center; gap:10px;"><span style="font-weight:700; color:var(--primary); font-size:0.75rem;">${t.prioridad.toUpperCase()}</span>${isAdminOrLider && !isFin ? `<button class="btn-small" onclick="finalizarTarea(${t.id_tarea})" style="background:#059669; color:white; border:none; padding:4px 8px; font-size:0.65rem;">Finalizar</button>` : ''}${isAdminOrLider && isFin ? `<button class="btn-small" onclick="reactivarTarea(${t.id_tarea})" style="background:#64748b; color:white; border:none; padding:4px 8px; font-size:0.65rem;">Reabrir</button>` : ''}</div></div>`;
+            const operarios = t.operarios_nombres && t.operarios_nombres.length ? t.operarios_nombres.join(', ') : 'Sin asignar';
+            const avance = t.avance !== undefined ? t.avance : 0;
+            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row"><span class="badge-inline">${t.prioridad.toUpperCase()}</span>${isAdminOrLider && !isFin ? `<button class="btn-success btn-small" onclick="finalizarTarea(${t.id_tarea})">Finalizar</button>` : ''}${isAdminOrLider && isFin ? `<button class="btn-small-muted" onclick="reactivarTarea(${t.id_tarea})">Reabrir</button>` : ''}</div></div>`;
         });
     } catch (e) { console.error(e); }
 }
@@ -881,7 +973,7 @@ async function cargarEquipoProyecto(id) {
         eCont.innerHTML = team.length ? "" : "<p>Sin personal.</p>";
         team.forEach(e => {
             const tareasText = e.tareas_activas && e.tareas_activas.length ? `En: ${e.tareas_activas.join(", ")}` : 'Disponible';
-            eCont.innerHTML += `<div class="list-item"><div><strong>${e.nombre} ${e.apellido}</strong><br><small style="color:${e.en_tarea ? '#9d5000' : '#059669'}; font-weight:600;">${tareasText}</small></div>${isAdmin ? `<button class="btn-outline" onclick="desvincularOperario(${id}, ${e.id_usuario})" style="color:#ef4444; border-color:#fecaca; font-size:0.7rem; padding:4px 8px;">Sacar</button>` : ''}</div>`;
+            eCont.innerHTML += `<div class="list-item"><div><strong>${e.nombre} ${e.apellido}</strong><br><small class="${e.en_tarea ? 'badge-status-inactive' : 'badge-status-active'}">${tareasText}</small></div>${isAdmin ? `<button class="btn-danger btn-small" onclick="desvincularOperario(${id}, ${e.id_usuario})">Sacar</button>` : ''}</div>`;
         });
     } catch (e) { console.error(e); }
 }
@@ -899,18 +991,55 @@ async function cargarInventarioProyecto(id) {
 
 async function desvincularOperario(projectId, userId) {
     if (confirm("¿Sacar del proyecto?")) {
-        const res = await fetch(`${API_URL}/proyectos/${projectId}/equipo/${userId}`, { method: 'DELETE', headers: getAuthHeaders() });
-        if (res.ok) setupProjectDetailPage();
+        try {
+            const res = await fetch(`${API_URL}/proyectos/${projectId}/equipo/${userId}`, { method: 'DELETE', headers: getAuthHeaders() });
+            if (res.ok) {
+                alert("Operario desvinculado.");
+                await refrescarDetallesProyecto(projectId);
+            } else {
+                const err = await res.json();
+                alert("Error: " + (err.detail || "No se pudo desvincular"));
+            }
+        } catch (e) { alert("Error de conexión"); }
     }
 }
 
-async function cargarOperariosDisponibles() {
+async function cargarOperariosDisponibles(currentProjectId) {
     const container = document.getElementById("availableOperatorsList");
+    if(!container) return;
     try {
-        const res = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
-        const ops = await res.json();
-        container.innerHTML = ops.length ? "" : "<p>No hay operarios libres.</p>";
-        ops.forEach(op => { container.innerHTML += `<div style="display:flex; gap:10px; padding:5px;"><input type="checkbox" value="${op.id_usuario}"><span>${op.nombre} ${op.apellido}</span></div>`; });
+        // 1. Obtener operarios libres (sin proyecto activo)
+        const resDisp = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
+        const disponibles = await resDisp.json();
+
+        // 2. Obtener operarios ya asignados a este proyecto para mantenerlos marcados
+        const resProj = await fetch(`${API_URL}/proyectos/${currentProjectId}`, { headers: getAuthHeaders() });
+        const proyecto = await resProj.json();
+        const asignadosIds = proyecto.id_operarios || [];
+
+        // 3. Obtener nombres de los ya asignados (usamos /usuarios?id_rol_fk=3 para todos los operarios)
+        const resAll = await fetch(`${API_URL}/usuarios?id_rol_fk=3`, { headers: getAuthHeaders() });
+        const todos = await resAll.json();
+        const misAsignados = todos.filter(u => asignadosIds.includes(u.id_usuario));
+
+        // Combinar listas sin duplicados
+        const listaCompleta = [...disponibles];
+        misAsignados.forEach(a => {
+            if (!listaCompleta.find(l => l.id_usuario === a.id_usuario)) listaCompleta.push(a);
+        });
+
+        container.innerHTML = listaCompleta.length ? "" : "<p>No hay operarios disponibles.</p>";
+        listaCompleta.forEach(op => {
+            const isChecked = asignadosIds.includes(op.id_usuario) ? "checked" : "";
+            container.innerHTML += `
+                <div class="notification-card">
+                    <input type="checkbox" value="${op.id_usuario}" ${isChecked}>
+                    <div class="flex-column">
+                        <span class="notification-title">${op.nombre} ${op.apellido}</span>
+                        <span class="notification-text">${op.correo}</span>
+                    </div>
+                </div>`;
+        });
     } catch (e) { console.error(e); }
 }
 
@@ -1071,11 +1200,11 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
                     <strong class="material-name">${i.nombre_material}</strong>
                 </div>
                 <div class="material-stock">
-                    <span class="stock-value" style="color:${low ? '#ef4444' : 'var(--primary)'}">${i.stock_actual}</span>
+                    <span class="stock-value ${low ? 'badge-status-inactive' : 'badge-status-active'}">${i.stock_actual}</span>
                     <span class="stock-unit">${i.unidad_medida}</span>
                 </div>
-                <div style="grid-column: 1 / 3; display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn-outline btn-small-muted role-admin-only" onclick="ajustarStock(${i.id_material_fk}, ${i.stock_actual})">Ajustar</button>
+                <div class="flex-row" style="grid-column: 1 / 3; margin-top:10px;">
+                    <button class="btn-small-muted role-admin-only" onclick="ajustarStock(${i.id_material_fk}, ${i.stock_actual})">Ajustar</button>
                 </div>
             </div>`;
         });
@@ -1092,20 +1221,133 @@ async function setupInventoryPage() {
     });
     const search = document.getElementById("inventoryInputSearch");
     if(search) search.oninput = (e) => cargarInventarioGlobal(document.querySelector("#inventoryFilters .chip-active").dataset.filter, e.target.value);
+
+    // --- MODALES Y ACCIONES DE INVENTARIO ---
+    const btnCreate = document.getElementById("btnCreateMaterial");
+    const modalCreate = document.getElementById("materialModal");
+    const closeCreate = document.getElementById("closeMaterialModal");
+    const materialForm = document.getElementById("materialForm");
+
+    if (btnCreate && modalCreate) {
+        btnCreate.onclick = () => {
+            modalCreate.style.display = "block";
+            if (materialForm) materialForm.reset();
+        };
+    }
+
+    if (closeCreate && modalCreate) {
+        closeCreate.onclick = () => {
+            modalCreate.style.display = "none";
+        };
+    }
+
+    if (materialForm) {
+        materialForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(materialForm));
+            // Asegurar tipo correcto para enteros
+            formData.stock = parseInt(formData.stock || 0);
+            formData.stock_minimo = parseInt(formData.stock_minimo || 0);
+
+            try {
+                const res = await fetch(`${API_URL}/materiales`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(formData)
+                });
+                if (res.ok) {
+                    alert("Material creado correctamente.");
+                    modalCreate.style.display = "none";
+                    materialForm.reset();
+                    cargarInventarioGlobal();
+                } else {
+                    let msg = "No se pudo crear el material";
+                    try {
+                        const err = await res.json();
+                        msg = err.detail;
+                        if (typeof msg === 'object') {
+                            if (Array.isArray(msg)) {
+                                msg = msg.map(m => (m.msg || JSON.stringify(m))).join(', ');
+                            } else {
+                                msg = JSON.stringify(msg);
+                            }
+                        }
+                    } catch (jsonErr) {
+                        msg = `Error del servidor (${res.status})`;
+                    }
+                    alert("Error: " + msg);
+                }
+            } catch (err) {
+                alert("Error de conexión al crear el material");
+            }
+        };
+    }
 }
 
 
 async function setupUserPage() {
-    const roleFilter = document.getElementById("roleFilterSelect");
-    if(roleFilter) roleFilter.onchange = () => cargarUsuarios(roleFilter.value, document.getElementById("userInputSearch").value);
+    console.log("setupUserPage: Inicializando filtros de roles...");
+    const roleChips = document.querySelectorAll("#roleFilters .chip");
+    if (roleChips.length === 0) {
+        console.warn("setupUserPage: No se encontraron chips con selector #roleFilters .chip");
+    }
+    roleChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            console.log("Filtro clickeado:", chip.dataset.role);
+            roleChips.forEach(c => c.classList.remove("chip-active"));
+            chip.classList.add("chip-active");
+            const role = chip.getAttribute('data-role') || 'all';
+            const term = document.getElementById("userInputSearch") ? document.getElementById("userInputSearch").value : "";
+            cargarUsuarios(role, term);
+        });
+    });
+
     const search = document.getElementById("userInputSearch");
-    if(search) search.oninput = (e) => cargarUsuarios(roleFilter ? roleFilter.value : 'all', e.target.value);
+    if(search) {
+        search.addEventListener('input', (e) => {
+            const activeChip = document.querySelector("#roleFilters .chip-active");
+            const role = activeChip ? activeChip.getAttribute('data-role') : 'all';
+            cargarUsuarios(role, e.target.value);
+        });
+    }
     
     // Abrir modal agregar
     const btnAdd = document.getElementById("btnAddUser");
     if(btnAdd) btnAdd.onclick = () => { document.getElementById("userModal").style.display = "block"; document.getElementById("userForm").reset(); };
     if(document.getElementById("closeUserModal")) document.getElementById("closeUserModal").onclick = () => document.getElementById("userModal").style.display = "none";
     if(document.getElementById("closeEditUserModal")) document.getElementById("closeEditUserModal").onclick = () => document.getElementById("editUserModal").style.display = "none";
+
+    // Formulario de agregar
+    const userForm = document.getElementById("userForm");
+    if (userForm) {
+        userForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(userForm));
+            // Construir el correo completo
+            formData.correo = (formData.correo_prefix || "") + "@constructora-gg.com";
+            delete formData.correo_prefix;
+            
+            // Asegurar tipos correctos
+            formData.id_rol_fk = parseInt(formData.id_rol_fk);
+            
+            try {
+                const res = await fetch(`${API_URL}/usuarios`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(formData)
+                });
+                if (res.ok) {
+                    alert("Usuario creado correctamente.");
+                    document.getElementById("userModal").style.display = "none";
+                    userForm.reset();
+                    cargarUsuarios();
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.detail || "No se pudo crear el usuario"));
+                }
+            } catch (err) { alert("Error de conexión"); }
+        };
+    }
 
     // Formulario de edición
     const editForm = document.getElementById("editUserForm");
@@ -1114,6 +1356,9 @@ async function setupUserPage() {
             e.preventDefault();
             const id = document.getElementById("edit_user_id").value;
             const formData = Object.fromEntries(new FormData(editForm));
+            
+            // Asegurar tipos correctos
+            if(formData.id_rol_fk) formData.id_rol_fk = parseInt(formData.id_rol_fk);
             
             // Limpiar password si está vacío para no enviarlo
             if (!formData.password) delete formData.password;
@@ -1139,6 +1384,7 @@ async function setupUserPage() {
 
 // --- USUARIOS CRUD ---
 async function cargarUsuarios(role = 'all', term = '') {
+    console.log(`cargarUsuarios: Cargando rol=${role}, term=${term}`);
     const container = document.getElementById("userList");
     if(!container) return;
     try {
@@ -1146,6 +1392,7 @@ async function cargarUsuarios(role = 'all', term = '') {
         if (role !== 'all') url += `?id_rol_fk=${role}`;
         const res = await fetch(url, { headers: getAuthHeaders() });
         let users = await res.json();
+        console.log(`cargarUsuarios: Recibidos ${users.length} usuarios`);
         if (term) { const t = term.toLowerCase(); users = users.filter(u => u.nombre.toLowerCase().includes(t) || u.correo.toLowerCase().includes(t)); }
         container.innerHTML = "";
         users.forEach(u => {
@@ -1157,11 +1404,11 @@ async function cargarUsuarios(role = 'all', term = '') {
                     <span>${u.correo} | ${roleName}</span>
                 </div>
                 <div class="user-role-status">
-                    <span class="status-tag" style="background:${u.activo ? '#d1fae5':'#fee2e2'}; color:${u.activo ? '#059669':'#b91c1c'};">${u.activo ? 'Activo':'Inactivo'}</span>
+                    <span class="status-tag ${u.activo ? 'badge-status-active' : 'badge-status-inactive'}">${u.activo ? 'Activo':'Inactivo'}</span>
                 </div>
-                <div class="user-actions" style="display:flex; gap:5px;">
-                    <button class="btn-outline btn-small-muted" onclick="abrirModalEditarUsuario(${u.id_usuario}, '${u.nombre}', '${u.apellido}', '${u.telefono || ''}', ${u.id_rol_fk})">Editar</button>
-                    <button class="btn-outline btn-small-muted" onclick="${u.activo ? `desactivarUsuario(${u.id_usuario})` : `reactivarUsuario(${u.id_usuario})`}">${u.activo ? 'Desactivar':'Reactivar'}</button>
+                <div class="user-actions flex-row" style="gap:8px;">
+                    <button class="btn-small-muted" onclick="abrirModalEditarUsuario(${u.id_usuario}, '${u.nombre}', '${u.apellido}', '${u.telefono || ''}', ${u.id_rol_fk})">Editar</button>
+                    <button class="${u.activo ? 'btn-danger':'btn-success'} btn-small" onclick="${u.activo ? `desactivarUsuario(${u.id_usuario})` : `reactivarUsuario(${u.id_usuario})`}">${u.activo ? 'Desactivar':'Reactivar'}</button>
                 </div>
             </div>`;
         });
@@ -1276,20 +1523,26 @@ async function setupAvancesPage() {
     if (btnAddMat && materialsList) {
         btnAddMat.onclick = () => {
             if (!select.value) return alert("Primero selecciona una tarea.");
+            let opts = projectMaterials.map(m => `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`).join('');
             
-            const div = document.createElement("div");
-            div.className = "material-usage-row";
-            div.style = "display: flex; gap: 8px; align-items: center; background: white; padding: 8px; border-radius: 6px; border: 1px solid var(--border);";
+            let div = document.createElement('div');
+            div.className = 'mat-item';
+            div.style.display = 'flex';
+            div.style.background = '#fff';
+            div.style.border = '1px solid var(--border)';
+            div.style.borderRadius = '8px';
+            div.style.padding = '5px 10px';
+            div.style.alignItems = 'center';
             div.innerHTML = `
-                <select class="mat-id" style="flex-grow: 1; border: none; outline: none; font-size: 0.85rem;">
-                    <option value="">¿Qué material?</option>
-                    ${projectMaterials.map(m => `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`).join('')}
+                <select class="mat-id input-borderless" style="flex-grow: 1;">
+                    <option value="">Seleccione material...</option>
+                    ${opts}
                 </select>
-                <div style="display:flex; align-items:center; gap:4px; border-left: 1px solid var(--border); padding-left: 8px;">
-                    <input type="number" class="mat-qty" placeholder="Cant." style="width: 60px; border: none; outline: none; text-align: center;" min="1">
+                <div class="flex-row" style="border-left: 1px solid var(--border); padding-left: 8px;">
+                    <input type="number" class="mat-qty input-borderless mat-qty-input" placeholder="Cant." min="1">
                     <small class="mat-unit" style="color: var(--muted); font-size: 0.7rem; min-width: 30px;">--</small>
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0 5px; font-weight: bold;">✕</button>
+                <button type="button" class="btn-remove-icon" onclick="this.parentElement.remove()">✕</button>
             `;
             
             // Mostrar unidad de medida al seleccionar material
