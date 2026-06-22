@@ -1196,7 +1196,7 @@ async function abrirModalDetalleTask(id) {
         const histCont = document.getElementById("detail_reports_history");
         histCont.innerHTML = t.historial_reportes.length
             ? t.historial_reportes.map(r => {
-                const canDelete = userId && r.id_operario_fk === userId;
+                const canDelete = userId && r.id_operario_fk === userId && t.estado !== 'finalizada';
                 return `
                 <div class="report-item">
                     <div class="report-item-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">

@@ -1371,6 +1371,9 @@ async def delete_reporte(
     if not tarea:
         raise HTTPException(status_code=404, detail="Tarea asociada no encontrada")
         
+    if tarea.estado == "finalizada":
+        raise HTTPException(status_code=400, detail="No se pueden eliminar reportes de una tarea finalizada")
+        
     id_proyecto = tarea.id_proyecto_fk
     
     # 3. Devolver stock al InventarioProyecto

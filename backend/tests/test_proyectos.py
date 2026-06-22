@@ -310,7 +310,7 @@ async def test_eliminar_reporte_avance(client_admin, client_lider, client_operar
     # 5. Reportar avance
     report_payload = {
         "id_tarea_fk": tarea.id_tarea,
-        "porcentaje": 100,
+        "porcentaje": 50,
         "observaciones": "Listo el cemento E",
         "horas_trabajadas": 8.0,
         "materiales_usados": [
@@ -322,12 +322,12 @@ async def test_eliminar_reporte_avance(client_admin, client_lider, client_operar
     assert response.status_code == 200
     report_id = response.json()["id_reporte"]
     
-    # Verificar stock reducido y tarea finalizada
+    # Verificar stock reducido y tarea en progreso
     db.refresh(inv)
     db.refresh(tarea)
     assert inv.stock_actual == 6
-    assert tarea.avance == 100
-    assert tarea.estado == "finalizada"
+    assert tarea.avance == 50
+    assert tarea.estado == "en_progreso"
     
     # 6. Eliminar el reporte avance
     del_res = await client_operario.delete(f"/reportes/{report_id}")
@@ -339,6 +339,87 @@ async def test_eliminar_reporte_avance(client_admin, client_lider, client_operar
     assert inv.stock_actual == 10
     assert tarea.avance == 0
     assert tarea.estado == "pendiente"
+
+
+@pytest.mark.asyncio
+async def test_eliminar_reporte_tarea_finalizada_fail(client_admin, client_lider, client_operario):
+    from tests.conftest import override_get_db_sync
+    import models
+    db = next(override_get_db_sync())
+    
+    # 1. Crear categoría y material
+    cat = models.CategoriaMaterial(nombre_categoria="Construccion F")
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    
+    mat = models.Material(nombre="Cemento F", id_categoria_fk=cat.id_categoria, unidad_medida="saco")
+    db.add(mat)
+    db.commit()
+    db.refresh(mat)
+    
+    # 2. Crear proyecto
+    proj = models.Proyecto(
+        nombre="Proyecto Reportes F",
+        descripcion="Construcción",
+        ciudad="Medellin",
+        direccion="Avenida 10",
+        presupuesto=300000,
+        id_lider_fk=2,
+        estado="activo"
+    )
+    db.add(proj)
+    db.commit()
+    db.refresh(proj)
+    
+    # 3. Crear stock en proyecto
+    inv = models.InventarioProyecto(
+        id_proyecto_fk=proj.id_proyecto,
+        id_material_fk=mat.id_material,
+        stock_actual=10,
+        unidad_medida="saco"
+    )
+    db.add(inv)
+    db.commit()
+    
+    # 4. Crear tarea
+    tarea = models.Tarea(
+        titulo="Cimentación F",
+        id_proyecto_fk=proj.id_proyecto,
+        estado="pendiente",
+        avance=0
+    )
+    operario = db.query(models.Usuario).filter(models.Usuario.id_usuario == 3).first()
+    tarea.operarios.append(operario)
+    db.add(tarea)
+    db.commit()
+    db.refresh(tarea)
+    
+    # 5. Reportar avance al 100% (finaliza la tarea)
+    report_payload = {
+        "id_tarea_fk": tarea.id_tarea,
+        "porcentaje": 100,
+        "observaciones": "Listo el cemento F al 100%",
+        "horas_trabajadas": 8.0,
+        "materiales_usados": [
+            {"id_material": mat.id_material, "cantidad": 4}
+        ]
+    }
+    
+    response = await client_operario.post("/reportes", json=report_payload)
+    assert response.status_code == 200
+    report_id = response.json()["id_reporte"]
+    
+    # Verificar que la tarea está finalizada
+    db.refresh(tarea)
+    assert tarea.avance == 100
+    assert tarea.estado == "finalizada"
+    
+    # 6. Intentar eliminar el reporte avance (debe fallar con 400 ya que la tarea está finalizada)
+    del_res = await client_operario.delete(f"/reportes/{report_id}")
+    assert del_res.status_code == 400
+    assert del_res.json()["detail"] == "No se pueden eliminar reportes de una tarea finalizada"
+
 
 
 
