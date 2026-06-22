@@ -104,6 +104,7 @@ class TareaUpdate(BaseModel):
     prioridad: Optional[TareaPrioridad] = None
     avance: Optional[int] = None
     id_usuario_finalizado_fk: Optional[int] = None
+    id_operarios: Optional[List[int]] = None
 
 class Tarea(TareaBase):
     id_tarea: int

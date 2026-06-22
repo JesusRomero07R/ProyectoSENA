@@ -121,6 +121,14 @@ class ReporteMaterial(Base):
     reporte = relationship("ReporteAvance", back_populates="materiales_detalles")
     material = relationship("Material")
 
+    @property
+    def nombre_material(self) -> str:
+        return self.material.nombre if self.material else ""
+
+    @property
+    def unidad_medida(self) -> str:
+        return self.material.unidad_medida if self.material else ""
+
 class CategoriaMaterial(Base):
     __tablename__ = "categorias_material"
     id_categoria = Column(Integer, primary_key=True, index=True)

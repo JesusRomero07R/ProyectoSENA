@@ -14,7 +14,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Panel Unificado</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="styles.css?v=1.0.3" />
   <style>
     /* Estilos dinámicos para el Dashboard Unificado */
     .role-section { display: none; } /* Por defecto oculto, JS lo mostrará */
@@ -123,20 +123,20 @@
             <div class="card-header"><h2>Indicadores Globales</h2></div>
             <div class="grid-4">
               <div class="kpi-card clickable-card" id="kpi-usuarios">
-                <span class="kpi-label">Usuarios</span>
+                <span class="kpi-label">Usuarios Registrados</span>
                 <span class="kpi-value" id="val-usuarios">--</span>
               </div>
               <div class="kpi-card clickable-card" id="kpi-proyectos">
-                <span class="kpi-label">Proyectos</span>
+                <span class="kpi-label">Proyectos Activos</span>
                 <span class="kpi-value" id="val-proyectos">--</span>
               </div>
               <div class="kpi-card clickable-card" id="kpi-inventario">
-                <span class="kpi-label">Inventario</span>
+                <span class="kpi-label">Materiales Críticos</span>
                 <span class="kpi-value" id="val-inventario">--</span>
               </div>
-              <div class="kpi-card clickable-card" id="kpi-avance" title="Promedio de avance de todos los proyectos activos">
-                <span class="kpi-label">Avance Global</span>
-                <span class="kpi-value" id="val-avance">--%</span>
+              <div class="kpi-card clickable-card" id="kpi-avance">
+                <span class="kpi-label">Alertas Pendientes</span>
+                <span class="kpi-value" id="val-avance">--</span>
               </div>
             </div>
         </div>
@@ -192,6 +192,6 @@
     </div>
     <p class="footer-copy">© 2025 Constructora GG. Panel Unificado.</p>
   </footer>
-  <script src="app.js?v=1.0.1"></script>
+  <script src="app.js?v=1.2.7"></script>
 </body>
 </html>

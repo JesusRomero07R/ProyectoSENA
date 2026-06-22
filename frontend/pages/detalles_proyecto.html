@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Detalles del Proyecto</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
   <style>
     .details-grid {
         display: grid;
@@ -241,25 +241,43 @@
                 </div>
             </div>
 
-            <div class="tab-container">
-                <div class="tabs">
-                    <div class="tab active" data-tab="tareas">Tareas</div>
-                    <div class="tab" data-tab="equipo">Equipo</div>
-                    <div class="tab" data-tab="inventario">Inventario</div>
+            <!-- Tareas del Proyecto -->
+            <div class="card" style="margin-top: 20px; padding: 20px;">
+                <div class="card-header">
+                    <h2>Tareas del Proyecto</h2>
+                    <p class="card-subtitle">Listado de actividades asignadas y su estado actual.</p>
                 </div>
+                <div id="listadoTareas" style="margin-top: 15px;">Cargando tareas...</div>
+            </div>
 
-                <div id="tareas" class="tab-content active">
-                    <div id="listadoTareas">Cargando tareas...</div>
-                </div>
-                <div id="equipo" class="tab-content">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 >Personal Asignado</h3>
-                        <button class="btn-primary role-admin" id="btnManageTeam" >+ Asignar Operarios</button>
+            <!-- Equipo Asignado -->
+            <div class="card" style="margin-top: 20px; padding: 20px;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h2>Personal Asignado (Equipo)</h2>
+                        <p class="card-subtitle">Operarios vinculados a esta obra.</p>
                     </div>
-                    <div id="listadoEquipo">Cargando equipo...</div>
+                    <button class="btn-primary role-admin" id="btnManageTeam">+ Asignar Operarios</button>
                 </div>
-                <div id="inventario" class="tab-content">
-                    <div id="listadoInventario">Cargando inventario...</div>
+                <div id="listadoEquipo" style="margin-top: 15px;">Cargando equipo...</div>
+            </div>
+
+            <!-- Inventario en Obra -->
+            <div class="card" style="margin-top: 20px; padding: 20px;">
+                <div class="card-header">
+                    <h2>Inventario / Materiales en Obra</h2>
+                    <p class="card-subtitle">Recursos y stock actual en el frente de obra.</p>
+                </div>
+                <div id="listadoInventario" style="margin-top: 15px;">Cargando inventario...</div>
+            </div>
+
+            <!-- Acciones / Exportar Reporte -->
+            <div class="card" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 20px; flex-wrap: wrap;">
+                <span style="font-size: 0.9rem; color: var(--muted);" id="detAccionesLabel">Acciones del proyecto:</span>
+                <div class="flex-row" style="gap: 10px; align-items: center;" id="projectDetailActions">
+                    <button id="btnGenerarPDF" class="btn-primary" style="height: 41px; display: flex; align-items: center; gap: 8px;">
+                        <span class="icon">📄</span> Generar Reporte PDF
+                    </button>
                 </div>
             </div>
         </div>
@@ -285,6 +303,28 @@
     </div>
   </div>
 
-  <script src="../app.js?v=1.0.1"></script>
+  <!-- Modal de Doble Validación para Cambiar Estado del Proyecto -->
+  <div id="confirmStateModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <div class="modal-header">
+            <h2 id="confirmModalTitle">Cambiar Estado del Proyecto</h2>
+            <span class="close-modal" id="closeConfirmModal">&times;</span>
+        </div>
+        <div style="margin-top: 15px; margin-bottom: 20px;">
+            <p id="confirmModalMessage" style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;">¿Está seguro de cambiar el estado de este proyecto?</p>
+            
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; background: var(--bg); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border); margin-top: 10px;">
+                <input type="checkbox" id="confirmDoubleCheck" style="margin-top: 3px;" />
+                <span style="font-size: 0.85rem; user-select: none; color: var(--text);">Confirmo plenamente que deseo proceder con esta acción.</span>
+            </label>
+        </div>
+        <div class="flex-row" style="justify-content: flex-end; gap: 10px;">
+            <button class="btn-outline" id="btnCancelConfirm">Cancelar</button>
+            <button class="btn-danger" id="btnExecuteConfirm" disabled>Confirmar</button>
+        </div>
+    </div>
+  </div>
+
+  <script src="../app.js?v=1.2.7"></script>
 </body>
 </html>

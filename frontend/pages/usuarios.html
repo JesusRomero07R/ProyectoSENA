@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Gestión de Usuarios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
   <style>
     /* CSS Adicional para la vista de Usuarios */
     .user-list {
@@ -65,6 +65,28 @@
       margin-top: 4px;
       background-color: #d1fae5;
       color: #059669;
+    }
+    .availability-tag {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .free-tag {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .occupied-tag {
+      background-color: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* Modal Styles */
@@ -274,6 +296,11 @@
             <div class="chip" data-role="2">Líderes</div>
             <div class="chip" data-role="3">Operarios</div>
           </div>
+          <div class="chips-row" id="availabilityFilters" style="margin-top: 10px;">
+            <div class="chip chip-active" data-availability="all">Todos los estados</div>
+            <div class="chip" data-availability="free">Libres / Disponibles</div>
+            <div class="chip" data-availability="occupied">En Proyecto</div>
+          </div>
         </header>
 
         <section>
@@ -388,6 +415,6 @@
         </div>
         </div>
 
-        <script src="../app.js?v=1.0.1"></script>
+        <script src="../app.js?v=1.2.7"></script>
         </body>
         </html>

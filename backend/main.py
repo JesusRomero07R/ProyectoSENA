@@ -208,7 +208,7 @@ async def create_usuario(
 @app.get("/usuarios/operarios-disponibles", response_model=List[schemas.Usuario])
 async def get_operarios_disponibles(
     db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1]))
+    current_user: models.Usuario = Depends(require_role([1, 2]))
 ):
     """
     Obtiene todos los operarios (Rol 3) que están activos y NO están 
@@ -552,6 +552,17 @@ async def update_proyecto(
         db.refresh(db_proyecto)
         return format_proyecto(db_proyecto, db)
 
+    # Si se está marcando como ACTIVO (reactivación) y antes estaba FINALIZADO
+    if proyecto_update.estado == "activo" and db_proyecto.estado == "finalizado":
+        # Desvincular operarios del proyecto y de sus tareas para que permanezcan disponibles
+        for operario in db_proyecto.operarios:
+            operario.disponibilidad = "disponible"
+        db_proyecto.operarios = []
+        
+        tareas = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == id_proyecto).all()
+        for tarea in tareas:
+            tarea.operarios = []
+
     update_data = proyecto_update.dict(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_proyecto, key, value)
@@ -571,6 +582,127 @@ async def get_proyecto(
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
     return format_proyecto(p, db)
+
+@app.get("/proyectos/{id_proyecto}/reporte-detallado")
+async def get_proyecto_reporte_detallado(
+    id_proyecto: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([1, 2]))
+):
+    proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+        
+    if current_user.id_rol_fk != 1 and proyecto.id_lider_fk != current_user.id_usuario:
+        raise HTTPException(status_code=403, detail="No tienes permisos para ver el reporte de este proyecto")
+        
+    lider_nombre = f"{proyecto.lider.nombre} {proyecto.lider.apellido}" if proyecto.lider else "No asignado"
+    
+    operarios = [
+        {
+            "id_usuario": o.id_usuario,
+            "nombre_completo": f"{o.nombre} {o.apellido}",
+            "correo": o.correo,
+            "telefono": o.telefono or "No registrado"
+        }
+        for o in proyecto.operarios
+    ]
+    
+    tareas = db.query(models.Tarea).options(
+        joinedload(models.Tarea.operarios),
+        joinedload(models.Tarea.finalizador)
+    ).filter(models.Tarea.id_proyecto_fk == id_proyecto).all()
+    
+    tareas_detalles = []
+    for t in tareas:
+        tareas_detalles.append({
+            "id_tarea": t.id_tarea,
+            "titulo": t.titulo,
+            "descripcion": t.descripcion or "Sin descripción",
+            "estado": t.estado,
+            "avance": t.avance,
+            "prioridad": t.prioridad,
+            "fecha_limite": t.fecha_limite,
+            "operarios_nombres": [f"{o.nombre} {o.apellido}" for o in t.operarios],
+            "finalizador_nombre": f"{t.finalizador.nombre} {t.finalizador.apellido}" if t.finalizador else None
+        })
+        
+    # Obtener todos los reportes de avance de las tareas de este proyecto
+    tarea_ids = [t.id_tarea for t in tareas]
+    reportes_avance = []
+    total_horas = 0.0
+    
+    if tarea_ids:
+        reportes_db = db.query(
+            models.ReporteAvance,
+            models.Tarea.titulo.label("titulo_tarea"),
+            models.Usuario.nombre.label("nombre_operario"),
+            models.Usuario.apellido.label("apellido_operario")
+        ).join(
+            models.Tarea, models.ReporteAvance.id_tarea_fk == models.Tarea.id_tarea
+        ).join(
+            models.Usuario, models.ReporteAvance.id_operario_fk == models.Usuario.id_usuario
+        ).filter(
+            models.Tarea.id_proyecto_fk == id_proyecto
+        ).order_by(models.ReporteAvance.fecha_reporte.desc()).all()
+        
+        for r, titulo_tarea, nom_op, ape_op in reportes_db:
+            total_horas += r.horas_trabajadas
+            
+            # Materiales usados en este reporte
+            materiales_usados = []
+            for rm in r.materiales_detalles:
+                materiales_usados.append({
+                    "nombre_material": rm.material.nombre if rm.material else "Desconocido",
+                    "cantidad_usada": rm.cantidad_usada,
+                    "unidad_medida": rm.material.unidad_medida if rm.material else ""
+                })
+                
+            reportes_avance.append({
+                "id_reporte": r.id_reporte,
+                "titulo_tarea": titulo_tarea,
+                "nombre_operario": f"{nom_op} {ape_op}",
+                "fecha_reporte": r.fecha_reporte,
+                "porcentaje": r.porcentaje,
+                "observaciones": r.observaciones or "Sin observaciones",
+                "horas_trabajadas": r.horas_trabajadas,
+                "foto_url": r.foto_url,
+                "materiales_usados": materiales_usados
+            })
+            
+    # Obtener inventario de este proyecto
+    inventario_proy = db.query(models.InventarioProyecto).filter(models.InventarioProyecto.id_proyecto_fk == id_proyecto).all()
+    materiales_inventario = []
+    for inv in inventario_proy:
+        materiales_inventario.append({
+            "nombre_material": inv.material.nombre if inv.material else "Desconocido",
+            "stock_actual": inv.stock_actual,
+            "unidad_medida": inv.unidad_medida
+        })
+        
+    avance_general = 0.0
+    if tareas:
+        total_avance = sum(t.avance for t in tareas)
+        avance_general = round(total_avance / len(tareas), 1)
+        
+    return {
+        "id_proyecto": proyecto.id_proyecto,
+        "nombre": proyecto.nombre,
+        "descripcion": proyecto.descripcion or "Sin descripción",
+        "ciudad": proyecto.ciudad,
+        "direccion": proyecto.direccion,
+        "presupuesto": float(proyecto.presupuesto),
+        "fecha_inicio": proyecto.fecha_inicio,
+        "fecha_fin": proyecto.fecha_fin,
+        "estado": proyecto.estado,
+        "lider_nombre": lider_nombre,
+        "avance_general": avance_general,
+        "operarios": operarios,
+        "tareas": tareas_detalles,
+        "total_horas_trabajadas": total_horas,
+        "reportes_avance": reportes_avance,
+        "inventario": materiales_inventario
+    }
 
 @app.delete("/proyectos/{id_proyecto}")
 async def delete_proyecto(
@@ -687,7 +819,7 @@ async def get_estado_equipo(
                 "tareas_activas": []
             }
         
-        if titulo_tarea:
+        if titulo_tarea and proyecto.estado != "finalizado":
             operarios_dict[usuario.id_usuario]["en_tarea"] = True
             if titulo_tarea not in operarios_dict[usuario.id_usuario]["tareas_activas"]:
                 operarios_dict[usuario.id_usuario]["tareas_activas"].append(titulo_tarea)
@@ -807,6 +939,9 @@ async def trasladar_material(
         
     if current_user.id_rol_fk == 2 and proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permisos sobre este proyecto")
+
+    if proyecto.estado == "finalizado":
+        raise HTTPException(status_code=400, detail="No se puede trasladar inventario a un proyecto finalizado")
     
     # 1. Verificar existencia del material
     material = db.query(models.Material).filter(models.Material.id_material == traslado.id_material).first()
@@ -961,16 +1096,40 @@ async def get_my_task_detail(
 async def create_tarea(
     tarea: schemas.TareaCreate,
     db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1, 2]))
+    current_user: models.Usuario = Depends(require_role([2]))
 ):
+    proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == tarea.id_proyecto_fk).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    if proyecto.id_lider_fk != current_user.id_usuario:
+        raise HTTPException(status_code=403, detail="No eres el líder de este proyecto")
+    if proyecto.estado == "finalizado":
+        raise HTTPException(status_code=400, detail="No se pueden agregar tareas a un proyecto finalizado")
+
     tarea_data = tarea.dict(exclude={"id_operarios"})
     db_tarea = models.Tarea(**tarea_data)
     
     # Asignar lista de operarios
     for user_id in tarea.id_operarios:
         usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == user_id).first()
-        if usuario:
-            db_tarea.operarios.append(usuario)
+        if not usuario:
+            raise HTTPException(status_code=404, detail=f"Operario con ID {user_id} no encontrado")
+        
+        # Si el operario no está asignado al proyecto, validar disponibilidad y agregarlo al proyecto
+        if usuario not in proyecto.operarios:
+            proyecto_activo = db.query(models.Proyecto).join(models.Proyecto.operarios).filter(
+                models.Proyecto.estado == "activo",
+                models.Usuario.id_usuario == user_id
+            ).first()
+            if proyecto_activo:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"El operario {usuario.nombre} ya está asignado al proyecto activo: {proyecto_activo.nombre}"
+                )
+            proyecto.operarios.append(usuario)
+        
+        usuario.disponibilidad = "ocupado"
+        db_tarea.operarios.append(usuario)
             
     db.add(db_tarea)
     db.commit()
@@ -1017,7 +1176,7 @@ async def update_tarea(
     id_tarea: int,
     tarea_update: schemas.TareaUpdate,
     db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1, 2]))
+    current_user: models.Usuario = Depends(require_role([2]))
 ):
     # 1. Buscar la tarea y su proyecto
     db_tarea = db.query(models.Tarea).filter(models.Tarea.id_tarea == id_tarea).first()
@@ -1026,8 +1185,8 @@ async def update_tarea(
     
     proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == db_tarea.id_proyecto_fk).first()
     
-    # 2. Validar permisos (Admin o Líder del proyecto)
-    if current_user.id_rol_fk != 1 and proyecto.id_lider_fk != current_user.id_usuario:
+    # 2. Validar permisos (Líder del proyecto)
+    if proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permisos para editar esta tarea")
     
     # 3. Actualizar campos básicos
@@ -1051,13 +1210,21 @@ async def update_tarea(
             if not usuario:
                 raise HTTPException(status_code=404, detail=f"Operario con ID {user_id} no encontrado")
             
-            # VALIDACIÓN: El operario debe pertenecer al proyecto de la tarea
-            # Verificamos si el usuario está en la relación 'operarios' del proyecto
+            # Si el operario no está asignado al proyecto, validar disponibilidad y agregarlo al proyecto
             if usuario not in proyecto.operarios:
-                raise HTTPException(
-                    status_code=400, 
-                    detail=f"El operario {usuario.nombre} no está asignado al proyecto {proyecto.nombre}"
-                )
+                proyecto_activo = db.query(models.Proyecto).join(models.Proyecto.operarios).filter(
+                    models.Proyecto.estado == "activo",
+                    models.Usuario.id_usuario == user_id
+                ).first()
+                if proyecto_activo:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"El operario {usuario.nombre} ya está asignado al proyecto activo: {proyecto_activo.nombre}"
+                    )
+                # Asociar al proyecto y marcar como ocupado
+                proyecto.operarios.append(usuario)
+            
+            usuario.disponibilidad = "ocupado"
             nuevos_operarios.append(usuario)
         
         # Reemplazar la lista anterior por la nueva
@@ -1071,7 +1238,7 @@ async def update_tarea(
 async def delete_tarea(
     id_tarea: int,
     db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(require_role([1, 2]))
+    current_user: models.Usuario = Depends(require_role([2]))
 ):
     # 1. Buscar la tarea y su proyecto asociado
     db_tarea = db.query(models.Tarea).filter(models.Tarea.id_tarea == id_tarea).first()
@@ -1080,8 +1247,8 @@ async def delete_tarea(
     
     proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == db_tarea.id_proyecto_fk).first()
     
-    # 2. Validar permisos: Admin tiene acceso total, Líder solo si es su proyecto
-    if current_user.id_rol_fk != 1 and proyecto.id_lider_fk != current_user.id_usuario:
+    # 2. Validar permisos: Líder del proyecto
+    if proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(
             status_code=403, 
             detail="No tienes permisos para eliminar tareas de este proyecto"
@@ -1117,14 +1284,16 @@ async def create_reporte(
         
         if not inv_proy or inv_proy.stock_actual < mat_usado.cantidad:
             # AUTOMÁTICO: Crear solicitud de material para el líder
-            proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
             material = db.query(models.Material).filter(models.Material.id_material == mat_usado.id_material).first()
+            
+            cant_actual = inv_proy.stock_actual if inv_proy else 0
+            cant_faltante = mat_usado.cantidad - cant_actual
             
             nueva_solicitud = models.SolicitudMaterial(
                 id_proyecto_fk=id_proyecto,
-                id_lider_fk=proyecto.id_lider_fk,
-                descripcion=f"Falta stock de {material.nombre} para completar tarea {tarea.titulo}. Cantidad faltante: {mat_usado.cantidad}",
-                estado="pendiente"
+                id_material_fk=mat_usado.id_material,
+                cantidad_solicitada=cant_faltante,
+                estado_solicitud="pendiente"
             )
             db.add(nueva_solicitud)
             db.commit()
@@ -1181,6 +1350,73 @@ async def create_reporte(
             
     db.commit()
     return db_reporte
+
+@app.delete("/reportes/{id_reporte}")
+async def delete_reporte(
+    id_reporte: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(require_role([3])) # Solo Operarios
+):
+    # 1. Validar existencia del reporte
+    reporte = db.query(models.ReporteAvance).filter(models.ReporteAvance.id_reporte == id_reporte).first()
+    if not reporte:
+        raise HTTPException(status_code=404, detail="Reporte no encontrado")
+        
+    # Seguridad: Un operario solo puede eliminar sus propios reportes
+    if reporte.id_operario_fk != current_user.id_usuario:
+        raise HTTPException(status_code=403, detail="No tienes permisos para eliminar este reporte")
+        
+    # 2. Obtener la tarea relacionada
+    tarea = db.query(models.Tarea).filter(models.Tarea.id_tarea == reporte.id_tarea_fk).first()
+    if not tarea:
+        raise HTTPException(status_code=404, detail="Tarea asociada no encontrada")
+        
+    id_proyecto = tarea.id_proyecto_fk
+    
+    # 3. Devolver stock al InventarioProyecto
+    for mat_detalle in reporte.materiales_detalles:
+        inv_proy = db.query(models.InventarioProyecto).filter(
+            models.InventarioProyecto.id_proyecto_fk == id_proyecto,
+            models.InventarioProyecto.id_material_fk == mat_detalle.id_material_fk
+        ).first()
+        if inv_proy:
+            inv_proy.stock_actual += mat_detalle.cantidad_usada
+            
+    # 4. Eliminar registros de ReporteMaterial
+    db.query(models.ReporteMaterial).filter(models.ReporteMaterial.id_reporte_fk == id_reporte).delete()
+    
+    # 5. Eliminar el reporte principal
+    db.delete(reporte)
+    db.commit()
+    
+    # 6. Recalcular el avance de la tarea y del proyecto
+    otros_reportes = db.query(models.ReporteAvance).filter(models.ReporteAvance.id_tarea_fk == tarea.id_tarea).all()
+    if otros_reportes:
+        tarea.avance = max(r.porcentaje for r in otros_reportes)
+    else:
+        tarea.avance = 0
+        
+    # Actualizar estado de la tarea basado en el nuevo avance
+    if tarea.avance >= 100:
+        tarea.estado = "finalizada"
+    elif tarea.avance > 0:
+        tarea.estado = "en_progreso"
+    else:
+        tarea.estado = "pendiente"
+        
+    # Si la tarea ya no está finalizada, limpiar el usuario finalizador
+    if tarea.avance < 100:
+        tarea.id_usuario_finalizado_fk = None
+        
+    # Recalcular el avance general del proyecto
+    proyecto = db.query(models.Proyecto).filter(models.Proyecto.id_proyecto == id_proyecto).first()
+    tareas_proyecto = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == id_proyecto).all()
+    total_avance = sum(t.avance for t in tareas_proyecto)
+    if tareas_proyecto:
+        proyecto.avance_general = total_avance / len(tareas_proyecto)
+        
+    db.commit()
+    return {"message": f"Reporte {id_reporte} eliminado y stock restablecido correctamente"}
 
 @app.get("/reportes", response_model=List[schemas.ReporteAvanceDetailed])
 async def list_reportes(
@@ -1383,9 +1619,17 @@ async def get_inventario_proyecto(
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     
-    # Seguridad: Solo admin, el líder del proyecto, u operarios asignados al mismo
+    # Seguridad: Solo admin, el líder del proyecto, u operarios asignados al mismo o a sus tareas
     is_lider = (current_user.id_rol_fk == 2 and proyecto.id_lider_fk == current_user.id_usuario)
-    is_operario = (current_user.id_rol_fk == 3 and any(o.id_usuario == current_user.id_usuario for o in proyecto.operarios))
+    
+    is_operario_in_team = (current_user.id_rol_fk == 3 and any(o.id_usuario == current_user.id_usuario for o in proyecto.operarios))
+    is_operario_in_tasks = False
+    if current_user.id_rol_fk == 3:
+        is_operario_in_tasks = db.query(models.Tarea).join(models.Tarea.operarios).filter(
+            models.Tarea.id_proyecto_fk == id_proyecto,
+            models.Usuario.id_usuario == current_user.id_usuario
+        ).first() is not None
+    is_operario = is_operario_in_team or is_operario_in_tasks
     
     if current_user.id_rol_fk != 1 and not is_lider and not is_operario:
         raise HTTPException(status_code=403, detail="No tienes permisos para ver el inventario de este proyecto")

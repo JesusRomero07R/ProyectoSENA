@@ -7,6 +7,21 @@
 const API_URL = "http://localhost:8000";
 console.log("Constructora GG: API_URL configurada en", API_URL);
 
+let loggedInUser = null;
+async function ensureLoggedInUser() {
+    if (loggedInUser) return loggedInUser;
+    try {
+        const res = await fetch(`${API_URL}/usuarios/me`, { headers: getAuthHeaders() });
+        if (res.ok) {
+            loggedInUser = await res.json();
+            return loggedInUser;
+        }
+    } catch (e) {
+        console.error("Error fetching logged in user:", e);
+    }
+    return null;
+}
+
 const getAuthHeaders = () => {
     const token = localStorage.getItem("access_token");
     return {
@@ -39,6 +54,20 @@ const goToLogin = () => {
     }
 };
 
+// Interceptor global de fetch para redirigir a login en caso de 401 (token expirado o inválido)
+const originalFetch = window.fetch;
+window.fetch = async function (...args) {
+    const res = await originalFetch(...args);
+    if (res.status === 401) {
+        const url = (typeof args[0] === 'string') ? args[0] : (args[0] && args[0].url) || "";
+        if (typeof url === 'string' && !url.includes("/auth/login")) {
+            console.warn("Acceso no autorizado (401). Redirigiendo a login.");
+            goToLogin();
+        }
+    }
+    return res;
+};
+
 // 2. LÓGICA DE UI Y ROLES
 const setupUIByRole = (roleId) => {
     const roleMap = {
@@ -59,6 +88,16 @@ const setupUIByRole = (roleId) => {
     document.querySelectorAll(`.role-${role.name}-only`).forEach(el => {
         el.style.display = (el.tagName === 'A' ? 'flex' : 'block');
     });
+
+    // Ajustes específicos del Administrador y Líder (remover accesos del menú a Tareas, Equipo y Materiales de la barra lateral, ya que son contextuales por proyecto)
+    if (roleId === 1 || roleId === 2) {
+        document.querySelectorAll('a.nav-link[href*="tareas.html"], a.nav-link[href*="equipo.html"], a.nav-link[href*="materiales.html"]').forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+        });
+        document.querySelectorAll('.mobile-bottom-nav a[href*="tareas.html"]').forEach(el => {
+            el.style.setProperty('display', 'none', 'important');
+        });
+    }
 
     // Etiquetas de texto
     const labels = {
@@ -173,7 +212,7 @@ window.onload = () => {
     initPage("dashboardProjectList", () => { cargarDashboardResumen(); });
     initPage("latestReportsList", () => { setupReportsPage(); });
     initPage("tasksList", () => { setupTasksPage(); });
-    initPage("teamListContainer", () => { cargarEquipoPagina(); setupEquipoPage(); });
+    initPage("teamListContainer", () => { const params = new URLSearchParams(window.location.search); const pid = params.get("project_id") || "all"; cargarEquipoPagina('all', '', pid); setupEquipoPage(pid); });
     initPage("profile-name", () => { setupProfilePage(); });
     initPage("projectMaterialsContainer", () => { setupMaterialesPage(); });
     initPage("btnEnviarReporte", () => { setupAvancesPage(); });
@@ -185,125 +224,220 @@ window.onload = () => {
 async function cargarDashboardResumen() {
     const container = document.getElementById("dashboardProjectList");
     const notifContainer = document.getElementById("adminNotificationsList");
-    if(!container) return;
+    if (!container) return;
+
+    console.log("Iniciando carga de resumen del dashboard...");
 
     try {
         const payload = getPayload();
         if (!payload) return goToLogin();
         const isAdmin = payload.role === 1;
 
-        const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-        const projects = projRes.ok ? await projRes.json() : [];
+        // 1. Cargar proyectos activos (compartido por admin y líder)
+        let projects = [];
+        try {
+            const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
+            if (projRes.ok) {
+                projects = await projRes.json();
+                console.log("Proyectos activos cargados:", projects.length);
+            } else {
+                console.error("Error al buscar proyectos activos:", projRes.status);
+            }
+        } catch (err) {
+            console.error("Excepción al cargar proyectos activos:", err);
+        }
 
+        // Renderizar proyectos en la lista lateral/principal
         container.innerHTML = projects.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No hay proyectos activos asignados.</p>";
         if (Array.isArray(projects)) {
             projects.forEach(p => {
                 container.innerHTML += `<div class="project-item clickable-card" onclick="window.location.href='pages/detalles_proyecto.html?id=${p.id_proyecto}'">
-                    <div><div class="project-title">${p.nombre}</div><div class="project-leader">Líder: ${p.lider ? p.lider.nombre : 'S/A'}</div></div><div class="project-progress-value">${p.avance_general}%</div></div>`;
+                    <div>
+                        <div class="project-title">${p.nombre}</div>
+                        <div class="project-leader">Líder: ${p.lider ? p.lider.nombre : 'S/A'}</div>
+                    </div>
+                    <div class="project-progress-value">${p.avance_general}%</div>
+                </div>`;
             });
         }
 
+        // Si es Admin, cargamos los indicadores globales específicos de admin
         if (isAdmin) {
-            const uRes = await fetch(`${API_URL}/usuarios`, { headers: getAuthHeaders() });
-            if (uRes.ok) { 
-                const users = await uRes.json(); 
-                if(document.getElementById('val-usuarios')) document.getElementById('val-usuarios').textContent = Array.isArray(users) ? users.length : 0; 
+            // KPI: Proyectos Activos (val-proyectos)
+            const valProj = document.getElementById('val-proyectos');
+            if (valProj) {
+                valProj.textContent = projects.length;
             }
-            const nRes = await fetch(`${API_URL}/notificaciones`, { headers: getAuthHeaders() });
-            if (nRes.ok && notifContainer) {
-                const notifications = await nRes.json();
-                if (Array.isArray(notifications)) {
-                    const pending = notifications.filter(n => !n.leida);
-                    const badge = document.getElementById("adminAlertBadge");
-                    if (badge) badge.style.display = pending.length ? "inline-block" : "none";
-                    
-                    notifContainer.innerHTML = pending.length ? "" : "<p style='text-align:center; color:var(--muted); font-size:0.85rem;'>No hay alertas pendientes.</p>";
-                    pending.slice(0, 5).forEach(n => {
-                        let targetPage = "";
-                        let targetText = "";
-                        if (n.tipo === "alarma_stock" || n.mensaje.toLowerCase().includes("stock")) {
-                            targetPage = "pages/inventario.html";
-                            targetText = "Ver Inventario";
-                        } else if (n.tipo === "password_reset" || n.mensaje.toLowerCase().includes("contraseña")) {
-                            targetPage = "pages/usuarios.html";
-                            targetText = "Gestionar Usuarios";
+
+            // KPI: Usuarios Registrados (val-usuarios)
+            try {
+                const uRes = await fetch(`${API_URL}/usuarios`, { headers: getAuthHeaders() });
+                if (uRes.ok) {
+                    const users = await uRes.json();
+                    const valUsers = document.getElementById('val-usuarios');
+                    if (valUsers) {
+                        valUsers.textContent = Array.isArray(users) ? users.length : 0;
+                    }
+                    console.log("Usuarios cargados para KPI:", Array.isArray(users) ? users.length : 0);
+                } else {
+                    console.error("Error al buscar usuarios:", uRes.status);
+                }
+            } catch (err) {
+                console.error("Excepción al buscar usuarios:", err);
+            }
+
+            // KPI: Alertas Pendientes (val-avance) y lista de notificaciones de admin
+            try {
+                const nRes = await fetch(`${API_URL}/notificaciones`, { headers: getAuthHeaders() });
+                if (nRes.ok) {
+                    const notifications = await nRes.json();
+                    if (Array.isArray(notifications)) {
+                        const pending = notifications.filter(n => !n.leida);
+                        
+                        // Badge de acción requerida en la sección de alertas del sistema
+                        const badge = document.getElementById("adminAlertBadge");
+                        if (badge) {
+                            badge.style.display = pending.length ? "inline-block" : "none";
                         }
 
-                        notifContainer.innerHTML += `
-                            <div class="notification-card">
-                                <div class="notification-header">
-                                    <div>
-                                        <strong class="notification-title">${n.titulo}</strong>
-                                        <p class="notification-text">${n.mensaje}</p>
-                                    </div>
-                                    <button onclick="marcarNotificacionLeida(${n.id_notificacion})" title="Marcar como leída" class="btn-small-muted btn-remove-icon" style="color: var(--success);">✓</button>
-                                </div>
-                                ${targetPage ? `
-                                    <button onclick="window.location.href='${targetPage}'" class="btn-outline btn-small" style="width:fit-content; border-color:var(--danger-light); color:var(--danger);">
+                        // Indicador "Alertas Pendientes" (anteriormente avance global)
+                        const valAvance = document.getElementById('val-avance');
+                        if (valAvance) {
+                            valAvance.textContent = pending.length;
+                        }
 
-                                        ${targetText} →
-                                    </button>
-                                ` : ''}
-                            </div>`;
-                    });
+                        // Lista visual de alertas pendientes
+                        if (notifContainer) {
+                            notifContainer.innerHTML = pending.length ? "" : "<p style='text-align:center; color:var(--muted); font-size:0.85rem;'>No hay alertas pendientes.</p>";
+                            pending.slice(0, 5).forEach(n => {
+                                let targetPage = "";
+                                let targetText = "";
+                                const msg = n.mensaje ? n.mensaje.toLowerCase() : "";
+                                if (n.tipo === "alarma_stock" || msg.includes("stock")) {
+                                    targetPage = "pages/inventario.html";
+                                    targetText = "Ver Inventario";
+                                } else if (n.tipo === "password_reset" || msg.includes("contraseña")) {
+                                    targetPage = "pages/usuarios.html";
+                                    targetText = "Gestionar Usuarios";
+                                }
+
+                                notifContainer.innerHTML += `
+                                    <div class="notification-card">
+                                        <div class="notification-header">
+                                            <div>
+                                                <strong class="notification-title">${n.titulo}</strong>
+                                                <p class="notification-text">${n.mensaje || ''}</p>
+                                            </div>
+                                            <button onclick="marcarNotificacionLeida(${n.id_notificacion})" title="Marcar como leída" class="btn-small-muted btn-remove-icon" style="color: var(--success);">✓</button>
+                                        </div>
+                                        ${targetPage ? `
+                                            <button onclick="window.location.href='${targetPage}'" class="btn-outline btn-small" style="width:fit-content; border-color:var(--danger-light); color:var(--danger);">
+                                                ${targetText} →
+                                            </button>
+                                        ` : ''}
+                                    </div>`;
+                            });
+                        }
+                        console.log("Alertas cargadas para KPI:", pending.length);
+                    }
+                } else {
+                    console.error("Error al buscar notificaciones:", nRes.status);
                 }
-            }
-            if(document.getElementById('val-proyectos')) document.getElementById('val-proyectos').textContent = Array.isArray(projects) ? projects.length : 0;
-            if(document.getElementById('val-avance')) { 
-                const avg = (Array.isArray(projects) && projects.length) ? (projects.reduce((s,p)=>s+p.avance_general,0)/projects.length).toFixed(1) : 0; 
-                document.getElementById('val-avance').textContent = `${avg}%`; 
+            } catch (err) {
+                console.error("Excepción al cargar notificaciones:", err);
             }
         }
 
+        // 2. Sección para Líder / Operario (Tareas Pendientes, etc.)
         const valPen = document.getElementById('valMisTareasPendientes');
         if (valPen) {
             let myTasks = [];
-            if (payload.role === 3) {
-                const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
-                if (tRes.ok) myTasks = await tRes.json();
-                
-                // Poblar lista de tareas de hoy para el operario
-                const taskContainer = document.getElementById("operarioTodayTasks");
-                if (taskContainer && Array.isArray(myTasks)) {
-                    const todayTasks = myTasks.filter(t => t.estado !== 'finalizada');
-                    taskContainer.innerHTML = todayTasks.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No tienes tareas pendientes para hoy.</p>";
-                    todayTasks.forEach(t => {
-                        taskContainer.innerHTML += `<div class="project-item">
-                            <div><div class="project-title">${t.titulo}</div><div class="project-leader">${t.nombre_proyecto}</div></div>
-                            <button class="btn-small" onclick="window.location.href='pages/tareas.html?report_task_id=${t.id_tarea}'">Ver</button>
-                        </div>`;
-                    });
-                }
-            } else if (Array.isArray(projects)) {
-                for (const p of projects) {
-                    const tasksR = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/tareas`, { headers: getAuthHeaders() });
-                    if (tasksR.ok) {
-                        const pTasks = await tasksR.json();
-                        if (Array.isArray(pTasks)) myTasks = myTasks.concat(pTasks);
+            try {
+                if (payload.role === 3) {
+                    const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
+                    if (tRes.ok) {
+                        myTasks = await tRes.json();
+                    } else {
+                        console.error("Error al buscar mis tareas:", tRes.status);
+                    }
+                    
+                    // Poblar lista de tareas de hoy para el operario
+                    const taskContainer = document.getElementById("operarioTodayTasks");
+                    if (taskContainer && Array.isArray(myTasks)) {
+                        const todayTasks = myTasks.filter(t => t.estado !== 'finalizada');
+                        taskContainer.innerHTML = todayTasks.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No tienes tareas pendientes para hoy.</p>";
+                        todayTasks.forEach(t => {
+                            taskContainer.innerHTML += `<div class="project-item">
+                                <div>
+                                    <div class="project-title">${t.titulo}</div>
+                                    <div class="project-leader">${t.nombre_proyecto}</div>
+                                </div>
+                                <button class="btn-small" onclick="window.location.href='pages/tareas.html?report_task_id=${t.id_tarea}'">Ver</button>
+                            </div>`;
+                        });
+                    }
+                } else if (Array.isArray(projects)) {
+                    // Para líderes, obtenemos las tareas de cada proyecto activo
+                    for (const p of projects) {
+                        try {
+                            const tasksR = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/tareas`, { headers: getAuthHeaders() });
+                            if (tasksR.ok) {
+                                const pTasks = await tasksR.json();
+                                if (Array.isArray(pTasks)) {
+                                    myTasks = myTasks.concat(pTasks);
+                                }
+                            }
+                        } catch (err) {
+                            console.error(`Excepción al obtener tareas del proyecto ${p.id_proyecto}:`, err);
+                        }
                     }
                 }
+            } catch (err) {
+                console.error("Excepción al cargar tareas de rol:", err);
             }
             
             if (Array.isArray(myTasks)) {
-                if(document.getElementById('valMisTareasPendientes')) document.getElementById('valMisTareasPendientes').textContent = myTasks.filter(t => t.estado === 'pendiente').length;
-                if(document.getElementById('valMisTareasEnCurso')) document.getElementById('valMisTareasEnCurso').textContent = myTasks.filter(t => t.estado === 'en_progreso').length;
-                if(document.getElementById('valMisTareasFinalizadas')) document.getElementById('valMisTareasFinalizadas').textContent = myTasks.filter(t => t.estado === 'finalizada').length;
-                if(document.getElementById('valMisProyectosActivos')) document.getElementById('valMisProyectosActivos').textContent = Array.isArray(projects) ? projects.length : 0;
+                if (document.getElementById('valMisTareasPendientes')) {
+                    document.getElementById('valMisTareasPendientes').textContent = myTasks.filter(t => t.estado === 'pendiente').length;
+                }
+                if (document.getElementById('valMisTareasEnCurso')) {
+                    document.getElementById('valMisTareasEnCurso').textContent = myTasks.filter(t => t.estado === 'en_progreso').length;
+                }
+                if (document.getElementById('valMisTareasFinalizadas')) {
+                    document.getElementById('valMisTareasFinalizadas').textContent = myTasks.filter(t => t.estado === 'finalizada').length;
+                }
+                if (document.getElementById('valMisProyectosActivos')) {
+                    document.getElementById('valMisProyectosActivos').textContent = Array.isArray(projects) ? projects.length : 0;
+                }
             }
         }
 
-        const invRes = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
-        if (invRes.ok) {
-            const inventory = await invRes.json();
-            const valI = document.getElementById('val-inventario');
-            if (valI && Array.isArray(inventory)) { 
-                const low = inventory.some(i => i.stock_actual <= 5); 
-                valI.textContent = low ? "Bajo" : "Óptimo"; 
-                valI.style.color = low ? "#ef4444" : "#059669"; 
+        // 3. KPI: Materiales Críticos (val-inventario) - para Admin (o quien tenga el elemento val-inventario)
+        const valI = document.getElementById('val-inventario');
+        if (valI) {
+            try {
+                const invRes = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
+                if (invRes.ok) {
+                    const inventory = await invRes.json();
+                    if (Array.isArray(inventory)) {
+                        // Materiales críticos son aquellos donde stock_actual <= stock_minimo
+                        const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
+                        valI.textContent = lowCount;
+                        valI.style.color = lowCount > 0 ? "#ef4444" : "#059669";
+                        console.log("Materiales críticos cargados:", lowCount);
+                    }
+                } else {
+                    console.error("Error al buscar inventario:", invRes.status);
+                }
+            } catch (err) {
+                console.error("Excepción al cargar inventario:", err);
             }
         }
+
         setupKPIShortcuts();
-    } catch (e) { console.error("Dashboard:", e); }
+    } catch (e) {
+        console.error("Error crítico en cargarDashboardResumen:", e);
+    }
 }
 
 async function marcarNotificacionLeida(id) {
@@ -457,13 +591,104 @@ async function setupProfilePage() {
 }
 
 // --- EQUIPO ---
-async function setupEquipoPage() {
+async function setupEquipoPage(projectId = 'all') {
     const filters = document.querySelectorAll("#teamFilters .chip");
-    filters.forEach(chip => chip.onclick = () => { document.querySelectorAll("#teamFilters .chip").forEach(c => c.classList.remove("chip-active")); chip.classList.add("chip-active"); cargarEquipoPagina(chip.dataset.status); });
-    if (document.getElementById("teamInputSearch")) document.getElementById("teamInputSearch").oninput = (e) => cargarEquipoPagina(document.querySelector("#teamFilters .chip-active").dataset.status, e.target.value);
+    filters.forEach(chip => chip.onclick = () => { 
+        document.querySelectorAll("#teamFilters .chip").forEach(c => c.classList.remove("chip-active")); 
+        chip.classList.add("chip-active"); 
+        cargarEquipoPagina(chip.dataset.status, document.getElementById("teamInputSearch") ? document.getElementById("teamInputSearch").value : "", projectId); 
+    });
+    if (document.getElementById("teamInputSearch")) {
+        document.getElementById("teamInputSearch").oninput = (e) => {
+            const activeChip = document.querySelector("#teamFilters .chip-active");
+            cargarEquipoPagina(activeChip ? activeChip.dataset.status : 'all', e.target.value, projectId);
+        };
+    }
+
+    const btn = document.getElementById("btnManageTeam");
+    const payload = getPayload();
+    const isAdmin = payload && payload.role === 1;
+
+    if (btn) {
+        let isProjectActive = true;
+        if (projectId !== "all") {
+            try {
+                const pRes = await fetch(`${API_URL}/proyectos/${projectId}`, { headers: getAuthHeaders() });
+                if (pRes.ok) {
+                    const project = await pRes.json();
+                    isProjectActive = project.estado && project.estado.toLowerCase() !== "finalizado";
+                }
+            } catch (err) {
+                console.error("Error al validar estado del proyecto para botón de asignación:", err);
+            }
+        }
+        
+        if (isProjectActive && isAdmin && projectId !== "all") {
+            btn.style.display = "block";
+            btn.onclick = async () => { 
+                document.getElementById("teamModal").style.display = "block"; 
+                await cargarOperariosDisponibles(projectId); 
+            };
+        } else {
+            btn.style.display = "none";
+        }
+    }
+
+    if (document.getElementById("closeTeamModal")) {
+        document.getElementById("closeTeamModal").onclick = () => {
+            document.getElementById("teamModal").style.display = "none";
+        };
+    }
+
+    const form = document.getElementById("teamForm");
+    if (form) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const ids = Array.from(document.getElementById("availableOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
+            try {
+                const res = await fetch(`${API_URL}/proyectos/configurar-equipo`, { 
+                    method: 'POST', 
+                    headers: getAuthHeaders(), 
+                    body: JSON.stringify({ id_proyecto: parseInt(projectId), id_usuarios: ids }) 
+                });
+                if (res.ok) { 
+                    alert("Equipo actualizado correctamente."); 
+                    document.getElementById("teamModal").style.display = "none"; 
+                    cargarEquipoPagina('all', '', projectId);
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.detail || "No se pudo actualizar el equipo"));
+                }
+            } catch (err) {
+                console.error("Error al configurar equipo desde página de equipo:", err);
+                alert("Error de conexión");
+            }
+        };
+    }
+
+    if (projectId !== "all") {
+        try {
+            const pRes = await fetch(`${API_URL}/proyectos/${projectId}`, { headers: getAuthHeaders() });
+            if (pRes.ok) {
+                const project = await pRes.json();
+                const subtitle = document.getElementById("teamSummary");
+                if (subtitle) {
+                    subtitle.innerHTML = `Personal asignado al proyecto <strong>${project.nombre}</strong>.`;
+                }
+            }
+        } catch (err) {
+            console.error("Error al cargar nombre del proyecto para equipo:", err);
+        }
+    } else {
+        const subtitle = document.getElementById("teamSummary");
+        if (subtitle) {
+            subtitle.textContent = "Supervisa al personal y operarios del sistema.";
+        }
+    }
+    renderProjectSubNavigation('equipo');
 }
 
-async function cargarEquipoPagina(filterStatus = 'all', term = '') {
+async function cargarEquipoPagina(filterStatus = 'all', term = '', projectId = 'all') {
     const container = document.getElementById("teamListContainer");
     if (!container) return;
     try {
@@ -471,18 +696,37 @@ async function cargarEquipoPagina(filterStatus = 'all', term = '') {
         const payload = getPayload();
         if (!payload) return goToLogin();
         let members = [];
-        if (payload.role === 1) {
+        if (payload.role === 1 && projectId === 'all') {
             const res = await fetch(`${API_URL}/usuarios?id_rol_fk=3`, { headers: getAuthHeaders() });
-            members = await res.json();
+            if (res.ok) {
+                members = await res.json();
+            } else {
+                console.error("Error al cargar operarios:", res.status);
+                return;
+            }
         } else {
-            const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-            const projects = projRes.ok ? await projRes.json() : [];
+            const urlProj = projectId !== 'all' ? `${API_URL}/proyectos` : `${API_URL}/proyectos?estado=activo`;
+            const projRes = await fetch(urlProj, { headers: getAuthHeaders() });
+            let projects = projRes.ok ? await projRes.json() : [];
+            if (!Array.isArray(projects)) projects = [];
+            if (projectId !== 'all') {
+                projects = projects.filter(p => p.id_proyecto == projectId);
+            }
             const memberMap = new Map();
             for (const p of projects) {
                 const teamRes = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/estado-equipo`, { headers: getAuthHeaders() });
-                if (teamRes.ok) { (await teamRes.json()).forEach(m => memberMap.set(m.id_usuario, m)); }
+                if (teamRes.ok) { 
+                    const tData = await teamRes.json();
+                    if (Array.isArray(tData)) {
+                        tData.forEach(m => memberMap.set(m.id_usuario, m)); 
+                    }
+                }
             }
             members = Array.from(memberMap.values());
+        }
+        if (!Array.isArray(members)) {
+            console.error("Members no es un array:", members);
+            return;
         }
         if (filterStatus !== 'all') members = members.filter(m => (m.en_tarea ? 'ocupado' : 'disponible') === filterStatus);
         if (term) { const t = term.toLowerCase(); members = members.filter(m => m.nombre.toLowerCase().includes(t) || m.correo.toLowerCase().includes(t)); }
@@ -510,7 +754,7 @@ function setupProjectPage() {
     if (searchInput) {
         searchInput.oninput = (e) => {
             const activeChip = document.querySelector("#projectFilters .chip-active");
-            cargarProyectos(activeChip ? activeChip.dataset.status : 'all', e.target.value);
+            cargarProyectos(activeChip ? activeChip.dataset.status : 'activo', e.target.value);
         };
     }
 
@@ -561,12 +805,20 @@ function setupProjectPage() {
     });
 }
 
-async function cargarProyectos(status = 'all', search = '') {
+async function cargarProyectos(status = 'activo', search = '') {
     const container = document.getElementById("projectList");
     if(!container) return;
     try {
         const res = await fetch(`${API_URL}/proyectos`, { headers: getAuthHeaders() });
+        if (!res.ok) {
+            console.error("Error al cargar proyectos:", res.status);
+            return;
+        }
         let projects = await res.json();
+        if (!Array.isArray(projects)) {
+            console.error("Proyectos cargados no es un array:", projects);
+            return;
+        }
         
         if (status !== 'all') projects = projects.filter(p => p.estado.toLowerCase() === status.toLowerCase());
         
@@ -588,8 +840,17 @@ async function cargarProyectos(status = 'all', search = '') {
             
             // Un admin puede gestionar TODO. Un líder solo lo suyo (el backend ya filtra la lista para el líder).
             const canManage = isAdmin || isLider;
+
+            let leaderProjectLinks = '';
+            if (isLider) {
+                leaderProjectLinks = `
+                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); window.location.href='tareas.html?project_id=${p.id_proyecto}'" style="border-color: var(--primary); color: var(--primary);">Tareas</button>
+                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); window.location.href='equipo.html?project_id=${p.id_proyecto}'" style="border-color: var(--primary); color: var(--primary);">Equipo</button>
+                    <button class="btn-small btn-outline" onclick="event.stopPropagation(); window.location.href='materiales.html?project_id=${p.id_proyecto}'" style="border-color: var(--primary); color: var(--primary);">Inventario</button>
+                `;
+            }
             
-            container.innerHTML += `<div class="project-card"><div class="project-header"><div class="project-title"><strong>${p.nombre}</strong><span>${p.ciudad}</span></div><span class="status-tag ${isFin ? 'status-tag-finalizado':''}">${p.estado.toUpperCase()}</span></div><div class="progress-section"><div class="progress-header"><span>Avance General</span><span class="progress-percentage">${p.avance_general}%</span></div><div class="project-progress-bar"><div class="progress-fill" style="width:${p.avance_general}%"></div></div></div><div class="project-meta-grid"><div class="meta-item"><span class="label">Presupuesto</span><span class="value">$${p.presupuesto.toLocaleString()}</span></div><div class="meta-item"><span class="label">Líder</span><span class="value">${p.lider ? p.lider.nombre : 'S/A'}</span></div></div><div class="task-actions" style="margin-top:10px;">${canManage && !isFin ? `<button class="btn-danger btn-small" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'finalizado')">Finalizar Proyecto</button>` : ''}${canManage && isFin ? `<button class="btn-success btn-small" onclick="cambiarEstadoProyecto(${p.id_proyecto}, 'activo')">Reactivar Proyecto</button>` : ''}<button class="btn-small-muted" onclick="window.location.href='detalles_proyecto.html?id=${p.id_proyecto}'">Ver Detalles</button></div></div>`;
+            container.innerHTML += `<div class="project-card clickable-card" onclick="window.location.href='detalles_proyecto.html?id=${p.id_proyecto}'"><div class="project-header"><div class="project-title"><strong>${p.nombre}</strong><span>${p.ciudad}</span></div><span class="status-tag ${isFin ? 'status-tag-finalizado':''}">${p.estado.toUpperCase()}</span></div><div class="progress-section"><div class="progress-header"><span>Avance General</span><span class="progress-percentage">${p.avance_general}%</span></div><div class="project-progress-bar"><div class="progress-fill" style="width:${p.avance_general}%"></div></div></div><div class="project-meta-grid"><div class="meta-item"><span class="label">Presupuesto</span><span class="value">$${p.presupuesto.toLocaleString()}</span></div><div class="meta-item"><span class="label">Líder</span><span class="value">${p.lider ? p.lider.nombre : 'S/A'}</span></div></div><div class="task-actions" style="margin-top:10px; display: flex; flex-wrap: wrap; gap: 8px;">${canManage && !isFin ? `<button class="btn-danger btn-small" onclick="event.stopPropagation(); cambiarEstadoProyecto(${p.id_proyecto}, 'finalizado')">Finalizar</button>` : ''}${canManage && isFin ? `<button class="btn-success btn-small" onclick="event.stopPropagation(); cambiarEstadoProyecto(${p.id_proyecto}, 'activo')">Reactivar</button>` : ''}${leaderProjectLinks}</div></div>`;
         });
     } catch (e) { console.error("Error cargando proyectos:", e); }
 }
@@ -644,19 +905,58 @@ async function setupTasksPage() {
         projectWrapper.style.display = "none";
     }
 
-    cargarSelectProyectosTareas(projectFilter, true);
-    const tasks = await cargarTareas();
+    await cargarSelectProyectosTareas(projectFilter, true);
+    
+    const params = new URLSearchParams(window.location.search);
+    const urlProjectId = params.get("project_id") || "all";
+    
+    if (urlProjectId !== "all") {
+        if (projectFilter) {
+            projectFilter.value = urlProjectId;
+        }
+        if (projectWrapper) {
+            projectWrapper.style.display = "none";
+        }
+        
+        // Cargar el nombre del proyecto seleccionado para mostrarlo en el encabezado
+        try {
+            const pRes = await fetch(`${API_URL}/proyectos/${urlProjectId}`, { headers: getAuthHeaders() });
+            if (pRes.ok) {
+                const project = await pRes.json();
+                const subtitle = document.querySelector(".content-title p");
+                if (subtitle) {
+                    subtitle.innerHTML = `Tareas asignadas al proyecto <strong>${project.nombre}</strong>.`;
+                }
+                if (project.estado && project.estado.toLowerCase() === "finalizado") {
+                    const btnNewTask = document.getElementById("btnNewTask");
+                    if (btnNewTask) btnNewTask.style.display = "none";
+                }
+            }
+        } catch (err) {
+            console.error("Error al cargar nombre del proyecto:", err);
+        }
+    }
+
+    const tasks = await cargarTareas('active', '', urlProjectId);
     
     // Abrir modal automáticamente si viene de un link de "Ver" del dashboard
-    const params = new URLSearchParams(window.location.search);
     const reportTaskId = params.get("report_task_id");
     if (reportTaskId && tasks.length) {
         const task = tasks.find(t => t.id_tarea == reportTaskId);
         if (task) abrirModalReporte(task.id_tarea, task.titulo, task.avance, task.id_proyecto_fk);
     }
 
-    if (projectFilter) projectFilter.onchange = () => cargarTareas(document.querySelector("#taskFilters .chip-active").dataset.status, "", projectFilter.value);
-    document.querySelectorAll("#taskFilters .chip").forEach(chip => chip.onclick = () => { document.querySelectorAll("#taskFilters .chip").forEach(c => c.classList.remove("chip-active")); chip.classList.add("chip-active"); cargarTareas(chip.dataset.status, "", projectFilter.value); });
+    if (projectFilter) {
+        projectFilter.onchange = () => cargarTareas(document.querySelector("#taskFilters .chip-active").dataset.status, "", projectFilter.value);
+    }
+    
+    document.querySelectorAll("#taskFilters .chip").forEach(chip => {
+        chip.onclick = () => { 
+            document.querySelectorAll("#taskFilters .chip").forEach(c => c.classList.remove("chip-active")); 
+            chip.classList.add("chip-active"); 
+            cargarTareas(chip.dataset.status, "", projectFilter ? projectFilter.value : "all"); 
+        };
+    });
     
     if (document.getElementById("btnNewTask")) { document.getElementById("btnNewTask").onclick = async () => { document.getElementById("newTaskModal").style.display = "block"; await cargarSelectProyectosTareas(document.getElementById("task_project_id"), false); }; }
     if (document.getElementById("closeNewTaskModal")) document.getElementById("closeNewTaskModal").onclick = () => document.getElementById("newTaskModal").style.display = "none";
@@ -675,12 +975,13 @@ async function setupTasksPage() {
             div.innerHTML = `
                 <select class="mat-id input-borderless" style="flex-grow: 1;">
                     <option value="">¿Qué material?</option>
-                    ${modalProjectMaterials.map(m => `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`).join('')}
                 </select>
                 <input type="number" class="mat-qty input-borderless" placeholder="Cant." style="width: 50px; text-align: center;" min="1">
-                <button type="button" class="btn-remove-icon" onclick="this.parentElement.remove()">✕</button>
+                <button type="button" class="btn-remove-icon" onclick="this.parentElement.remove(); actualizarOpcionesMateriales();">✕</button>
             `;
+            div.querySelector(".mat-id").onchange = () => actualizarOpcionesMateriales();
             materialsList.appendChild(div);
+            actualizarOpcionesMateriales();
         };
     }
 
@@ -727,6 +1028,47 @@ async function setupTasksPage() {
             else { const err = await res.json(); alert(err.detail || "Error al enviar"); }
         };
     }
+
+    if (document.getElementById("closeReassignModal")) {
+        document.getElementById("closeReassignModal").onclick = () => {
+            document.getElementById("reassignModal").style.display = "none";
+        };
+    }
+    const reassignForm = document.getElementById("reassignForm");
+    if (reassignForm) {
+        reassignForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const taskId = document.getElementById("reassign_task_id").value;
+            const projectId = document.getElementById("reassign_project_id").value;
+            const selectedCheckbox = Array.from(document.getElementById("reassignOperatorsList").querySelectorAll('input:checked'));
+            const ops = selectedCheckbox.map(cb => parseInt(cb.value));
+
+            if (!ops.length) return alert("Por favor selecciona al menos un operario.");
+
+            try {
+                const res = await fetch(`${API_URL}/tareas/${taskId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ id_operarios: ops })
+                });
+
+                if (res.ok) {
+                    alert("Operarios reasignados con éxito.");
+                    document.getElementById("reassignModal").style.display = "none";
+                    reassignForm.reset();
+                    cargarTareas(document.querySelector("#taskFilters .chip-active").dataset.status, "", projectFilter ? projectFilter.value : "all");
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.detail || "No se pudo reasignar operarios"));
+                }
+            } catch (err) {
+                console.error("Error de conexión al reasignar:", err);
+                alert("Error de conexión");
+            }
+        };
+    }
+
+    renderProjectSubNavigation('tareas');
 }
 
 async function cargarSelectProyectosTareas(selectEl, isFilter = true) {
@@ -750,7 +1092,7 @@ async function cargarOperariosPorProyecto(projectId) {
     } catch (e) { console.error(e); }
 }
 
-async function cargarTareas(status = 'all', search = '', projectId = 'all') {
+async function cargarTareas(status = 'active', search = '', projectId = 'all') {
     const container = document.getElementById("tasksList");
     if(!container) return [];
     try {
@@ -760,24 +1102,42 @@ async function cargarTareas(status = 'all', search = '', projectId = 'all') {
         let tasks = [];
         if (payload.role === 3) {
             const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
-            if (tRes.ok) tasks = await tRes.json();
+            if (tRes.ok) {
+                const fetchedTasks = await tRes.json();
+                if (Array.isArray(fetchedTasks)) tasks = fetchedTasks;
+            }
         } else {
-            const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
+            const urlProj = projectId !== 'all' ? `${API_URL}/proyectos` : `${API_URL}/proyectos?estado=activo`;
+            const projRes = await fetch(urlProj, { headers: getAuthHeaders() });
             if (projRes.ok) {
                 let projects = await projRes.json();
-                if (projectId !== 'all') projects = projects.filter(p => p.id_proyecto == projectId);
-                for (const p of projects) {
-                    const tRes = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/tareas`, { headers: getAuthHeaders() });
-                    if (tRes.ok) {
-                        const pTasks = await tRes.json();
-                        pTasks.forEach(t => { t.nombre_proyecto = p.nombre; t.id_proyecto_fk = p.id_proyecto; });
-                        tasks = tasks.concat(pTasks);
+                if (Array.isArray(projects)) {
+                    if (projectId !== 'all') projects = projects.filter(p => p.id_proyecto == projectId);
+                    for (const p of projects) {
+                        const tRes = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/tareas`, { headers: getAuthHeaders() });
+                        if (tRes.ok) {
+                            const pTasks = await tRes.json();
+                            if (Array.isArray(pTasks)) {
+                                pTasks.forEach(t => { 
+                                    t.nombre_proyecto = p.nombre; 
+                                    t.id_proyecto_fk = p.id_proyecto; 
+                                    t.proyecto_estado = p.estado;
+                                });
+                                tasks = tasks.concat(pTasks);
+                            }
+                        }
                     }
                 }
             }
         }
 
-        if (status !== 'all') tasks = tasks.filter(t => t.estado === status);
+        if (!Array.isArray(tasks)) tasks = [];
+
+        if (status === 'active') {
+            tasks = tasks.filter(t => t.estado !== 'finalizada');
+        } else if (status !== 'all') {
+            tasks = tasks.filter(t => t.estado === status);
+        }
         
         // Actualizar KPIs de la página de tareas
         if (document.getElementById("valTareasPendientes")) document.getElementById("valTareasPendientes").textContent = tasks.filter(t => t.estado === 'pendiente').length;
@@ -787,16 +1147,18 @@ async function cargarTareas(status = 'all', search = '', projectId = 'all') {
         container.innerHTML = tasks.length ? "" : "<p style='padding:40px; text-align:center;'>Sin tareas.</p>";
         tasks.forEach(t => {
             const sClass = t.estado === 'pendiente' ? 'status-pendiente' : (t.estado === 'en_progreso' ? 'status-en-curso' : 'status-completada');
-            const isAdminOrLider = payload.role === 1 || payload.role === 2;
+            const isLider = payload.role === 2;
+            const isProjActive = t.proyecto_estado ? t.proyecto_estado.toLowerCase() !== 'finalizado' : true;
             container.innerHTML += `<div class="task-card">
                 <div class="task-header"><strong>${t.nombre_proyecto || 'S/P'}</strong><span class="status-pill-task ${sClass}">${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</span></div>
                 <div class="task-title">${t.titulo}</div>
-                <div class="task-meta"><span>Avance: ${t.avance}% | Prioridad: ${t.prioridad}</span><span>Equipo: ${t.operarios_nombres ? t.operarios_nombres.join(", ") : 'Asignado'}</span></div>
+                <div class="task-meta"><span>Avance: ${t.avance}% | Prioridad: ${t.prioridad}</span><span>Equipo: ${t.operarios_nombres && t.operarios_nombres.length ? t.operarios_nombres.join(", ") : 'Sin asignar'}</span></div>
                 <div class="task-actions">
-                    ${payload.role === 3 && t.estado !== 'finalizada' ? `<button class="btn-primary btn-small" onclick="abrirModalReporte(${t.id_tarea}, '${t.titulo}', ${t.avance}, ${t.id_proyecto_fk})">Reportar</button>` : ''}
+                    ${payload.role === 3 && t.estado !== 'finalizada' && isProjActive ? `<button class="btn-primary btn-small" onclick="abrirModalReporte(${t.id_tarea}, '${t.titulo.replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${t.avance}, ${t.id_proyecto_fk})">Reportar</button>` : ''}
                     <button class="btn-small-muted" onclick="abrirModalDetalleTask(${t.id_tarea})">Historial</button>
-                    ${isAdminOrLider && t.estado !== 'finalizada' ? `<button class="btn-success btn-small" onclick="finalizarTarea(${t.id_tarea})">Finalizar Tarea</button>` : ''}
-                    ${isAdminOrLider && t.estado === 'finalizada' ? `<button class="btn-success btn-small" onclick="reactivarTarea(${t.id_tarea})">Reactivar</button>` : ''}
+                    ${isLider && t.estado !== 'finalizada' && isProjActive && (!t.operarios_nombres || t.operarios_nombres.length === 0) ? `<button class="btn-primary btn-small" onclick="abrirModalReasignarOperario(${t.id_tarea}, ${t.id_proyecto_fk})">Reasignar Operario</button>` : ''}
+                    ${isLider && t.estado !== 'finalizada' && isProjActive ? `<button class="btn-success btn-small" onclick="finalizarTarea(${t.id_tarea})">Finalizar Tarea</button>` : ''}
+                    ${isLider && t.estado === 'finalizada' && isProjActive ? `<button class="btn-success btn-small" onclick="reactivarTarea(${t.id_tarea})">Reactivar</button>` : ''}
                 </div></div>`;
                 });
                 return tasks;
@@ -828,13 +1190,21 @@ async function abrirModalDetalleTask(id) {
             : '<span style="font-size:0.8rem; color:var(--muted);">Sin materiales</span>';
 
         // Historial de reportes
+        const user = await ensureLoggedInUser();
+        const userId = user ? user.id_usuario : null;
+
         const histCont = document.getElementById("detail_reports_history");
         histCont.innerHTML = t.historial_reportes.length
-            ? t.historial_reportes.map(r => `
+            ? t.historial_reportes.map(r => {
+                const canDelete = userId && r.id_operario_fk === userId;
+                return `
                 <div class="report-item">
-                    <div class="report-item-header">
-                        <strong class="report-date">${new Date(r.fecha_reporte).toLocaleDateString()} ${new Date(r.fecha_reporte).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
-                        <span class="report-percentage">Avance: ${r.porcentaje}%</span>
+                    <div class="report-item-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
+                        <div>
+                            <strong class="report-date">${new Date(r.fecha_reporte).toLocaleDateString()} ${new Date(r.fecha_reporte).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
+                            <span class="report-percentage">Avance: ${r.porcentaje}%</span>
+                        </div>
+                        ${canDelete ? `<button class="btn-danger btn-small" style="padding: 2px 6px; font-size: 0.75rem; width: auto; height: auto; border-radius: 4px;" onclick="eliminarReporteAvance(${r.id_reporte}, ${id})">Eliminar</button>` : ''}
                     </div>
                     <p class="notification-text" style="margin-bottom:5px;">${r.observaciones || 'Sin observaciones'}</p>
                     <div style="font-size:0.75rem; color:var(--muted);">
@@ -842,13 +1212,38 @@ async function abrirModalDetalleTask(id) {
                         ${r.materiales_detalles.length ? ` | <span style="color:var(--text);">Materiales: ${r.materiales_detalles.map(md => `${md.nombre_material} (${md.cantidad_usada})`).join(', ')}</span>` : ''}
                     </div>
                 </div>
-            `).join('')
+                `;
+            }).join('')
             : "<p style='text-align:center; color:var(--muted); padding:20px;'>No hay reportes registrados.</p>";
 
         document.getElementById("taskDetailModal").style.display = "block";
     } catch (e) {
         console.error(e);
         alert("No se pudo cargar el historial de la tarea.");
+    }
+}
+
+async function eliminarReporteAvance(idReporte, idTarea) {
+    if (confirm("¿Está seguro de que desea eliminar este reporte de avance? El stock de materiales utilizados será restablecido y el progreso de la tarea será recalculado.")) {
+        try {
+            const res = await fetch(`${API_URL}/reportes/${idReporte}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                alert("Reporte de avance eliminado exitosamente.");
+                await abrirModalDetalleTask(idTarea);
+                if (typeof cargarTareas === 'function') {
+                    cargarTareas();
+                }
+            } else {
+                const err = await res.json();
+                alert("Error: " + (err.detail || "No se pudo eliminar el reporte"));
+            }
+        } catch (e) {
+            console.error("Error al eliminar reporte:", e);
+            alert("Error de conexión");
+        }
     }
 }
 
@@ -884,6 +1279,29 @@ async function abrirModalReporte(id, titulo, actual, projectId) {
     document.getElementById("reportModal").style.display = "block";
 }
 
+function actualizarOpcionesMateriales() {
+    const rows = document.querySelectorAll(".mat-item");
+    const selectedIds = Array.from(rows)
+        .map(row => row.querySelector(".mat-id").value)
+        .filter(id => id !== "");
+
+    rows.forEach(row => {
+        const select = row.querySelector(".mat-id");
+        const currentValue = select.value;
+
+        let optionsHtml = `<option value="">¿Qué material?</option>`;
+        modalProjectMaterials.forEach(m => {
+            const isSelectedElsewhere = selectedIds.includes(m.id_material_fk.toString()) && m.id_material_fk.toString() !== currentValue;
+            if (!isSelectedElsewhere) {
+                optionsHtml += `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`;
+            }
+        });
+
+        select.innerHTML = optionsHtml;
+        select.value = currentValue;
+    });
+}
+
 // --- DETALLES ---
 // --- DETALLES ---
 async function setupProjectDetailPage() {
@@ -917,12 +1335,12 @@ async function setupProjectDetailPage() {
             } catch (err) { alert("Error de conexión"); }
         };
     }
-    document.querySelectorAll(".tab").forEach(tab => tab.onclick = () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById(tab.dataset.tab).classList.add("active");
-    });
+    const btnPDF = document.getElementById("btnGenerarPDF");
+    if (btnPDF) {
+        btnPDF.onclick = () => exportarProyectoPDF(id);
+    }
+    
+    renderProjectSubNavigation('detalles');
 
     await refrescarDetallesProyecto(id);
 }
@@ -937,14 +1355,131 @@ async function refrescarDetallesProyecto(id) {
             document.getElementById("detAvance").textContent = `${p.avance_general}%`;
             document.getElementById("detLider").textContent = p.lider ? `${p.lider.nombre} ${p.lider.apellido}` : 'No asignado';
             document.getElementById("detPresupuesto").textContent = `$${p.presupuesto.toLocaleString()}`;
-            await cargarTareasProyecto(id);
-            await cargarEquipoProyecto(id);
+            const isProjectActive = p.estado.toLowerCase() !== 'finalizado';
+            
+            // Ocultar botón de asignación de equipo si el proyecto está finalizado o el usuario no es Admin
+            const payload = getPayload();
+            const isAdmin = payload && payload.role === 1;
+            const btnManageTeam = document.getElementById("btnManageTeam");
+            if (btnManageTeam) {
+                btnManageTeam.style.display = (isProjectActive && isAdmin) ? "block" : "none";
+            }
+
+            await cargarTareasProyecto(id, isProjectActive);
+            await cargarEquipoProyecto(id, isProjectActive);
             await cargarInventarioProyecto(id);
+
+            // Generar botón de Finalizar/Reactivar Proyecto si es Admin o Líder
+            if (payload && (payload.role === 1 || payload.role === 2)) {
+                // Eliminar botón previo si existe
+                const existingBtn = document.getElementById("btnToggleProjectState");
+                if (existingBtn) existingBtn.remove();
+
+                const actionsContainer = document.getElementById("projectDetailActions");
+                if (actionsContainer) {
+                    const toggleBtn = document.createElement("button");
+                    toggleBtn.id = "btnToggleProjectState";
+                    
+                    const isFinished = p.estado.toLowerCase() === 'finalizado';
+                    if (isFinished) {
+                        toggleBtn.className = "btn-success";
+                        toggleBtn.textContent = "Reactivar Proyecto";
+                        toggleBtn.onclick = () => abrirModalConfirmacionEstado(p.id_proyecto, p.nombre, 'activo');
+                    } else {
+                        toggleBtn.className = "btn-danger";
+                        toggleBtn.textContent = "Finalizar Proyecto";
+                        toggleBtn.onclick = () => abrirModalConfirmacionEstado(p.id_proyecto, p.nombre, 'finalizado');
+                    }
+                    toggleBtn.style.height = "41px";
+                    toggleBtn.style.display = "inline-flex";
+                    toggleBtn.style.alignItems = "center";
+                    toggleBtn.style.gap = "6px";
+                    actionsContainer.appendChild(toggleBtn);
+                }
+            }
         }
     } catch (e) { console.error(e); }
 }
 
-async function cargarTareasProyecto(id) {
+function abrirModalConfirmacionEstado(id, nombre, nuevoEstado) {
+    const modal = document.getElementById("confirmStateModal");
+    if (!modal) return;
+
+    const titleEl = document.getElementById("confirmModalTitle");
+    const msgEl = document.getElementById("confirmModalMessage");
+    const checkEl = document.getElementById("confirmDoubleCheck");
+    const btnExecute = document.getElementById("btnExecuteConfirm");
+    const btnCancel = document.getElementById("btnCancelConfirm");
+    const btnClose = document.getElementById("closeConfirmModal");
+
+    // Limpiar estado previo
+    checkEl.checked = false;
+    btnExecute.disabled = true;
+
+    // Configurar textos dinámicos
+    if (nuevoEstado === 'finalizado') {
+        titleEl.textContent = "Finalizar Proyecto";
+        msgEl.innerHTML = `¿Está seguro de que desea <strong>FINALIZAR</strong> el proyecto <strong>"${nombre}"</strong>?<br><br>Esto marcará el proyecto como completado y limitará las tareas activas.`;
+        btnExecute.className = "btn-danger";
+        btnExecute.textContent = "Confirmar Finalización";
+    } else {
+        titleEl.textContent = "Reactivar Proyecto";
+        msgEl.innerHTML = `¿Está seguro de que desea <strong>REACTIVAR</strong> el proyecto <strong>"${nombre}"</strong>?<br><br>El proyecto volverá a estar en estado activo y se podrán gestionar tareas.`;
+        btnExecute.className = "btn-success";
+        btnExecute.textContent = "Confirmar Reactivación";
+    }
+
+    // Doble validación: habilitar el botón solo al marcar el checkbox
+    checkEl.onchange = () => {
+        btnExecute.disabled = !checkEl.checked;
+    };
+
+    // Funciones de cierre
+    const cerrar = () => {
+        modal.style.display = "none";
+    };
+
+    btnCancel.onclick = cerrar;
+    btnClose.onclick = cerrar;
+    
+    // Ejecutar acción al confirmar
+    btnExecute.onclick = async () => {
+        try {
+            let url = `${API_URL}/proyectos/${id}`;
+            let method = 'PUT';
+            let body = JSON.stringify({ estado: nuevoEstado });
+
+            if (nuevoEstado === 'finalizado') {
+                url = `${API_URL}/proyectos/${id}/finalizar`;
+                method = 'POST';
+                body = null;
+            }
+
+            const res = await fetch(url, {
+                method: method,
+                headers: getAuthHeaders(),
+                body: body
+            });
+
+            if (res.ok) {
+                alert(`Proyecto marcado como ${nuevoEstado.toUpperCase()} exitosamente.`);
+                cerrar();
+                // Recargar detalles
+                refrescarDetallesProyecto(id);
+            } else {
+                const err = await res.json();
+                alert("Error: " + (err.detail || "No se pudo cambiar el estado del proyecto"));
+            }
+        } catch (err) {
+            console.error("Error al cambiar estado de proyecto:", err);
+            alert("Error de conexión al servidor.");
+        }
+    };
+
+    modal.style.display = "block";
+}
+
+async function cargarTareasProyecto(id, isProjectActive = true) {
     const tCont = document.getElementById("listadoTareas");
     if (!tCont) return;
     try {
@@ -952,28 +1487,25 @@ async function cargarTareasProyecto(id) {
         const tasks = await res.json();
         const payload = getPayload();
         if (!payload) return goToLogin();
-        const isAdminOrLider = payload.role === 1 || payload.role === 2;
         tCont.innerHTML = tasks.length ? "" : "<p>No hay tareas.</p>";
         tasks.forEach(t => {
-            const isFin = t.estado === 'finalizada';
             const operarios = t.operarios_nombres && t.operarios_nombres.length ? t.operarios_nombres.join(', ') : 'Sin asignar';
             const avance = t.avance !== undefined ? t.avance : 0;
-            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row"><span class="badge-inline">${t.prioridad.toUpperCase()}</span>${isAdminOrLider && !isFin ? `<button class="btn-success btn-small" onclick="finalizarTarea(${t.id_tarea})">Finalizar</button>` : ''}${isAdminOrLider && isFin ? `<button class="btn-small-muted" onclick="reactivarTarea(${t.id_tarea})">Reabrir</button>` : ''}</div></div>`;
+            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row"><span class="badge-inline">${t.prioridad.toUpperCase()}</span></div></div>`;
         });
     } catch (e) { console.error(e); }
 }
 
-async function cargarEquipoProyecto(id) {
+async function cargarEquipoProyecto(id, isProjectActive = true) {
     const eCont = document.getElementById("listadoEquipo");
     if (!eCont) return;
     try {
         const res = await fetch(`${API_URL}/proyectos/${id}/estado-equipo`, { headers: getAuthHeaders() });
         const team = await res.json();
-        const isAdmin = document.body.classList.contains('role-admin');
         eCont.innerHTML = team.length ? "" : "<p>Sin personal.</p>";
         team.forEach(e => {
             const tareasText = e.tareas_activas && e.tareas_activas.length ? `En: ${e.tareas_activas.join(", ")}` : 'Disponible';
-            eCont.innerHTML += `<div class="list-item"><div><strong>${e.nombre} ${e.apellido}</strong><br><small class="${e.en_tarea ? 'badge-status-inactive' : 'badge-status-active'}">${tareasText}</small></div>${isAdmin ? `<button class="btn-danger btn-small" onclick="desvincularOperario(${id}, ${e.id_usuario})">Sacar</button>` : ''}</div>`;
+            eCont.innerHTML += `<div class="list-item"><div><strong>${e.nombre} ${e.apellido}</strong><br><small class="${e.en_tarea ? 'badge-status-inactive' : 'badge-status-active'}">${tareasText}</small></div></div>`;
         });
     } catch (e) { console.error(e); }
 }
@@ -1045,11 +1577,37 @@ async function cargarOperariosDisponibles(currentProjectId) {
 
 // --- MATERIALES (LÍDER / OPERARIO) ---
 async function setupMaterialesPage() {
-    cargarMaterialesProyectos();
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get("project_id") || "all";
+    
+    cargarMaterialesProyectos(pid);
+
+    if (pid !== "all") {
+        try {
+            const pRes = await fetch(`${API_URL}/proyectos/${pid}`, { headers: getAuthHeaders() });
+            if (pRes.ok) {
+                const project = await pRes.json();
+                const subtitle = document.querySelector(".content-title p");
+                if (subtitle) {
+                    subtitle.innerHTML = `Inventario y existencias en obra para el proyecto <strong>${project.nombre}</strong>.`;
+                }
+                if (project.estado && project.estado.toLowerCase() === "finalizado") {
+                    const btnRequestGlobal = document.getElementById("btnRequestGlobal");
+                    if (btnRequestGlobal) btnRequestGlobal.style.display = "none";
+                }
+            }
+        } catch (err) {
+            console.error("Error al cargar nombre del proyecto para materiales:", err);
+        }
+    } else {
+        const subtitle = document.querySelector(".content-title p");
+        if (subtitle) {
+            subtitle.textContent = "Existencias disponibles en los proyectos asignados.";
+        }
+    }
+
     if (document.getElementById("btnRequestGlobal")) document.getElementById("btnRequestGlobal").onclick = async () => { document.getElementById("transferModal").style.display = "block"; await cargarSelectsTransferencia(); };
-    if (document.getElementById("btnRequestTask")) document.getElementById("btnRequestTask").onclick = async () => { document.getElementById("taskRequestModal").style.display = "block"; await cargarSelectsPedidoTarea(); };
     if (document.getElementById("closeTransferModal")) document.getElementById("closeTransferModal").onclick = () => document.getElementById("transferModal").style.display = "none";
-    if (document.getElementById("closeTaskRequestModal")) document.getElementById("closeTaskRequestModal").onclick = () => document.getElementById("taskRequestModal").style.display = "none";
     const transForm = document.getElementById("transferForm");
     if (transForm) {
         transForm.onsubmit = async (e) => {
@@ -1064,7 +1622,7 @@ async function setupMaterialesPage() {
                     method: 'POST', 
                     headers: getAuthHeaders(), 
                     body: JSON.stringify({ 
-                        id_proyecto: parseInt(data.id_proyecto), 
+                        id_proyecto: parseInt(pid !== "all" ? pid : data.id_proyecto), 
                         id_material: parseInt(data.id_material), 
                         cantidad: parseInt(data.cantidad) 
                     }) 
@@ -1082,7 +1640,7 @@ async function setupMaterialesPage() {
                 if (res.ok) { 
                     alert("Solicitud procesada: " + responseData.message); 
                     document.getElementById("transferModal").style.display = "none"; 
-                    cargarMaterialesProyectos(); 
+                    cargarMaterialesProyectos(pid); 
                     transForm.reset();
                 } else { 
                     alert(responseData.detail || "Error en la solicitud"); 
@@ -1096,19 +1654,14 @@ async function setupMaterialesPage() {
             }
         };
     }
-    const taskReqForm = document.getElementById("taskRequestForm");
-    if (taskReqForm) {
-        taskReqForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(taskReqForm));
-            const res = await fetch(`${API_URL}/reportes`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ id_tarea_fk: parseInt(data.id_tarea), porcentaje: 0, horas_trabajadas: 0, observaciones: `Solicitud material`, materiales_usados: [{ id_material: parseInt(data.id_material), cantidad: parseInt(data.cantidad) }] }) });
-            if (res.ok) { alert("Solicitado"); document.getElementById("taskRequestModal").style.display = "none"; cargarMaterialesProyectos(); }
-            else { const err = await res.json(); alert(err.detail); }
-        };
-    }
+
+    renderProjectSubNavigation('inventario');
 }
 
 async function cargarSelectsTransferencia() {
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get("project_id") || "all";
+
     const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
     const invRes = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
     const projects = await projRes.json();
@@ -1117,8 +1670,19 @@ async function cargarSelectsTransferencia() {
     const projectSelect = document.getElementById("trans_project");
     const materialSelect = document.getElementById("trans_material");
     const stockSpan = document.getElementById("valGlobalStock");
+    const projectGroup = document.getElementById("trans_project_group");
 
-    if (projectSelect) projectSelect.innerHTML = '<option value="">Selecciona proyecto</option>' + projects.map(p => `<option value="${p.id_proyecto}">${p.nombre}</option>`).join('');
+    if (projectSelect) {
+        projectSelect.innerHTML = '<option value="">Selecciona proyecto</option>' + projects.map(p => `<option value="${p.id_proyecto}">${p.nombre}</option>`).join('');
+        if (pid !== "all") {
+            projectSelect.value = pid;
+            projectSelect.removeAttribute("required");
+            if (projectGroup) projectGroup.style.display = "none";
+        } else {
+            projectSelect.setAttribute("required", "required");
+            if (projectGroup) projectGroup.style.display = "block";
+        }
+    }
     
     if (materialSelect) {
         materialSelect.innerHTML = '<option value="">Selecciona un material...</option>' + 
@@ -1131,29 +1695,19 @@ async function cargarSelectsTransferencia() {
     }
 }
 
-async function cargarSelectsPedidoTarea() {
-    const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
-    const tasks = await tRes.json();
-    document.getElementById("req_task").innerHTML = '<option value="">Selecciona tarea</option>' + tasks.filter(t=>t.estado!=='finalizada').map(t=>`<option value="${t.id_tarea}">${t.titulo}</option>`).join('');
-    document.getElementById("req_task").onchange = async (e) => {
-        const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-        const projects = await projRes.json();
-        let matHtml = '<option value="">Selecciona material</option>';
-        for(const p of projects) {
-            const mRes = await fetch(`${API_URL}/inventario/proyecto/${p.id_proyecto}`, { headers: getAuthHeaders() });
-            (await mRes.json()).forEach(m => matHtml += `<option value="${m.id_material_fk}">${m.nombre_material} (En obra: ${m.stock_actual})</option>`);
-        }
-        document.getElementById("req_material").innerHTML = matHtml;
-    };
-}
 
-async function cargarMaterialesProyectos() {
+
+async function cargarMaterialesProyectos(projectId = 'all') {
     const container = document.getElementById("projectMaterialsContainer");
     if(!container) return;
     try {
         const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
         if (!projRes.ok) throw new Error("Error cargando proyectos");
-        const projects = await projRes.json();
+        let projects = await projRes.json();
+        
+        if (projectId !== 'all') {
+            projects = projects.filter(p => p.id_proyecto == projectId);
+        }
         
         if (projects.length === 0) {
             container.innerHTML = "<p style='text-align: center; padding: 40px; color: var(--muted);'>No hay proyectos activos asignados.</p>";
@@ -1203,8 +1757,9 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
                     <span class="stock-value ${low ? 'badge-status-inactive' : 'badge-status-active'}">${i.stock_actual}</span>
                     <span class="stock-unit">${i.unidad_medida}</span>
                 </div>
-                <div class="flex-row" style="grid-column: 1 / 3; margin-top:10px;">
-                    <button class="btn-small-muted role-admin-only" onclick="ajustarStock(${i.id_material_fk}, ${i.stock_actual})">Ajustar</button>
+                <div class="flex-row" style="grid-column: 1 / 3; margin-top:10px; gap:8px;">
+                    <button class="btn-success btn-small role-admin-only" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'subir', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">+ Agregar</button>
+                    <button class="btn-danger btn-small role-admin-only" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'bajar', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">- Restar</button>
                 </div>
             </div>`;
         });
@@ -1286,28 +1841,30 @@ async function setupInventoryPage() {
 
 
 async function setupUserPage() {
-    console.log("setupUserPage: Inicializando filtros de roles...");
+    console.log("setupUserPage: Inicializando filtros...");
     const roleChips = document.querySelectorAll("#roleFilters .chip");
-    if (roleChips.length === 0) {
-        console.warn("setupUserPage: No se encontraron chips con selector #roleFilters .chip");
-    }
+    const availabilityChips = document.querySelectorAll("#availabilityFilters .chip");
+
     roleChips.forEach(chip => {
         chip.addEventListener('click', () => {
-            console.log("Filtro clickeado:", chip.dataset.role);
             roleChips.forEach(c => c.classList.remove("chip-active"));
             chip.classList.add("chip-active");
-            const role = chip.getAttribute('data-role') || 'all';
-            const term = document.getElementById("userInputSearch") ? document.getElementById("userInputSearch").value : "";
-            cargarUsuarios(role, term);
+            cargarUsuarios();
+        });
+    });
+
+    availabilityChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            availabilityChips.forEach(c => c.classList.remove("chip-active"));
+            chip.classList.add("chip-active");
+            cargarUsuarios();
         });
     });
 
     const search = document.getElementById("userInputSearch");
     if(search) {
-        search.addEventListener('input', (e) => {
-            const activeChip = document.querySelector("#roleFilters .chip-active");
-            const role = activeChip ? activeChip.getAttribute('data-role') : 'all';
-            cargarUsuarios(role, e.target.value);
+        search.addEventListener('input', () => {
+            cargarUsuarios();
         });
     }
     
@@ -1383,36 +1940,126 @@ async function setupUserPage() {
 }
 
 // --- USUARIOS CRUD ---
-async function cargarUsuarios(role = 'all', term = '') {
-    console.log(`cargarUsuarios: Cargando rol=${role}, term=${term}`);
+async function cargarUsuarios() {
     const container = document.getElementById("userList");
     if(!container) return;
+
+    // Obtener filtros seleccionados de la UI
+    const activeRoleChip = document.querySelector("#roleFilters .chip-active");
+    const role = activeRoleChip ? activeRoleChip.getAttribute('data-role') : 'all';
+
+    const activeAvailChip = document.querySelector("#availabilityFilters .chip-active");
+    const availability = activeAvailChip ? activeAvailChip.getAttribute('data-availability') : 'all';
+
+    const searchInput = document.getElementById("userInputSearch");
+    const term = searchInput ? searchInput.value : "";
+
+    console.log(`cargarUsuarios: Cargando con filtros ui -> rol=${role}, disponibilidad=${availability}, term=${term}`);
+
     try {
         let url = `${API_URL}/usuarios`;
         if (role !== 'all') url += `?id_rol_fk=${role}`;
         const res = await fetch(url, { headers: getAuthHeaders() });
+        if (!res.ok) {
+            console.error("Error al cargar usuarios:", res.status);
+            return;
+        }
         let users = await res.json();
+        if (!Array.isArray(users)) {
+            console.error("Usuarios cargados no es un array:", users);
+            return;
+        }
         console.log(`cargarUsuarios: Recibidos ${users.length} usuarios`);
-        if (term) { const t = term.toLowerCase(); users = users.filter(u => u.nombre.toLowerCase().includes(t) || u.correo.toLowerCase().includes(t)); }
+
+        // Cargar proyectos para ver asignaciones reales
+        let projects = [];
+        try {
+            const projRes = await fetch(`${API_URL}/proyectos`, { headers: getAuthHeaders() });
+            if (projRes.ok) projects = await projRes.json();
+        } catch (projErr) {
+            console.error("Error al cargar proyectos para mapeo:", projErr);
+        }
+
+        // Mapear id_usuario -> nombre_proyecto para proyectos activos
+        const userProjectMap = {};
+        if (Array.isArray(projects)) {
+            projects.forEach(p => {
+                if (p.estado === 'activo') {
+                    if (p.id_lider_fk) {
+                        userProjectMap[p.id_lider_fk] = p.nombre;
+                    }
+                    if (Array.isArray(p.id_operarios)) {
+                        p.id_operarios.forEach(opId => {
+                            userProjectMap[opId] = p.nombre;
+                        });
+                    }
+                }
+            });
+        }
+
+        // Filtrar por término de búsqueda
+        if (term) {
+            const t = term.toLowerCase();
+            users = users.filter(u => 
+                (u.nombre && u.nombre.toLowerCase().includes(t)) || 
+                (u.apellido && u.apellido.toLowerCase().includes(t)) || 
+                (u.correo && u.correo.toLowerCase().includes(t))
+            );
+        }
+
+        // Filtrar por disponibilidad
+        if (availability !== 'all') {
+            users = users.filter(u => {
+                if (u.id_rol_fk === 1) return availability === 'free'; // Admins no se asignan a proyectos
+                
+                const hasProject = !!userProjectMap[u.id_usuario];
+                if (availability === 'free') {
+                    return !hasProject;
+                } else if (availability === 'occupied') {
+                    return hasProject;
+                }
+                return true;
+            });
+        }
+
         container.innerHTML = "";
+        if (users.length === 0) {
+            container.innerHTML = `<p style="text-align:center; padding:20px; color:var(--muted);">No se encontraron usuarios con los filtros seleccionados.</p>`;
+            return;
+        }
+
         users.forEach(u => {
             const roleName = u.id_rol_fk === 1 ? "Admin" : (u.id_rol_fk === 2 ? "Líder" : "Operario");
+            
+            let availabilityTag = '';
+            if (u.id_rol_fk === 2 || u.id_rol_fk === 3) {
+                const projectName = userProjectMap[u.id_usuario];
+                if (projectName) {
+                    availabilityTag = `<span class="availability-tag occupied-tag" title="Asignado a: ${projectName}">En Proyecto: <strong>${projectName}</strong></span>`;
+                } else {
+                    availabilityTag = `<span class="availability-tag free-tag">Disponible / Libre</span>`;
+                }
+            }
+
             container.innerHTML += `<div class="user-card">
-                <div class="user-avatar-small">${u.nombre[0]}</div>
+                <div class="user-avatar-small">${u.nombre ? u.nombre[0].toUpperCase() : 'U'}</div>
                 <div class="user-details">
-                    <strong>${u.nombre} ${u.apellido}</strong>
-                    <span>${u.correo} | ${roleName}</span>
+                    <strong>${u.nombre || ''} ${u.apellido || ''}</strong>
+                    <span>${u.correo || ''} | ${roleName}</span>
                 </div>
                 <div class="user-role-status">
                     <span class="status-tag ${u.activo ? 'badge-status-active' : 'badge-status-inactive'}">${u.activo ? 'Activo':'Inactivo'}</span>
+                    ${availabilityTag}
                 </div>
                 <div class="user-actions flex-row" style="gap:8px;">
-                    <button class="btn-small-muted" onclick="abrirModalEditarUsuario(${u.id_usuario}, '${u.nombre}', '${u.apellido}', '${u.telefono || ''}', ${u.id_rol_fk})">Editar</button>
+                    <button class="btn-small-muted" onclick="abrirModalEditarUsuario(${u.id_usuario}, '${(u.nombre || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${(u.apellido || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}', '${(u.telefono || '').replace(/'/g, "\\'").replace(/"/g, "&quot;")}', ${u.id_rol_fk})">Editar</button>
                     <button class="${u.activo ? 'btn-danger':'btn-success'} btn-small" onclick="${u.activo ? `desactivarUsuario(${u.id_usuario})` : `reactivarUsuario(${u.id_usuario})`}">${u.activo ? 'Desactivar':'Reactivar'}</button>
                 </div>
             </div>`;
         });
-    } catch(e) {}
+    } catch(e) {
+        console.error("Error en cargarUsuarios:", e);
+    }
 }
 
 function abrirModalEditarUsuario(id, nombre, apellido, telefono, role) {
@@ -1425,11 +2072,61 @@ function abrirModalEditarUsuario(id, nombre, apellido, telefono, role) {
     document.getElementById("editUserModal").style.display = "block";
 }
 
+async function desactivarUsuario(id) {
+    if (confirm("¿Está seguro de que desea desactivar este usuario? Se desvinculará de todos sus proyectos y tareas activos.")) {
+        try {
+            const res = await fetch(`${API_URL}/usuarios/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                alert("Usuario desactivado con éxito.");
+                cargarUsuarios();
+            } else {
+                const err = await res.json();
+                alert("Error: " + (err.detail || "No se pudo desactivar el usuario"));
+            }
+        } catch (err) {
+            console.error("Error al desactivar usuario:", err);
+            alert("Error de conexión");
+        }
+    }
+}
+
+async function reactivarUsuario(id) {
+    if (confirm("¿Está seguro de que desea reactivar este usuario?")) {
+        try {
+            const res = await fetch(`${API_URL}/usuarios/${id}/activar`, {
+                method: 'PATCH',
+                headers: getAuthHeaders()
+            });
+            if (res.ok) {
+                alert("Usuario reactivado con éxito.");
+                cargarUsuarios();
+            } else {
+                const err = await res.json();
+                alert("Error: " + (err.detail || "No se pudo reactivar el usuario"));
+            }
+        } catch (err) {
+            console.error("Error al reactivar usuario:", err);
+            alert("Error de conexión");
+        }
+    }
+}
+
 // --- REPORTES INVENTARIO ---
 async function generarReporteInventario() {
     try {
         const res = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
+        if (!res.ok) {
+            console.error("Error al generar reporte de inventario:", res.status);
+            return;
+        }
         const items = await res.json();
+        if (!Array.isArray(items)) {
+            console.error("Los items de inventario no son un array:", items);
+            return;
+        }
         const body = document.getElementById("reportTableBody");
         if(!body) return;
         body.innerHTML = items.map(i => {
@@ -1447,6 +2144,35 @@ async function setupReportsPage() {
         chip.classList.add("chip-active");
         document.getElementById("reportsSection").style.display = chip.dataset.period === 'financial' ? "none" : "block";
     });
+
+    const select = document.getElementById("proyectoReporteSelect");
+    if (select) {
+        try {
+            const res = await fetch(`${API_URL}/proyectos`, { headers: getAuthHeaders() });
+            if (res.ok) {
+                const projects = await res.json();
+                select.innerHTML = '<option value="">Selecciona un proyecto...</option>' + 
+                    projects.map(p => `<option value="${p.id_proyecto}">${p.nombre} (${p.ciudad})</option>`).join('');
+            } else {
+                select.innerHTML = '<option value="">Error al cargar proyectos</option>';
+            }
+        } catch (e) {
+            console.error("Error cargando proyectos para reporte:", e);
+            select.innerHTML = '<option value="">Error de conexión</option>';
+        }
+    }
+
+    const btnPDF = document.getElementById("btnGenerarPDF");
+    if (btnPDF) {
+        btnPDF.onclick = () => {
+            const pId = document.getElementById("proyectoReporteSelect").value;
+            if (!pId) {
+                alert("Por favor seleccione un proyecto.");
+                return;
+            }
+            exportarProyectoPDF(pId);
+        };
+    }
 }
 
 async function cargarDatosReportes() {
@@ -1619,10 +2345,443 @@ async function setupAvancesPage() {
     }
 }
 
-async function ajustarStock(id, actual) {
-    const nuevo = prompt("Nuevo stock para el material:", actual);
-    if (nuevo !== null && nuevo !== "") {
-        const res = await fetch(`${API_URL}/materiales/${id}/stock?nueva_cantidad=${parseInt(nuevo)}`, { method: 'PUT', headers: getAuthHeaders() });
-        if (res.ok) cargarInventarioGlobal();
+async function modificarStock(id, actual, operacion, nombre) {
+    const verboAccion = operacion === 'subir' ? 'agregar' : 'restar';
+    const cantidadStr = prompt(`Stock actual de "${nombre}": ${actual} unidades.\n¿Cuántas unidades desea ${verboAccion}?`);
+    if (cantidadStr === null || cantidadStr === "") return;
+    
+    const cantidad = parseInt(cantidadStr);
+    if (isNaN(cantidad) || cantidad <= 0) {
+        alert("Por favor ingrese una cantidad válida mayor a cero.");
+        return;
+    }
+    
+    let nuevoStock = actual;
+    if (operacion === 'subir') {
+        nuevoStock = actual + cantidad;
+    } else {
+        if (cantidad > actual) {
+            alert(`No es posible restar ${cantidad} unidades. El stock actual es de solo ${actual} unidades.`);
+            return;
+        }
+        nuevoStock = actual - cantidad;
+    }
+    
+    const confirmacion = confirm(`¿Confirmas que deseas ${verboAccion} ${cantidad} unidades al material "${nombre}"?\nEl stock final cambiará de ${actual} a ${nuevoStock} unidades.`);
+    if (!confirmacion) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, {
+            method: 'PUT',
+            headers: getAuthHeaders()
+        });
+        if (res.ok) {
+            cargarInventarioGlobal();
+        } else {
+            const err = await res.json();
+            alert("Error al actualizar el stock: " + (err.detail || "Error desconocido"));
+        }
+    } catch (e) {
+        alert("Error de conexión al actualizar el stock.");
     }
 }
+
+async function exportarProyectoPDF(idProyecto) {
+    try {
+        console.log("Generando reporte detallado para el proyecto ID:", idProyecto);
+        const res = await fetch(`${API_URL}/proyectos/${idProyecto}/reporte-detallado`, {
+            headers: getAuthHeaders()
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert("Error al cargar reporte: " + (err.detail || "No autorizado"));
+            return;
+        }
+        const p = await res.json();
+        
+        // Generar ventana de impresión
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            alert("El navegador bloqueó la ventana emergente. Por favor permita las ventanas emergentes para este sitio.");
+            return;
+        }
+        
+        // Formatear tablas y listas
+        const operariosHTML = p.operarios.length 
+            ? `<table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${p.operarios.map(o => `
+                        <tr>
+                            <td>${o.nombre_completo}</td>
+                            <td>${o.correo}</td>
+                            <td>${o.telefono}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+               </table>`
+            : `<p class="no-data">No hay operarios asignados a este proyecto.</p>`;
+
+        const inventarioHTML = p.inventario.length
+            ? `<table>
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Cantidad en Obra</th>
+                        <th>Unidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${p.inventario.map(i => `
+                        <tr>
+                            <td>${i.nombre_material}</td>
+                            <td>${i.stock_actual}</td>
+                            <td>${i.unidad_medida}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+               </table>`
+            : `<p class="no-data">No hay materiales en el inventario de esta obra.</p>`;
+
+        const tareasHTML = p.tareas.length
+            ? `<table>
+                <thead>
+                    <tr>
+                        <th>Tarea</th>
+                        <th>Prioridad</th>
+                        <th>Avance</th>
+                        <th>Estado</th>
+                        <th>Asignados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${p.tareas.map(t => {
+                        let badgeClass = 'badge-pending';
+                        if (t.estado === 'finalizada') badgeClass = 'badge-finalized';
+                        return `
+                            <tr>
+                                <td><strong>${t.titulo}</strong><br><small>${t.descripcion}</small></td>
+                                <td><span class="badge">${t.prioridad}</span></td>
+                                <td>${t.avance}%</td>
+                                <td><span class="badge ${badgeClass}">${t.estado}</span></td>
+                                <td>${t.operarios_nombres.join(', ') || 'Sin asignar'}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+               </table>`
+            : `<p class="no-data">No hay tareas creadas para este proyecto.</p>`;
+
+        const reportesHTML = p.reportes_avance.length
+            ? `<table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Operario</th>
+                        <th>Tarea</th>
+                        <th>Avance</th>
+                        <th>Observaciones</th>
+                        <th>Materiales Reportados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${p.reportes_avance.map(r => {
+                        const mats = r.materiales_usados.map(m => `${m.nombre_material} (${m.cantidad_usada} ${m.unidad_medida})`).join('<br>') || 'Ninguno';
+                        return `
+                            <tr>
+                                <td>${new Date(r.fecha_reporte).toLocaleDateString()}</td>
+                                <td>${r.nombre_operario}</td>
+                                <td>${r.titulo_tarea}</td>
+                                <td>${r.porcentaje}%</td>
+                                <td>${r.observaciones}</td>
+                                <td>${mats}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+               </table>`
+            : `<p class="no-data">No se han registrado reportes de avance para este proyecto.</p>`;
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <title>Reporte de Obra - ${p.nombre}</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        color: #1e293b;
+                        margin: 40px;
+                        font-size: 13px;
+                        line-height: 1.5;
+                        background: #fff;
+                    }
+                    .header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-bottom: 3px solid #0f172a;
+                        padding-bottom: 10px;
+                        margin-bottom: 25px;
+                    }
+                    .brand-name {
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #0f172a;
+                    }
+                    .report-title {
+                        font-size: 14px;
+                        color: #64748b;
+                        text-align: right;
+                    }
+                    .section-title {
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #0f172a;
+                        border-bottom: 1px solid #cbd5e1;
+                        padding-bottom: 5px;
+                        margin-top: 25px;
+                        margin-bottom: 10px;
+                        text-transform: uppercase;
+                    }
+                    .project-desc {
+                        margin-bottom: 20px;
+                        padding: 12px;
+                        background: #f8fafc;
+                        border-left: 4px solid #0284c7;
+                        border-radius: 0 6px 6px 0;
+                    }
+                    .meta-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 10px 20px;
+                        background-color: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        padding: 15px;
+                        border-radius: 6px;
+                        margin-bottom: 20px;
+                    }
+                    .meta-item {
+                        display: flex;
+                        justify-content: space-between;
+                    }
+                    .meta-label {
+                        font-weight: 600;
+                        color: #475569;
+                    }
+                    .meta-value {
+                        color: #0f172a;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #e2e8f0;
+                        padding: 8px 10px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f1f5f9;
+                        font-weight: 600;
+                        color: #475569;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f8fafc;
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 2px 6px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        border-radius: 4px;
+                        text-transform: uppercase;
+                    }
+                    .badge-active { background-color: #dcfce7; color: #15803d; }
+                    .badge-pending { background-color: #fef9c3; color: #a16207; }
+                    .badge-finalized { background-color: #e2e8f0; color: #475569; }
+                    .no-data {
+                        text-align: center;
+                        color: #64748b;
+                        font-style: italic;
+                        padding: 15px;
+                        border: 1px dashed #cbd5e1;
+                        border-radius: 6px;
+                    }
+                    @media print {
+                        body { margin: 20px; }
+                        .no-print { display: none; }
+                        .page-break { page-break-before: always; }
+                        tr { page-break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="brand-name">Constructora GG</div>
+                    <div class="report-title">
+                        <strong>Informe Ejecutivo de Proyecto</strong><br>
+                        Fecha Emisión: ${new Date().toLocaleDateString()}<br>
+                        Generado por: Plataforma GG
+                    </div>
+                </div>
+
+                <div class="section-title">Detalles del Proyecto</div>
+                <div class="project-desc">
+                    <strong>${p.nombre}</strong><br>
+                    ${p.descripcion}
+                </div>
+
+                <div class="meta-grid">
+                    <div class="meta-item"><span class="meta-label">Estado:</span><span class="meta-value">${p.estado.toUpperCase()}</span></div>
+                    <div class="meta-item"><span class="meta-label">Avance General:</span><span class="meta-value">${p.avance_general}%</span></div>
+                    <div class="meta-item"><span class="meta-label">Ciudad:</span><span class="meta-value">${p.ciudad}</span></div>
+                    <div class="meta-item"><span class="meta-label">Dirección:</span><span class="meta-value">${p.direccion}</span></div>
+                    <div class="meta-item"><span class="meta-label">Líder Asignado:</span><span class="meta-value">${p.lider_nombre}</span></div>
+                    <div class="meta-item"><span class="meta-label">Presupuesto:</span><span class="meta-value">$${p.presupuesto.toLocaleString()}</span></div>
+                    <div class="meta-item"><span class="meta-label">Fecha Inicio:</span><span class="meta-value">${p.fecha_inicio ? new Date(p.fecha_inicio).toLocaleDateString() : 'No definida'}</span></div>
+                    <div class="meta-item"><span class="meta-label">Fecha Fin:</span><span class="meta-value">${p.fecha_fin ? new Date(p.fecha_fin).toLocaleDateString() : 'No definida'}</span></div>
+                    <div class="meta-item"><span class="meta-label">Total Horas Hombre:</span><span class="meta-value">${p.total_horas_trabajadas} hrs</span></div>
+                </div>
+
+                <div class="section-title">Personal Asignado (Equipo)</div>
+                ${operariosHTML}
+
+                <div class="page-break"></div>
+
+                <div class="section-title">Inventario en Obra</div>
+                ${inventarioHTML}
+
+                <div class="section-title">Control de Tareas</div>
+                ${tareasHTML}
+
+                <div class="page-break"></div>
+
+                <div class="section-title">Historial de Avances y Novedades</div>
+                ${reportesHTML}
+
+                <script>
+                    window.onload = function() {
+                        window.print();
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+        
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    } catch (e) {
+        console.error("Error al exportar PDF:", e);
+        alert("Error de conexión al generar el reporte en PDF.");
+    }
+}
+
+function renderProjectSubNavigation(activeTab) {
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get("project_id") || params.get("id");
+    if (!projectId || projectId === "all") return;
+
+    const payload = getPayload();
+    if (!payload) return;
+    const isOperario = payload.role === 3;
+
+    // Buscar el contenedor .content
+    const contentSec = document.querySelector(".content");
+    if (!contentSec) return;
+
+    // Si ya existe la barra, no duplicar
+    if (document.getElementById("projectSubNavRow")) return;
+
+    // Crear la barra de navegación
+    const nav = document.createElement("div");
+    nav.id = "projectSubNavRow";
+    nav.className = "chips-row project-sub-nav";
+
+    const tabs = [];
+    
+    // Si no es operario, puede ver Detalles
+    if (!isOperario) {
+        tabs.push({ id: 'detalles', label: '🛈 Detalles', href: `detalles_proyecto.html?id=${projectId}` });
+    }
+
+    tabs.push({ id: 'tareas', label: '✍ Tareas', href: `tareas.html?project_id=${projectId}` });
+
+    // Si no es operario, puede ver Equipo
+    if (!isOperario) {
+        tabs.push({ id: 'equipo', label: '👤 Equipo', href: `equipo.html?project_id=${projectId}` });
+    }
+
+    tabs.push({ id: 'inventario', label: '📦 Inventario', href: `materiales.html?project_id=${projectId}` });
+
+    nav.innerHTML = tabs.map(t => `
+        <a href="${t.href}" class="chip ${activeTab === t.id ? 'chip-active' : ''}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            ${t.label}
+        </a>
+    `).join('');
+
+    // Insertar siempre en la parte superior de .content, antes del header/nombres
+    contentSec.prepend(nav);
+}
+
+async function abrirModalReasignarOperario(taskId, projectId) {
+    const modal = document.getElementById("reassignModal");
+    if (!modal) return;
+    document.getElementById("reassign_task_id").value = taskId;
+    document.getElementById("reassign_project_id").value = projectId;
+    modal.style.display = "block";
+    await cargarOperariosParaReasignar(projectId);
+}
+
+async function cargarOperariosParaReasignar(projectId) {
+    const container = document.getElementById("reassignOperatorsList");
+    if (!container) return;
+    try {
+        container.innerHTML = "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>Buscando operarios...</p>";
+        
+        // 1. Obtener operarios libres (sin proyecto activo)
+        const resDisp = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
+        const disponibles = await resDisp.json();
+
+        // 2. Obtener operarios ya asignados a este proyecto (si los hay)
+        const resProjTeam = await fetch(`${API_URL}/proyectos/${projectId}/estado-equipo`, { headers: getAuthHeaders() });
+        const team = await resProjTeam.json();
+
+        // Combinar listas sin duplicados
+        const listaCompleta = [...disponibles];
+        team.forEach(a => {
+            if (!listaCompleta.find(l => l.id_usuario === a.id_usuario)) {
+                listaCompleta.push({
+                    id_usuario: a.id_usuario,
+                    nombre: a.nombre,
+                    apellido: a.apellido,
+                    correo: 'Asignado al proyecto'
+                });
+            }
+        });
+
+        container.innerHTML = listaCompleta.length ? "" : "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>No hay operarios disponibles.</p>";
+        listaCompleta.forEach(op => {
+            container.innerHTML += `
+                <div class="flex-row" style="padding: 8px 5px; gap: 10px; align-items: center; border-bottom: 1px solid var(--border); width: 100%;">
+                    <input type="checkbox" value="${op.id_usuario}">
+                    <div class="flex-column" style="font-size: 0.85rem; flex-grow: 1; text-align: left;">
+                        <strong>${op.nombre} ${op.apellido}</strong>
+                        <span style="font-size: 0.75rem; color: var(--muted);">${op.correo}</span>
+                    </div>
+                </div>`;
+        });
+    } catch (e) {
+        console.error("Error al cargar operarios para reasignar:", e);
+        container.innerHTML = "<p style='font-size: 0.8rem; color: var(--danger); text-align: center;'>Error al cargar operarios.</p>";
+    }
+}
+

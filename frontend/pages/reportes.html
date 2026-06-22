@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Reportes Globales</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
   <style>
     /* CSS Adicional para la vista de Reportes */
     .report-kpi-grid {
@@ -170,10 +170,6 @@
             <h1>Reportes Globales</h1>
             <p>Análisis ejecutivo de métricas clave.</p>
           </div>
-          <div class="chips-row" id="reportFilters">
-            <div class="chip chip-active" data-period="all">Todos los proyectos</div>
-            <div class="chip" data-period="financial">Financiero</div>
-          </div>
         </header>
 
         <section>
@@ -196,22 +192,6 @@
               </div>
           </div>
 
-          <div class="report-financial-card" id="financialSection">
-            <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 15px;">Resumen Financiero</div>
-            <div class="financial-detail">
-              <span class="label">Presupuesto total</span>
-              <span class="value" id="valPresupuestoTotal">$ 0</span>
-            </div>
-            <div class="financial-detail">
-              <span class="label">Proyectos activos</span>
-              <span class="value" id="valProyectosActivos">$ 0</span>
-            </div>
-            <div class="financial-detail">
-              <span class="label">Inversión promedio</span>
-              <span class="value" id="valInversionPromedio">$ 0</span>
-            </div>
-          </div>
-
           <div class="card" style="margin-top: 15px;" id="reportsSection">
             <div class="card-header">
               <h2>Últimos Reportes Generados</h2>
@@ -220,8 +200,23 @@
             <div class="latest-report-list" id="latestReportsList">
                 <!-- Se cargará dinámicamente -->
             </div>
-            <div style="margin-top: 15px; text-align: right;">
-                <button class="btn-primary" onclick="window.location.href='tareas.html'">Generar Nuevo Reporte</button>
+          </div>
+
+          <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+              <h2>Generar Reporte de Proyecto (PDF)</h2>
+              <p class="card-subtitle">Exporta un informe de presentación completo con el estado general de la obra y recursos.</p>
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 250px;">
+                <label for="proyectoReporteSelect" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text);">Selecciona Proyecto (Activo o Finalizado)</label>
+                <select id="proyectoReporteSelect" style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-family: inherit;">
+                  <option value="">Cargando proyectos...</option>
+                </select>
+              </div>
+              <button id="btnGenerarPDF" class="btn-primary" style="height: 41px; display: flex; align-items: center; gap: 8px;">
+                <span class="icon">📄</span> Generar Reporte PDF
+              </button>
             </div>
           </div>
         </section>
@@ -236,6 +231,6 @@
         </div>
         <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
       </footer>
-  <script src="../app.js?v=1.0.1"></script>
+  <script src="../app.js?v=1.2.7"></script>
 </body>
 </html>

@@ -1183,3 +1183,12 @@ input[type="radio"]:focus {
     max-width: 100%;
   }
 }
+
+/* Sub-navegación dentro de proyectos */
+.project-sub-nav {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+

@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Constructora GG – Suministros y Materiales</title>
+  <title>Constructora GG – Inventario de Obra</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
   <style>
     .materials-grid {
       display: grid;
@@ -104,7 +104,7 @@
         <div class="brand-logo">GG</div>
         <div class="brand-text">
           <span>Constructora GG</span>
-          <span>Materiales de Obra</span>
+          <span>Inventario de Obra</span>
         </div>
       </div>
       <div class="app-header-right">
@@ -180,7 +180,7 @@
       <section class="content">
         <header class="content-header">
           <div class="content-title">
-            <h1>Materiales en Obra</h1>
+            <h1>Inventario en Obra</h1>
             <p>Existencias disponibles en los proyectos asignados.</p>
           </div>
         </header>
@@ -191,10 +191,6 @@
                 <button class="btn-primary role-lider" id="btnRequestGlobal">
                     <span class="icon">📥</span>
                     <span>Pedir a Almacén Central</span>
-                </button>
-                <button class="btn-primary role-operario" id="btnRequestTask">
-                    <span class="icon">📋</span>
-                    <span>Pedir para mi Tarea</span>
                 </button>
             </div>
             
@@ -214,7 +210,7 @@
             <span class="close-modal" id="closeTransferModal">&times;</span>
         </div>
         <form id="transferForm">
-            <div class="input-group">
+            <div class="input-group" id="trans_project_group">
                 <label for="trans_project">Proyecto Destino</label>
                 <select id="trans_project" name="id_proyecto" required>
                     <option value="">Selecciona un proyecto</option>
@@ -238,35 +234,6 @@
     </div>
   </div>
 
-  <!-- Modal para Pedir para Tarea (Operario) -->
-  <div id="taskRequestModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Pedir para mi Tarea</h2>
-            <span class="close-modal" id="closeTaskRequestModal">&times;</span>
-        </div>
-        <form id="taskRequestForm">
-            <div class="input-group">
-                <label for="req_task">Mi Tarea Actual</label>
-                <select id="req_task" name="id_tarea" required>
-                    <option value="">Selecciona tarea</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="req_material">Material de Obra</label>
-                <select id="req_material" name="id_material" required>
-                    <option value="">Selecciona material</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="req_qty">Cantidad</label>
-                <input type="number" id="req_qty" name="cantidad" min="1" required>
-            </div>
-            <button type="submit" class="btn-primary" >Confirmar Pedido</button>
-        </form>
-    </div>
-  </div>
-
-  <script src="../app.js?v=1.0.1"></script>
+  <script src="../app.js?v=1.2.7"></script>
 </body>
 </html>

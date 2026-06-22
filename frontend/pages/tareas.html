@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Tareas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.1" />
+  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
   <style>
     /* CSS Consolidado para la vista de Tareas */
     .tasks-list {
@@ -201,10 +201,11 @@
               </div>
 
               <div class="chips-row" id="taskFilters">
-                <div class="chip chip-active" data-status="all">Todas</div>
+                <div class="chip chip-active" data-status="active">Pendientes/En curso</div>
                 <div class="chip" data-status="pendiente">Pendientes</div>
                 <div class="chip" data-status="en_progreso">En curso</div>
-                <div class="chip" data-status="finalizada">Completadas</div>
+                <div class="chip" data-status="finalizada">Finalizadas</div>
+                <div class="chip" data-status="all">Todas</div>
               </div>
           </div>
         </header>
@@ -227,7 +228,7 @@
 
             <div class="action-bar" >
                 <input type="text" id="taskInputSearch" class="input-search" placeholder="Buscar tarea..." >
-                <button class="btn-primary role-admin role-lider" id="btnNewTask" style="white-space: nowrap;">
+                <button class="btn-primary role-lider-only" id="btnNewTask" style="white-space: nowrap;">
                     <span class="icon">+</span>
                     <span>Nueva Tarea</span>
                 </button>
@@ -379,6 +380,30 @@
           </div>
         </div>
 
-        <script src="../app.js?v=1.0.1"></script>
+        <!-- Modal para Reasignar Operarios a una Tarea -->
+        <div id="reassignModal" class="modal">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h2>Reasignar Operario</h2>
+                  <span class="close-modal" id="closeReassignModal">&times;</span>
+              </div>
+              <p class="notification-text" style="margin-bottom: 15px;">
+                  Selecciona los operarios que trabajarán en esta tarea. Si no pertenecen al proyecto, se vincularán automáticamente.
+              </p>
+              <form id="reassignForm">
+                  <input type="hidden" id="reassign_task_id">
+                  <input type="hidden" id="reassign_project_id">
+                  <div class="input-group">
+                      <label>Operarios del Proyecto / Disponibles</label>
+                      <div id="reassignOperatorsList" style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                          <p style="font-size: 0.8rem; color: var(--muted); text-align: center;">Cargando operarios...</p>
+                      </div>
+                  </div>
+                  <button type="submit" class="btn-primary" style="width: 100%; height: 45px; margin-top: 10px;">Guardar Asignación</button>
+              </form>
+          </div>
+        </div>
+
+        <script src="../app.js?v=1.2.7"></script>
         </body>
         </html>
