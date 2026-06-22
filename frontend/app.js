@@ -954,6 +954,16 @@ async function setupTasksPage() {
         chip.onclick = () => { 
             document.querySelectorAll("#taskFilters .chip").forEach(c => c.classList.remove("chip-active")); 
             chip.classList.add("chip-active"); 
+            
+            if (isOperario && projectWrapper && urlProjectId === "all") {
+                if (chip.dataset.status === 'finalizada') {
+                    projectWrapper.style.display = "block";
+                } else {
+                    projectWrapper.style.display = "none";
+                    if (projectFilter) projectFilter.value = "all";
+                }
+            }
+            
             cargarTareas(chip.dataset.status, "", projectFilter ? projectFilter.value : "all"); 
         };
     });
@@ -1074,8 +1084,26 @@ async function setupTasksPage() {
 async function cargarSelectProyectosTareas(selectEl, isFilter = true) {
     if (!selectEl) return;
     try {
-        const res = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-        const projects = await res.json();
+        const payload = getPayload();
+        let projects = [];
+        if (payload && payload.role === 3) {
+            const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
+            if (tRes.ok) {
+                const fetchedTasks = await tRes.json();
+                const seenProjects = new Map();
+                fetchedTasks.forEach(t => {
+                    if (t.id_proyecto_fk && t.nombre_proyecto) {
+                        seenProjects.set(t.id_proyecto_fk, t.nombre_proyecto);
+                    }
+                });
+                projects = Array.from(seenProjects.entries()).map(([id, nombre]) => ({ id_proyecto: id, nombre: nombre }));
+            }
+        } else {
+            const res = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
+            if (res.ok) {
+                projects = await res.json();
+            }
+        }
         selectEl.innerHTML = isFilter ? '<option value="all">-- Todos los Proyectos --</option>' : '<option value="">Selecciona un proyecto</option>';
         projects.forEach(p => { selectEl.innerHTML += `<option value="${p.id_proyecto}">${p.nombre}</option>`; });
     } catch (e) { console.error(e); }
@@ -1103,8 +1131,13 @@ async function cargarTareas(status = 'active', search = '', projectId = 'all') {
         if (payload.role === 3) {
             const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
             if (tRes.ok) {
-                const fetchedTasks = await tRes.json();
-                if (Array.isArray(fetchedTasks)) tasks = fetchedTasks;
+                let fetchedTasks = await tRes.json();
+                if (Array.isArray(fetchedTasks)) {
+                    if (projectId !== 'all') {
+                        fetchedTasks = fetchedTasks.filter(t => t.id_proyecto_fk == projectId);
+                    }
+                    tasks = fetchedTasks;
+                }
             }
         } else {
             const urlProj = projectId !== 'all' ? `${API_URL}/proyectos` : `${API_URL}/proyectos?estado=activo`;
