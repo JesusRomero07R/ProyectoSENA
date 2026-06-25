@@ -968,9 +968,37 @@ async function setupTasksPage() {
         };
     });
     
-    if (document.getElementById("btnNewTask")) { document.getElementById("btnNewTask").onclick = async () => { document.getElementById("newTaskModal").style.display = "block"; await cargarSelectProyectosTareas(document.getElementById("task_project_id"), false); }; }
+    if (document.getElementById("btnNewTask")) { 
+        document.getElementById("btnNewTask").onclick = async () => { 
+            const currentProjId = urlProjectId !== "all" ? urlProjectId : (projectFilter ? projectFilter.value : "all");
+            if (currentProjId === "all") {
+                alert("Por favor, selecciona un proyecto en el filtro superior antes de crear una tarea.");
+                return;
+            }
+            
+            document.getElementById("newTaskModal").style.display = "block"; 
+            
+            const selectProj = document.getElementById("task_project_id");
+            if (selectProj) {
+                selectProj.innerHTML = "";
+                try {
+                    const pRes = await fetch(`${API_URL}/proyectos/${currentProjId}`, { headers: getAuthHeaders() });
+                    if (pRes.ok) {
+                        const proj = await pRes.json();
+                        selectProj.innerHTML = `<option value="${proj.id_proyecto}" selected>${proj.nombre}</option>`;
+                    } else {
+                        selectProj.innerHTML = `<option value="${currentProjId}" selected>Proyecto #${currentProjId}</option>`;
+                    }
+                } catch(e) {
+                    selectProj.innerHTML = `<option value="${currentProjId}" selected>Proyecto #${currentProjId}</option>`;
+                }
+                selectProj.disabled = true;
+            }
+            
+            await cargarOperariosPorProyecto(currentProjId);
+        }; 
+    }
     if (document.getElementById("closeNewTaskModal")) document.getElementById("closeNewTaskModal").onclick = () => document.getElementById("newTaskModal").style.display = "none";
-    if (document.getElementById("task_project_id")) document.getElementById("task_project_id").onchange = (e) => cargarOperariosPorProyecto(e.target.value);
     
     const btnAddMat = document.getElementById("btnModalAddMaterial");
     const materialsList = document.getElementById("modalMaterialsList");
@@ -1002,7 +1030,9 @@ async function setupTasksPage() {
             const data = Object.fromEntries(new FormData(newTaskForm));
             const ops = Array.from(document.getElementById("taskOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
             if (!ops.length) return alert("Asigna operarios");
-            const res = await fetch(`${API_URL}/tareas`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ ...data, id_operarios: ops, id_proyecto_fk: parseInt(data.id_proyecto_fk) }) });
+            const projIdSelect = document.getElementById("task_project_id");
+            const finalProjId = projIdSelect ? projIdSelect.value : data.id_proyecto_fk;
+            const res = await fetch(`${API_URL}/tareas`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ ...data, id_operarios: ops, id_proyecto_fk: parseInt(finalProjId) }) });
             if (res.ok) { alert("Tarea creada"); document.getElementById("newTaskModal").style.display = "none"; newTaskForm.reset(); cargarTareas(); }
         };
     }
