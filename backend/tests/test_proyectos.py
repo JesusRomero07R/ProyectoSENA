@@ -421,5 +421,101 @@ async def test_eliminar_reporte_tarea_finalizada_fail(client_admin, client_lider
     assert del_res.json()["detail"] == "No se pueden eliminar reportes de una tarea finalizada"
 
 
+@pytest.mark.asyncio
+async def test_reactivar_tarea_restaura_avance_y_finalizador(client_admin, client_lider, client_operario):
+    from tests.conftest import override_get_db_sync
+    import models
+    db = next(override_get_db_sync())
+    
+    # 1. Crear categoría y material
+    cat = models.CategoriaMaterial(nombre_categoria="Construccion R")
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    
+    mat = models.Material(nombre="Cemento R", id_categoria_fk=cat.id_categoria, unidad_medida="saco")
+    db.add(mat)
+    db.commit()
+    db.refresh(mat)
+    
+    # 2. Crear proyecto
+    proj = models.Proyecto(
+        nombre="Proyecto Reactivacion R",
+        descripcion="Construcción",
+        ciudad="Bogota",
+        direccion="Calle 100",
+        presupuesto=250000,
+        id_lider_fk=2,
+        estado="activo"
+    )
+    db.add(proj)
+    db.commit()
+    db.refresh(proj)
+    
+    # 3. Crear stock en proyecto
+    inv = models.InventarioProyecto(
+        id_proyecto_fk=proj.id_proyecto,
+        id_material_fk=mat.id_material,
+        stock_actual=10,
+        unidad_medida="saco"
+    )
+    db.add(inv)
+    db.commit()
+    
+    # 4. Crear tarea
+    tarea = models.Tarea(
+        titulo="Cimentación R",
+        id_proyecto_fk=proj.id_proyecto,
+        estado="pendiente",
+        avance=0
+    )
+    operario = db.query(models.Usuario).filter(models.Usuario.id_usuario == 3).first()
+    tarea.operarios.append(operario)
+    db.add(tarea)
+    db.commit()
+    db.refresh(tarea)
+    
+    # 5. Reportar avance al 45%
+    report_payload = {
+        "id_tarea_fk": tarea.id_tarea,
+        "porcentaje": 45,
+        "observaciones": "Avance del 45%",
+        "horas_trabajadas": 4.0,
+        "materiales_usados": []
+    }
+    
+    response = await client_operario.post("/reportes", json=report_payload)
+    assert response.status_code == 200
+    
+    db.refresh(tarea)
+    assert tarea.avance == 45
+    assert tarea.estado == "en_progreso"
+    
+    # 6. Finalizar la tarea por parte del líder
+    finalizar_payload = {
+        "estado": "finalizada"
+    }
+    res_finalizada = await client_lider.put(f"/tareas/{tarea.id_tarea}", json=finalizar_payload)
+    assert res_finalizada.status_code == 200
+    
+    db.refresh(tarea)
+    assert tarea.avance == 100
+    assert tarea.estado == "finalizada"
+    assert tarea.id_usuario_finalizado_fk == 2
+    
+    # 7. Reactivar la tarea por parte del líder
+    reactivar_payload = {
+        "estado": "en_progreso"
+    }
+    res_reactivada = await client_lider.put(f"/tareas/{tarea.id_tarea}", json=reactivar_payload)
+    assert res_reactivada.status_code == 200
+    
+    db.refresh(tarea)
+    assert tarea.avance == 45
+    assert tarea.estado == "en_progreso"
+    assert tarea.id_usuario_finalizado_fk is None
+
+
+
 
 

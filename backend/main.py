@@ -1189,6 +1189,8 @@ async def update_tarea(
     if proyecto.id_lider_fk != current_user.id_usuario:
         raise HTTPException(status_code=403, detail="No tienes permisos para editar esta tarea")
     
+    estado_anterior = db_tarea.estado
+    
     # 3. Actualizar campos básicos
     update_data = tarea_update.dict(exclude={"id_operarios"}, exclude_unset=True)
     for key, value in update_data.items():
@@ -1198,9 +1200,15 @@ async def update_tarea(
     if tarea_update.estado == "finalizada":
         db_tarea.id_usuario_finalizado_fk = current_user.id_usuario
         db_tarea.avance = 100
-    elif tarea_update.estado and db_tarea.estado == "finalizada" and tarea_update.estado != "finalizada":
+    elif estado_anterior == "finalizada" and tarea_update.estado and tarea_update.estado != "finalizada":
         # Si se reactiva, limpiamos el finalizador
         db_tarea.id_usuario_finalizado_fk = None
+        # Recalculamos el avance real basado en los reportes
+        reportes = db.query(models.ReporteAvance).filter(models.ReporteAvance.id_tarea_fk == db_tarea.id_tarea).all()
+        if reportes:
+            db_tarea.avance = max(r.porcentaje for r in reportes)
+        else:
+            db_tarea.avance = 0
     
     # 4. Actualizar operarios si se enviaron
     if tarea_update.id_operarios is not None:
@@ -1230,6 +1238,12 @@ async def update_tarea(
         # Reemplazar la lista anterior por la nueva
         db_tarea.operarios = nuevos_operarios
     
+    # Recalcular el avance general del proyecto
+    tareas_proyecto = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == proyecto.id_proyecto).all()
+    if tareas_proyecto:
+        total_avance = sum(t.avance for t in tareas_proyecto)
+        proyecto.avance_general = total_avance / len(tareas_proyecto)
+        
     db.commit()
     db.refresh(db_tarea)
     return db_tarea
