@@ -561,7 +561,8 @@ async def update_proyecto(
         
         tareas = db.query(models.Tarea).filter(models.Tarea.id_proyecto_fk == id_proyecto).all()
         for tarea in tareas:
-            tarea.operarios = []
+            if tarea.estado != "finalizada":
+                tarea.operarios = []
 
     update_data = proyecto_update.dict(exclude_unset=True)
     for key, value in update_data.items():
@@ -1205,6 +1206,8 @@ async def update_tarea(
         db_tarea.id_usuario_finalizado_fk = None
         # Si el líder reactiva la tarea, esta debe volver a 0% de avance
         db_tarea.avance = 0
+        # Limpiar los operarios asociados para que se deba reasignar
+        db_tarea.operarios = []
     
     # 4. Actualizar operarios si se enviaron
     if tarea_update.id_operarios is not None:
