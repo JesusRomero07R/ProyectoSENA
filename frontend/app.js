@@ -2815,35 +2815,19 @@ async function cargarOperariosParaReasignar(projectId) {
     try {
         container.innerHTML = "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>Buscando operarios...</p>";
         
-        // 1. Obtener operarios libres (sin proyecto activo)
-        const resDisp = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
-        const disponibles = await resDisp.json();
-
-        // 2. Obtener operarios ya asignados a este proyecto (si los hay)
+        // Obtener únicamente los operarios ya asignados a este proyecto
         const resProjTeam = await fetch(`${API_URL}/proyectos/${projectId}/estado-equipo`, { headers: getAuthHeaders() });
         const team = await resProjTeam.json();
 
-        // Combinar listas sin duplicados
-        const listaCompleta = [...disponibles];
-        team.forEach(a => {
-            if (!listaCompleta.find(l => l.id_usuario === a.id_usuario)) {
-                listaCompleta.push({
-                    id_usuario: a.id_usuario,
-                    nombre: a.nombre,
-                    apellido: a.apellido,
-                    correo: 'Asignado al proyecto'
-                });
-            }
-        });
-
-        container.innerHTML = listaCompleta.length ? "" : "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>No hay operarios disponibles.</p>";
-        listaCompleta.forEach(op => {
+        container.innerHTML = team.length ? "" : "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>No hay operarios vinculados a este proyecto.</p>";
+        team.forEach(op => {
+            const tareasText = op.en_tarea ? `En tarea(s): ${op.tareas_activas.join(", ")}` : 'Disponible';
             container.innerHTML += `
                 <div class="flex-row" style="padding: 8px 5px; gap: 10px; align-items: center; border-bottom: 1px solid var(--border); width: 100%;">
                     <input type="checkbox" value="${op.id_usuario}">
                     <div class="flex-column" style="font-size: 0.85rem; flex-grow: 1; text-align: left;">
                         <strong>${op.nombre} ${op.apellido}</strong>
-                        <span style="font-size: 0.75rem; color: var(--muted);">${op.correo}</span>
+                        <span style="font-size: 0.75rem; color: var(--muted);">${tareasText}</span>
                     </div>
                 </div>`;
         });
@@ -2852,4 +2836,3 @@ async function cargarOperariosParaReasignar(projectId) {
         container.innerHTML = "<p style='font-size: 0.8rem; color: var(--danger); text-align: center;'>Error al cargar operarios.</p>";
     }
 }
-
