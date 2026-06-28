@@ -516,6 +516,56 @@ async def test_reactivar_tarea_restaura_avance_y_finalizador(client_admin, clien
     assert tarea.id_usuario_finalizado_fk is None
 
 
+@pytest.mark.asyncio
+async def test_operario_reporte_100_finaliza_y_asigna_finalizador(client_operario, client_lider):
+    from tests.conftest import override_get_db_sync
+    import models
+    db = next(override_get_db_sync())
+    
+    proyecto = models.Proyecto(
+        nombre="Proyecto Reporte 100",
+        descripcion="Desc",
+        ciudad="Medellin",
+        presupuesto=1000000.0,
+        estado="activo",
+        id_lider_fk=2
+    )
+    db.add(proyecto)
+    db.commit()
+    
+    operario_user = db.query(models.Usuario).filter(models.Usuario.id_usuario == 3).first()
+    proyecto.operarios.append(operario_user)
+    db.commit()
+    
+    tarea = models.Tarea(
+        titulo="Tarea Reporte 100",
+        descripcion="Desc",
+        prioridad="alta",
+        estado="pendiente",
+        avance=0,
+        id_proyecto_fk=proyecto.id_proyecto
+    )
+    tarea.operarios.append(operario_user)
+    db.add(tarea)
+    db.commit()
+    
+    report_payload = {
+        "id_tarea_fk": tarea.id_tarea,
+        "porcentaje": 100,
+        "observaciones": "Avance finalizado al 100%",
+        "horas_trabajadas": 8.0,
+        "materiales_usados": []
+    }
+    
+    response = await client_operario.post("/reportes", json=report_payload)
+    assert response.status_code == 200
+    
+    db.refresh(tarea)
+    assert tarea.avance == 100
+    assert tarea.estado == "finalizada"
+    assert tarea.id_usuario_finalizado_fk == 3
+
+
 
 
 

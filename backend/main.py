@@ -1355,6 +1355,7 @@ async def create_reporte(
         # Actualizar estado de la tarea
         if reporte.porcentaje >= 100:
             tarea.estado = "finalizada"
+            tarea.id_usuario_finalizado_fk = current_user.id_usuario
         elif reporte.porcentaje > 0:
             tarea.estado = "en_progreso"
             
