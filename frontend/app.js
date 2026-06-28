@@ -367,12 +367,11 @@ async function cargarDashboardResumen() {
                         const todayTasks = myTasks.filter(t => t.estado !== 'finalizada');
                         taskContainer.innerHTML = todayTasks.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No tienes tareas pendientes para hoy.</p>";
                         todayTasks.forEach(t => {
-                            taskContainer.innerHTML += `<div class="project-item">
+                            taskContainer.innerHTML += `<div class="project-item clickable-card" onclick="window.location.href='pages/tareas.html?report_task_id=${t.id_tarea}'">
                                 <div>
                                     <div class="project-title">${t.titulo}</div>
                                     <div class="project-leader">${t.nombre_proyecto}</div>
                                 </div>
-                                <button class="btn-small" onclick="window.location.href='pages/tareas.html?report_task_id=${t.id_tarea}'">Ver</button>
                             </div>`;
                         });
                     }
