@@ -1203,12 +1203,8 @@ async def update_tarea(
     elif estado_anterior == "finalizada" and tarea_update.estado and tarea_update.estado != "finalizada":
         # Si se reactiva, limpiamos el finalizador
         db_tarea.id_usuario_finalizado_fk = None
-        # Recalculamos el avance real basado en los reportes
-        reportes = db.query(models.ReporteAvance).filter(models.ReporteAvance.id_tarea_fk == db_tarea.id_tarea).all()
-        if reportes:
-            db_tarea.avance = max(r.porcentaje for r in reportes)
-        else:
-            db_tarea.avance = 0
+        # Si el líder reactiva la tarea, esta debe volver a 0% de avance
+        db_tarea.avance = 0
     
     # 4. Actualizar operarios si se enviaron
     if tarea_update.id_operarios is not None:

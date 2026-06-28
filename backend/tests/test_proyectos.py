@@ -511,7 +511,7 @@ async def test_reactivar_tarea_restaura_avance_y_finalizador(client_admin, clien
     assert res_reactivada.status_code == 200
     
     db.refresh(tarea)
-    assert tarea.avance == 45
+    assert tarea.avance == 0
     assert tarea.estado == "en_progreso"
     assert tarea.id_usuario_finalizado_fk is None
 
