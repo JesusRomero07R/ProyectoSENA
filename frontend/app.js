@@ -1551,9 +1551,10 @@ async function cargarTareasProyecto(id, isProjectActive = true) {
         if (!payload) return goToLogin();
         tCont.innerHTML = tasks.length ? "" : "<p>No hay tareas.</p>";
         tasks.forEach(t => {
-            const operarios = t.operarios_nombres && t.operarios_nombres.length ? t.operarios_nombres.join(', ') : 'Sin asignar';
+            const sinOperario = !t.operarios_nombres || t.operarios_nombres.length === 0;
+            const operarios = !sinOperario ? t.operarios_nombres.join(', ') : '<span style="color: #dc2626; font-weight: 700;">Sin asignar</span>';
             const avance = t.avance !== undefined ? t.avance : 0;
-            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row"><span class="badge-inline">${t.prioridad.toUpperCase()}</span></div></div>`;
+            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row">${sinOperario ? '<span style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 8px;">⚠️ SIN OPERARIO</span>' : ''}<span class="badge-inline">${t.prioridad.toUpperCase()}</span></div></div>`;
         });
     } catch (e) { console.error(e); }
 }
