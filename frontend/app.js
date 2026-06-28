@@ -945,6 +945,11 @@ async function setupTasksPage() {
         if (task) abrirModalReporte(task.id_tarea, task.titulo, task.avance, task.id_proyecto_fk);
     }
 
+    const detailTaskId = params.get("detail_task_id");
+    if (detailTaskId) {
+        abrirModalDetalleTask(parseInt(detailTaskId));
+    }
+
     if (projectFilter) {
         projectFilter.onchange = () => cargarTareas(document.querySelector("#taskFilters .chip-active").dataset.status, "", projectFilter.value);
     }
@@ -1554,7 +1559,7 @@ async function cargarTareasProyecto(id, isProjectActive = true) {
             const sinOperario = !t.operarios_nombres || t.operarios_nombres.length === 0;
             const operarios = !sinOperario ? t.operarios_nombres.join(', ') : '<span style="color: #dc2626; font-weight: 700;">Sin asignar</span>';
             const avance = t.avance !== undefined ? t.avance : 0;
-            tCont.innerHTML += `<div class="list-item"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row">${sinOperario ? '<span style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 8px;">⚠️ SIN OPERARIO</span>' : ''}<span class="badge-inline">${t.prioridad.toUpperCase()}</span></div></div>`;
+            tCont.innerHTML += `<div class="list-item clickable-card" style="cursor: pointer;" onclick="window.location.href='tareas.html?project_id=${id}&detail_task_id=${t.id_tarea}'"><div><strong>${t.titulo}</strong><br><small>${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</small><br><small><strong>Asignado a:</strong> ${operarios} | <strong>Avance:</strong> ${avance}%</small></div><div class="flex-row">${sinOperario ? '<span style="color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 8px;">⚠️ SIN OPERARIO</span>' : ''}<span class="badge-inline">${t.prioridad.toUpperCase()}</span></div></div>`;
         });
     } catch (e) { console.error(e); }
 }
