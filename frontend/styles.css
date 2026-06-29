@@ -535,6 +535,7 @@ button:active, .btn:active {
 
 /* Botones de éxito y peligro globales */
 .btn-success {
+  padding: 0 10px;
   background: var(--success);
   color: #fff;
   border: none;
@@ -546,6 +547,7 @@ button:active, .btn:active {
 }
 
 .btn-danger {
+  padding: 0 10px;
   background: var(--danger);
   color: #fff;
   border: none;
@@ -1187,8 +1189,5 @@ input[type="radio"]:focus {
 /* Sub-navegación dentro de proyectos */
 .project-sub-nav {
   border-bottom: 1px solid var(--border);
-  padding-bottom: 15px;
   margin-bottom: 20px;
 }
-
-
