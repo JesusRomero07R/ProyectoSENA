@@ -1,0 +1,163 @@
+/* CSS Adicional para la vista de Usuarios */
+    .user-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .user-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg-card);
+      position: relative;
+    }
+    .user-avatar-small {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .user-details {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.9rem;
+    }
+    .user-details strong {
+      font-weight: 600;
+    }
+    .user-details span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .user-role-status {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      text-align: right;
+    }
+    .role-tag {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.8rem;
+    }
+    .status-tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      margin-top: 4px;
+      background-color: #d1fae5;
+      color: #059669;
+    }
+    .availability-tag {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+      font-weight: 500;
+      display: inline-block;
+    }
+    .free-tag {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .occupied-tag {
+      background-color: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+      max-width: 180px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: var(--bg-card);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-soft);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .close-modal:hover {
+      color: var(--text);
+    }
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .input-group input, .input-group select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+    }
+
+    /* Email Input with Suffix */
+    .input-email-wrapper {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: white;
+        overflow: hidden;
+    }
+    .input-email-wrapper input {
+        border: none !important;
+        flex-grow: 1;
+        border-radius: 0 !important;
+    }
+    .email-suffix {
+        padding: 0 12px;
+        background: var(--bg);
+        color: var(--muted);
+        font-size: 0.85rem;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        border-left: 1px solid var(--border);
+        white-space: nowrap;
+    }
+
+    /* Ajuste para mobile */

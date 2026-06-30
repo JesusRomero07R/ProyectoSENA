@@ -1,0 +1,76 @@
+/* CSS Adicional para la vista de Equipo */
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .user-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-card);
+            position: relative;
+        }
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.9rem;
+        }
+        .user-details strong {
+            font-weight: 600;
+        }
+        .user-details span {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .user-status-tasks {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+        }
+        .role-tag {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        .status-tag-disponible {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #d1fae5;
+            color: #059669;
+        }
+        .status-tag-ocupado {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #fffbeb;
+            color: #9d5000;
+        }
+        .status-tag-baja {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 999px;
+            margin-top: 4px;
+            background-color: #f3f4f6;
+            color: var(--muted);
+        }

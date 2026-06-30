@@ -5,201 +5,14 @@
   <title>Constructora GG – Mi Perfil</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="../styles.css?v=1.0.3" />
-  <style>
-    /* CSS Adicional para la vista de Perfil */
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      margin-bottom: 25px;
-    }
-    .profile-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background-color: var(--primary);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 2rem;
-      box-shadow: var(--shadow-soft);
-    }
-    .profile-name {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .profile-role {
-      font-size: 0.9rem;
-      color: var(--muted);
-    }
-    .profile-badges {
-      display: flex;
-      gap: 8px;
-      margin-top: 5px;
-    }
-    .badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #eef2ff;
-      color: var(--primary);
-      font-weight: 600;
-    }
-    .badge-secondary {
-        background: #f3f4f6;
-        color: var(--muted);
-    }
-
-    .profile-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 25px;
-    }
-    .profile-info-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .profile-info-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .profile-info-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-    .profile-kpis {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-    .profile-kpi-item {
-      padding: 15px;
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      text-align: center;
-    }
-    .profile-kpi-value {
-      display: block;
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    .profile-kpi-label {
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    .profile-footer {
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 1px solid var(--border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
-        color: var(--muted);
-    }
-    .profile-highlight {
-        color: var(--primary);
-        font-weight: 700;
-    }
-
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; padding: 10px; }
-      .sidebar { display: none; }
-      .profile-grid { grid-template-columns: 1fr; }
-    }
-  </style>
+  
 </head>
 <body>
   <div class="app">
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">GG</div>
-        <div class="brand-text">
-          <span>Constructora GG</span>
-          <span>Mi Perfil</span>
-        </div>
-      </div>
-      <div class="app-header-right">
-        <div class="user-chip">
-            <div class="user-avatar" id="header-avatar">JL</div>
-            <div class="user-info">
-                <span id="header-username">Juan López</span>
-                <span id="header-userrole">Operario</span>
-            </div>
-        </div>
-        <button id="logout-button" class="logout-btn" type="button">
-            <span class="icon">⎋</span>
-            <span class="label">Cerrar sesión</span>
-        </button>
-      </div>
-    </header>
+    <div id="app-header"></div>
 
     <main class="layout">
-      <aside class="sidebar">
-        <div>
-          <div class="sidebar-section-title">Menú</div>
-          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
-            <!-- Inicio (Común) -->
-            <a class="nav-link" href="../dashboard.html">
-              <span class="icon">Π</span>
-              <span class="label">Inicio</span>
-            </a>
-            <!-- Admin -->
-            <a class="nav-link role-admin" href="usuarios.html">
-              <span class="icon">👤</span>
-              <span class="label">Usuarios</span>
-            </a>
-            <a class="nav-link role-admin" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Proyectos Globales</span>
-            </a>
-            <!-- Líder -->
-            <a class="nav-link role-lider" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Mis Proyectos</span>
-            </a>
-            <!-- Líder y Operario -->
-            <a class="nav-link role-lider role-operario" href="tareas.html">
-              <span class="icon">✍</span>
-              <span class="label">Tareas</span>
-            </a>
-            <a class="nav-link role-lider" href="equipo.html">
-                <span class="icon">👤</span>
-                <span class="label">Equipo</span>
-            </a>
-            <!-- Inventario / Materiales -->
-            <a class="nav-link role-admin" href="inventario.html">
-              <span class="icon">📦</span>
-              <span class="label">Inventario</span>
-            </a>
-            <a class="nav-link role-lider" href="materiales.html">
-              <span class="icon">📦</span>
-              <span class="label">Materiales</span>
-            </a>
-            <!-- Admin / Reportes -->
-            <a class="nav-link role-admin" href="reportes.html">
-              <span class="icon">기</span>
-              <span class="label">Reportes</span>
-            </a>
-            <a class="nav-link role-admin role-lider role-operario nav-active" href="perfil.html">
-              <span class="icon">👤</span>
-              <span class="label">Perfil</span>
-            </a>
-          </nav>
-        </div>
-        <p class="sidebar-hint" id="role-hint">
-          Configuración de cuenta y datos personales del trabajador.
-        </p>
-      </aside>
+      <div id="app-sidebar"></div>
 
       <section class="content">
         <header class="content-header">
@@ -317,14 +130,7 @@
     </div>
   </div>
 
-    <footer class="app-footer">
-        <div class="footer-nav">
-            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
-            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
-            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
-        </div>
-        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
-      </footer>
-  <script src="../app.js?v=1.3.6"></script>
+    <div id="app-footer"></div>
+  <script type="module" src="../js/main.js"></script>
 </body>
 </html>

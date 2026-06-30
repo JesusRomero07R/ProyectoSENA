@@ -5,256 +5,14 @@
   <title>Constructora GG – Gestión de Proyectos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="../styles.css?v=1.0.3" />
-  <style>
-    /* CSS Consolidado para la vista de Proyectos */
-    .project-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .project-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: var(--bg-card);
-    }
-    .project-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    .project-title {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-    .project-title strong {
-        font-size: 1rem;
-        font-weight: 700;
-    }
-    .project-title span {
-        font-size: 0.75rem;
-        color: var(--muted);
-    }
-    .status-tag {
-        font-size: 0.7rem;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background-color: #d1fae5;
-        color: #059669;
-        font-weight: 600;
-        align-self: flex-start;
-    }
-    .status-tag-finalizado {
-        background-color: #f3f4f6;
-        color: var(--muted);
-    }
-    .progress-section {
-        margin-top: 5px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .progress-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .progress-header span {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--muted);
-    }
-    .progress-percentage {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-    .project-progress-bar {
-        height: 8px;
-        background-color: #e5e7eb;
-        border-radius: 999px;
-        overflow: hidden;
-    }
-    .progress-fill {
-        height: 100%;
-        background-color: var(--primary);
-    }
-    .project-meta-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        font-size: 0.85rem;
-        border-top: 1px dashed var(--border);
-        padding-top: 10px;
-        margin-top: 5px;
-    }
-    .meta-item {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    .meta-item .label {
-        font-weight: 600;
-        color: var(--muted);
-        font-size: 0.75rem;
-    }
-    .meta-item .value {
-        font-weight: 700;
-        color: var(--text);
-    }
-
-    /* Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-    }
-    .modal-content {
-      background-color: var(--bg-card);
-      margin: 5% auto;
-      padding: 25px;
-      border-radius: var(--radius-lg);
-      width: 90%;
-      max-width: 500px;
-      box-shadow: var(--shadow-soft);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .close-modal {
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      color: var(--muted);
-    }
-    .close-modal:hover {
-      color: var(--text);
-    }
-    .input-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .input-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    .input-group input, .input-group select, .input-group textarea {
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 0.9rem;
-      font-family: inherit;
-    }
-    .input-group textarea {
-        resize: vertical;
-        min-height: 80px;
-    }
-
-    /* Ajuste para mobile */
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; padding: 10px; }
-      .sidebar { display: none; }
-    }
-  </style>
+  
 </head>
 <body class="role-admin"> <!-- Role class added dynamically -->
   <div class="app">
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">GG</div>
-        <div class="brand-text">
-          <span>Constructora GG</span>
-          <span class="role-admin-only">Panel de Administración</span>
-          <span class="role-lider-only">Panel del Líder</span>
-        </div>
-      </div>
-      <div class="app-header-right">
-        <div class="user-chip">
-            <div class="user-avatar" id="header-avatar">AM</div>
-            <div class="user-info">
-                <span id="header-username">Ana Martínez</span>
-                <span id="header-userrole">Líder de Proyecto</span>
-            </div>
-        </div>
-        <button id="logout-button" class="logout-btn" type="button">
-            <span class="icon">⎋</span>
-            <span class="label">Cerrar sesión</span>
-        </button>
-      </div>
-    </header>
+    <div id="app-header"></div>
 
     <main class="layout">
-      <aside class="sidebar">
-        <div>
-          <div class="sidebar-section-title">Menú</div>
-          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
-            <!-- Inicio (Común) -->
-            <a class="nav-link" href="../dashboard.html">
-              <span class="icon">Π</span>
-              <span class="label">Inicio</span>
-            </a>
-            <!-- Admin -->
-            <a class="nav-link role-admin" href="usuarios.html">
-              <span class="icon">👤</span>
-              <span class="label">Usuarios</span>
-            </a>
-            <a class="nav-link role-admin nav-active" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Proyectos Globales</span>
-            </a>
-            <!-- Líder -->
-            <a class="nav-link role-lider nav-active" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Mis Proyectos</span>
-            </a>
-            <!-- Líder y Operario -->
-            <a class="nav-link role-lider role-operario" href="tareas.html">
-              <span class="icon">✍</span>
-              <span class="label">Tareas</span>
-            </a>
-            <a class="nav-link role-lider" href="equipo.html">
-                <span class="icon">👤</span>
-                <span class="label">Equipo</span>
-            </a>
-            <!-- Inventario / Materiales -->
-            <a class="nav-link role-admin" href="inventario.html">
-              <span class="icon">📦</span>
-              <span class="label">Inventario</span>
-            </a>
-            <a class="nav-link role-lider" href="materiales.html">
-              <span class="icon">📦</span>
-              <span class="label">Materiales</span>
-            </a>
-            <!-- Admin / Reportes -->
-            <a class="nav-link role-admin" href="reportes.html">
-              <span class="icon">기</span>
-              <span class="label">Reportes</span>
-            </a>
-            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
-              <span class="icon">👤</span>
-              <span class="label">Perfil</span>
-            </a>
-          </nav>
-        </div>
-        <p class="sidebar-hint" id="role-hint">
-            Supervisión de avance, presupuesto y equipo asignado a cada proyecto.
-        </p>
-      </aside>
+      <div id="app-sidebar"></div>
 
       <section class="content">
         <header class="content-header">
@@ -291,14 +49,7 @@
       </section>
     </main>
   </div>
-    <footer class="app-footer">
-        <div class="footer-nav">
-            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
-            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
-            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
-        </div>
-        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
-        </footer>
+    <div id="app-footer"></div>
 
         <!-- Modal para Nuevo Proyecto -->
         <div id="projectModal" class="modal">
@@ -339,6 +90,6 @@
         </div>
         </div>
 
-        <script src="../app.js?v=1.3.6"></script>
+        <script type="module" src="../js/main.js"></script>
         </body>
         </html>

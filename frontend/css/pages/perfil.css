@@ -1,0 +1,104 @@
+/* CSS Adicional para la vista de Perfil */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 2rem;
+      box-shadow: var(--shadow-soft);
+    }
+    .profile-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .profile-role {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .profile-badges {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .badge-secondary {
+        background: #f3f4f6;
+        color: var(--muted);
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+    .profile-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .profile-info-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-info-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .profile-kpis {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .profile-kpi-item {
+      padding: 15px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      text-align: center;
+    }
+    .profile-kpi-value {
+      display: block;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .profile-kpi-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .profile-footer {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    .profile-highlight {
+        color: var(--primary);
+        font-weight: 700;
+    }

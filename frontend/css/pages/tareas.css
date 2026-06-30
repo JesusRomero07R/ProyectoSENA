@@ -1,0 +1,86 @@
+/* CSS Consolidado para la vista de Tareas */
+    .tasks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .task-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .task-title {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+    .task-meta {
+        font-size: 0.75rem;
+        color: var(--muted);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .task-project {
+        font-weight: 600;
+        color: var(--primary-dark);
+        font-size: 0.8rem;
+    }
+    .status-pill-task {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+    .status-pendiente { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; }
+    .status-en-curso { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; }
+    .status-completada { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; }
+
+    .task-details {
+        margin-top: 5px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+        font-size: 0.8rem;
+        display: none;
+    }
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 5px;
+    }
+
+    /* KPI Cards from Operario View */
+    .grid-kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .kpi-card {
+        padding: 15px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .kpi-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .kpi-label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }

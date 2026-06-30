@@ -1,0 +1,67 @@
+/* CSS Adicional para la vista de Reportes */
+    .report-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .report-kpi-card {
+        padding: 15px;
+        border-radius: var(--radius-md);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        text-align: center;
+    }
+    .report-kpi-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .report-kpi-card .label {
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    .report-financial-card {
+        padding: 20px;
+        border-radius: var(--radius-md);
+        background: var(--primary);
+        color: #ffffff;
+        margin-bottom: 20px;
+    }
+    .financial-detail {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .financial-detail:last-child {
+        border-bottom: none;
+    }
+    .financial-detail .label {
+        font-size: 0.85rem;
+        font-weight: 300;
+    }
+    .financial-detail .value {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .latest-report-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .latest-report-item {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 15px;
+        background: var(--bg-card);
+    }
+    .latest-report-item strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+    .latest-report-item span {
+        font-size: 0.85rem;
+        color: var(--muted);
+    }

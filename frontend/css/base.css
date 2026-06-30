@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+:root {
+  --primary: #2563eb;          /* Royal Blue */
+  --primary-dark: #1d4ed8;     /* Darker Cobalto */
+  --primary-light: #eff6ff;    /* Light accent blue */
+  --accent: #d97706;           /* Ámbar de seguridad industrial */
+  --accent-light: #fef3c7;
+  --bg: #f8fafc;               /* Slate 50 */
+  --bg-card: #ffffff;
+  --text: #0f172a;             /* Slate 900 */
+  --muted: #64748b;            /* Slate 500 */
+  --border: #e2e8f0;           /* Slate 200 */
+  
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  
+  --shadow-soft: 0 10px 25px -5px rgba(15, 23, 42, 0.03), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+  --shadow-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 10px 10px -6px rgba(15, 23, 42, 0.06);
+  --shadow-premium: 0 20px 40px -15px rgba(37, 99, 235, 0.12);
+  
+  --success: #10b981;
+  --success-light: #ecfdf5;
+  --danger: #ef4444;
+  --danger-light: #fef2f2;
+  --warning: #f59e0b;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: 
+    radial-gradient(circle at top left, #eef2ff, transparent 60%),
+    linear-gradient(#f8fafc, #f8fafc),
+    radial-gradient(#e2e8f0 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
+  background-position: 0 0, 0 0, 0 0;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+.mt-20 {
+  margin-top: 20px;
+}

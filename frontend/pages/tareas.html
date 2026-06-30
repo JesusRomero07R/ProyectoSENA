@@ -5,183 +5,14 @@
   <title>Constructora GG – Tareas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="../styles.css?v=1.0.3" />
-  <style>
-    /* CSS Consolidado para la vista de Tareas */
-    .tasks-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .task-card {
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        padding: 15px;
-        background: var(--bg-card);
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    .task-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .task-title {
-        font-weight: 700;
-        font-size: 1rem;
-    }
-    .task-meta {
-        font-size: 0.75rem;
-        color: var(--muted);
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    .task-project {
-        font-weight: 600;
-        color: var(--primary-dark);
-        font-size: 0.8rem;
-    }
-    .status-pill-task {
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      font-weight: 600;
-    }
-    .status-pendiente { color: #dc2626; background-color: #fef2f2; border: 1px solid #fee2e2; }
-    .status-en-curso { color: #9d5000; background-color: #fffbeb; border: 1px solid #fce3a2; }
-    .status-completada { color: #059669; background-color: #ecfdf5; border: 1px solid #d1fae5; }
-
-    .task-details {
-        margin-top: 5px;
-        padding-top: 8px;
-        border-top: 1px dashed var(--border);
-        font-size: 0.8rem;
-        display: none;
-    }
-    .task-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        margin-top: 5px;
-    }
-
-    /* KPI Cards from Operario View */
-    .grid-kpis {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-    .kpi-card {
-        padding: 15px;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-md);
-        background: var(--bg-card);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    .kpi-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-    .kpi-label {
-        font-size: 0.8rem;
-        color: var(--muted);
-    }
-
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; padding: 10px; }
-      .sidebar { display: none; }
-    }
-  </style>
+  
 </head>
 <body class="role-lider">
   <div class="app">
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">GG</div>
-        <div class="brand-text">
-          <span>Constructora GG</span>
-          <span class="role-lider-only">Panel del Líder</span>
-          <span class="role-operario-only">Panel de Operario</span>
-        </div>
-      </div>
-      <div class="app-header-right">
-        <div class="user-chip">
-            <div class="user-avatar" id="header-avatar">AM</div>
-            <div class="user-info">
-                <span id="header-username">Ana Martínez</span>
-                <span id="header-userrole">Líder de Proyecto</span>
-            </div>
-        </div>
-        <button id="logout-button" class="logout-btn" type="button">
-            <span class="icon">⎋</span>
-            <span class="label">Cerrar sesión</span>
-        </button>
-      </div>
-    </header>
+    <div id="app-header"></div>
 
     <main class="layout">
-      <aside class="sidebar">
-        <div>
-          <div class="sidebar-section-title">Menú</div>
-          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
-            <!-- Inicio (Común) -->
-            <a class="nav-link" href="../dashboard.html">
-              <span class="icon">Π</span>
-              <span class="label">Inicio</span>
-            </a>
-            <!-- Admin -->
-            <a class="nav-link role-admin" href="usuarios.html">
-              <span class="icon">👤</span>
-              <span class="label">Usuarios</span>
-            </a>
-            <a class="nav-link role-admin" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Proyectos Globales</span>
-            </a>
-            <!-- Líder -->
-            <a class="nav-link role-lider" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Mis Proyectos</span>
-            </a>
-            <!-- Líder y Operario -->
-            <a class="nav-link role-lider role-operario nav-active" href="tareas.html">
-              <span class="icon">✍</span>
-              <span class="label">Tareas</span>
-            </a>
-            <a class="nav-link role-lider" href="equipo.html">
-                <span class="icon">👤</span>
-                <span class="label">Equipo</span>
-            </a>
-            <!-- Inventario / Materiales -->
-            <a class="nav-link role-admin" href="inventario.html">
-              <span class="icon">📦</span>
-              <span class="label">Inventario</span>
-            </a>
-            <a class="nav-link role-lider" href="materiales.html">
-              <span class="icon">📦</span>
-              <span class="label">Materiales</span>
-            </a>
-            <!-- Admin / Reportes -->
-            <a class="nav-link role-admin" href="reportes.html">
-              <span class="icon">기</span>
-              <span class="label">Reportes</span>
-            </a>
-            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
-              <span class="icon">👤</span>
-              <span class="label">Perfil</span>
-            </a>
-          </nav>
-        </div>
-        <p class="sidebar-hint" id="role-hint">
-            Gestión y reporte de tareas asignadas.
-        </p>
-      </aside>
+      <div id="app-sidebar"></div>
 
       <section class="content">
         <header class="content-header">
@@ -245,14 +76,7 @@
       </section>
     </main>
   </div>
-    <footer class="app-footer">
-        <div class="footer-nav">
-            <a href="../shared/sobre_nosotros.html" class="footer-link">Sobre nosotros</a>
-            <a href="../shared/soporte_ayuda.html" class="footer-link">Soporte y ayuda</a>
-            <a href="../shared/terminos_condiciones.html" class="footer-link">Términos y condiciones</a>
-        </div>
-        <p class="footer-copy">© 2025 Constructora GG. Todos los derechos reservados.</p>
-        </footer>
+    <div id="app-footer"></div>
 
         <!-- Modal para Reportar Avance de Tarea -->
         <div id="reportModal" class="modal">
@@ -404,6 +228,6 @@
           </div>
         </div>
 
-        <script src="../app.js?v=1.3.6"></script>
+        <script type="module" src="../js/main.js"></script>
         </body>
         </html>

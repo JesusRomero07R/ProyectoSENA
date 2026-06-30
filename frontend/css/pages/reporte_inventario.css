@@ -1,0 +1,62 @@
+.report-container {
+        background: var(--bg-card);
+        padding: 30px;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+    }
+    .report-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        border-bottom: 2px solid var(--bg);
+        padding-bottom: 15px;
+    }
+    .report-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    .report-table th, .report-table td {
+        text-align: left;
+        padding: 12px 15px;
+        border-bottom: 1px solid var(--border);
+    }
+    .report-table th {
+        background: var(--bg);
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-ok { background: #d1fae5; color: #059669; }
+    .status-low { background: #fee2e2; color: #ef4444; }
+    
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .summary-card {
+        background: var(--bg);
+        padding: 20px;
+        border-radius: var(--radius-md);
+        text-align: center;
+    }
+    .summary-card .value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+    }
+    .summary-card .label {
+        font-size: 0.9rem;
+        color: var(--muted);
+    }

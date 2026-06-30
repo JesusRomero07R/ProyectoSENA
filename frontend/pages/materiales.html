@@ -5,177 +5,14 @@
   <title>Constructora GG – Inventario de Obra</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="../styles.css?v=1.0.3" />
-  <style>
-    .materials-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-    }
-    .project-section {
-        margin-bottom: 30px;
-    }
-    .project-header-title {
-        background: var(--bg);
-        padding: 10px 15px;
-        border-radius: var(--radius-md);
-        margin-bottom: 15px;
-        border-left: 4px solid var(--primary);
-        font-weight: 700;
-    }
-    .material-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 15px;
-      background: var(--bg-card);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .material-main {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    .stock-badge {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: var(--primary);
-    }
-    /* Modal Styles */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-    }
-    .modal-content {
-      background-color: var(--bg-card);
-      margin: 5% auto;
-      padding: 25px;
-      border-radius: var(--radius-lg);
-      width: 90%;
-      max-width: 500px;
-      box-shadow: var(--shadow-soft);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .close-modal {
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      color: var(--muted);
-    }
-    .input-group {
-      margin-bottom: 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .input-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-    .input-group input, .input-group select {
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 768px) {
-      .layout { grid-template-columns: 1fr; padding: 10px; }
-      .sidebar { display: none; }
-    }
-  </style>
+  
 </head>
 <body class="role-lider">
   <div class="app">
-    <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">GG</div>
-        <div class="brand-text">
-          <span>Constructora GG</span>
-          <span>Inventario de Obra</span>
-        </div>
-      </div>
-      <div class="app-header-right">
-        <div class="user-chip">
-            <div class="user-avatar" id="header-avatar">--</div>
-            <div class="user-info">
-                <span id="header-username">Cargando...</span>
-                <span id="header-userrole">Rol</span>
-            </div>
-        </div>
-        <button id="logout-button" class="logout-btn" type="button">
-            <span class="icon">⎋</span>
-            <span class="label">Cerrar sesión</span>
-        </button>
-      </div>
-    </header>
+    <div id="app-header"></div>
 
     <main class="layout">
-      <aside class="sidebar">
-        <div>
-          <div class="sidebar-section-title">Menú</div>
-          <nav class="nav" id="unified-nav" aria-label="Navegación principal">
-            <!-- Inicio (Común) -->
-            <a class="nav-link" href="../dashboard.html">
-              <span class="icon">Π</span>
-              <span class="label">Inicio</span>
-            </a>
-            <!-- Admin -->
-            <a class="nav-link role-admin" href="usuarios.html">
-              <span class="icon">👤</span>
-              <span class="label">Usuarios</span>
-            </a>
-            <a class="nav-link role-admin" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Proyectos Globales</span>
-            </a>
-            <!-- Líder -->
-            <a class="nav-link role-lider" href="proyectos.html">
-              <span class="icon">✓</span>
-              <span class="label">Mis Proyectos</span>
-            </a>
-            <!-- Líder y Operario -->
-            <a class="nav-link role-lider role-operario" href="tareas.html">
-              <span class="icon">✍</span>
-              <span class="label">Tareas</span>
-            </a>
-            <a class="nav-link role-lider" href="equipo.html">
-                <span class="icon">👤</span>
-                <span class="label">Equipo</span>
-            </a>
-            <!-- Inventario / Materiales -->
-            <a class="nav-link role-admin" href="inventario.html">
-              <span class="icon">📦</span>
-              <span class="label">Inventario Global</span>
-            </a>
-            <a class="nav-link role-lider nav-active" href="materiales.html">
-              <span class="icon">📦</span>
-              <span class="label">Materiales</span>
-            </a>
-            <!-- Admin / Reportes -->
-            <a class="nav-link role-admin" href="reportes.html">
-              <span class="icon">기</span>
-              <span class="label">Reportes</span>
-            </a>
-            <a class="nav-link role-admin role-lider role-operario" href="perfil.html">
-              <span class="icon">👤</span>
-              <span class="label">Perfil</span>
-            </a>
-          </nav>
-        </div>
-      </aside>
+      <div id="app-sidebar"></div>
 
       <section class="content">
         <header class="content-header">
@@ -234,6 +71,6 @@
     </div>
   </div>
 
-  <script src="../app.js?v=1.3.6"></script>
+  <script type="module" src="../js/main.js"></script>
 </body>
 </html>

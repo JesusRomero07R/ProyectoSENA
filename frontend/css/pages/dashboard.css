@@ -1,0 +1,7 @@
+/* Estilos dinámicos para el Dashboard Unificado */
+    .role-section { display: none; } /* Por defecto oculto, JS lo mostrará */
+    
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .project-card-list { display: flex; flex-direction: column; gap: 12px; }
+    .project-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border-radius: var(--radius-md); background: #f9fafb; border: 1px solid var(--border); }
+    .project-progress-value { font-weight: 700; font-size: 1.2rem; color: var(--primary); align-self: center; }

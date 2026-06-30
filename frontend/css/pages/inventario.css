@@ -1,0 +1,122 @@
+/* CSS Adicional para la vista de Inventario */
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .material-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 15px;
+      background: var(--bg-card);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+    }
+    .material-info {
+        grid-column: 1 / 2;
+    }
+    .material-name {
+        font-weight: 700;
+        font-size: 1rem;
+        display: block;
+    }
+    .material-category {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .material-stock {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .stock-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+    .stock-unit {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 600;
+    }
+    .stock-indicator {
+        grid-column: 1 / 3;
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .indicator-fill {
+        height: 100%;
+        background: var(--primary);
+    }
+    .indicator-low { background: #ef4444; }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background-color: var(--bg-card);
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--shadow-soft);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .close-modal:hover {
+      color: var(--text);
+    }
+    .input-group {
+      margin-bottom: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .input-group input, .input-group select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+    }
+
+    .material-actions {
+        grid-column: 1 / 3;
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    /* Ajuste para mobile */
