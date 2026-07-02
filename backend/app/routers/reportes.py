@@ -93,6 +93,8 @@ async def create_reporte(
         if reporte.porcentaje >= 100:
             tarea.estado = "finalizada"
             tarea.id_usuario_finalizado_fk = current_user.id_usuario
+            tarea.motivo_finalizacion = "progreso_completado"
+            db.add(models.EventoTarea(id_tarea_fk=tarea.id_tarea, tipo="finalizada", motivo="progreso_completado", id_usuario_fk=current_user.id_usuario))
         elif reporte.porcentaje > 0:
             tarea.estado = "en_progreso"
 

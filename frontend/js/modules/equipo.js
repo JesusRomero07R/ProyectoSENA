@@ -4,6 +4,11 @@ import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.
 import { toast } from '../toast.js';
 
 export async function setupEquipoPage(projectId = 'all') {
+    if (projectId === 'all') {
+        const params = new URLSearchParams(window.location.search);
+        projectId = params.get("project_id") || "all";
+    }
+
     const filters = document.querySelectorAll("#teamFilters .chip");
     filters.forEach(chip => chip.onclick = () => { 
         document.querySelectorAll("#teamFilters .chip").forEach(c => c.classList.remove("chip-active")); 
@@ -98,6 +103,7 @@ export async function setupEquipoPage(projectId = 'all') {
         }
     }
     renderProjectSubNavigation('equipo');
+    cargarEquipoPagina('all', '', projectId);
 }
 
 async function cargarEquipoPagina(filterStatus = 'all', term = '', projectId = 'all') {

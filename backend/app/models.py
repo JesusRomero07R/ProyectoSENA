@@ -93,10 +93,25 @@ class Tarea(Base):
     avance = Column(Integer, default=0) # Porcentaje de avance
     id_proyecto_fk = Column(Integer, ForeignKey("proyectos.id_proyecto"))
     id_usuario_finalizado_fk = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=True)
+    motivo_finalizacion = Column(String(100), nullable=True)  # "progreso_completado" | "finalizado_por_lider"
 
     proyecto = relationship("Proyecto")
     finalizador = relationship("Usuario", foreign_keys=[id_usuario_finalizado_fk])
     operarios = relationship("Usuario", secondary=tareas_operarios)
+    eventos = relationship("EventoTarea", back_populates="tarea", order_by="EventoTarea.fecha")
+
+class EventoTarea(Base):
+    __tablename__ = "eventos_tarea"
+    id_evento = Column(Integer, primary_key=True, index=True)
+    id_tarea_fk = Column(Integer, ForeignKey("tareas.id_tarea"), nullable=False)
+    tipo = Column(String(50), nullable=False)  # "finalizada" | "reactivada"
+    motivo = Column(String(100), nullable=True)  # "progreso_completado" | "finalizado_por_lider"
+    id_usuario_fk = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
+    fecha = Column(DateTime, server_default=func.now())
+
+    tarea = relationship("Tarea", back_populates="eventos")
+    usuario = relationship("Usuario")
+
 
 class ReporteAvance(Base):
     __tablename__ = "reportes_avance"

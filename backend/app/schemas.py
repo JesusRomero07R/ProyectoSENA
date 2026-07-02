@@ -168,6 +168,7 @@ class ReporteAvanceCreate(ReporteAvanceBase):
 class ReporteAvance(ReporteAvanceBase):
     id_reporte: int
     id_operario_fk: int
+    nombre_operario: Optional[str] = None
     fecha_reporte: datetime
     materiales_detalles: List[ReporteMaterialDetailed] = []
 
@@ -178,6 +179,9 @@ class TareaDetalleOperario(TareaOperario):
     horas_totales: float = 0.0
     materiales_totales: List[ReporteMaterialDetailed] = []
     historial_reportes: List[ReporteAvance] = []
+    finalizador_nombre: Optional[str] = None
+    motivo_finalizacion: Optional[str] = None
+    eventos_historial: List[dict] = []
 
 # --- Otros ---
 class OperarioEstado(BaseModel):

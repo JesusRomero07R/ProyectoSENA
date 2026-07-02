@@ -17,9 +17,8 @@
       <section class="content">
         <header class="content-header">
           <div class="content-title">
-            <h1 class="role-admin">Gestión de Tareas</h1>
-            <h1 class="role-lider">Gestión de Tareas</h1>
-            <h1 class="role-operario">Mis Tareas</h1>
+            <h1 class="role-lider-admin">Gestión de Tareas</h1>
+            <h1 class="role-operario-only">Mis Tareas</h1>
             <p>Revisa y gestiona las actividades de obra.</p>
           </div>
           
@@ -31,7 +30,7 @@
                   </select>
               </div>
 
-              <div class="chips-row" id="taskFilters">
+              <div class="chips-row" id="taskFilters" style="display: flex; flex-direction: row; flex-wrap: wrap;">
                 <div class="chip chip-active" data-status="active">Pendientes/En curso</div>
                 <div class="chip" data-status="pendiente">Pendientes</div>
                 <div class="chip" data-status="en_progreso">En curso</div>
@@ -42,7 +41,7 @@
         </header>
 
         <section>
-            <div class="grid-kpis">
+            <div class="grid-3">
                 <div class="kpi-card">
                     <span class="kpi-label">Pendientes</span>
                     <span class="kpi-value" id="valTareasPendientes">0</span>
@@ -107,7 +106,7 @@
                       <label for="report_obs">Observaciones / Novedades</label>
                       <textarea id="report_obs" name="observaciones" placeholder="Escribe qué se hizo hoy..."></textarea>
                   </div>
-                  <div class="input-group" style="border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-md); background: #f9fafb;">
+                  <div class="input-group" style="border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-md);">
                       <label style="font-weight: 700; margin-bottom: 10px; display: block;">Materiales Usados</label>
                       <div id="modalMaterialsList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
                         <!-- Se cargarán dinámicamente -->
@@ -142,7 +141,7 @@
               </div>
 
               <!-- Materiales Acumulados -->
-              <div class="card" style="margin-bottom: 20px; background: #f8fafc;">
+              <div class="card" style="margin-bottom: 20px;">
                   <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text);">Materiales Utilizados</h3>
                   <div id="detail_materials_summary" style="display: flex; flex-wrap: wrap; gap: 8px;">
                       <!-- Se cargará dinámicamente -->

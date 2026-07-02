@@ -36,7 +36,7 @@ async def get_my_tasks(
     return tareas
 
 @router.get("/tareas/mis-tareas/{id_tarea}", response_model=schemas.TareaDetalleOperario)
-async def get_my_task_detail(
+def get_my_task_detail(
     id_tarea: int,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(require_role([1, 2, 3]))
@@ -78,16 +78,37 @@ async def get_my_task_detail(
                 materiales_map[mid] = {"nombre_material": md.material.nombre, "cantidad_usada": 0, "unidad_medida": md.material.unidad_medida}
             materiales_map[mid]["cantidad_usada"] += md.cantidad_usada
 
+        # Obtener nombre del operario que reportó
+        operario = db.query(models.Usuario).filter(models.Usuario.id_usuario == r.id_operario_fk).first()
+        nombre_operario = f"{operario.nombre} {operario.apellido}" if operario else "Desconocido"
+
         historial_final.append({
             "id_reporte": r.id_reporte,
             "id_tarea_fk": r.id_tarea_fk,
             "id_operario_fk": r.id_operario_fk,
+            "nombre_operario": nombre_operario,
             "fecha_reporte": r.fecha_reporte,
             "porcentaje": r.porcentaje,
             "observaciones": r.observaciones,
             "foto_url": r.foto_url,
             "horas_trabajadas": r.horas_trabajadas,
             "materiales_detalles": m_detalles
+        })
+
+    finalizador_nombre = None
+    if tarea.id_usuario_finalizado_fk and tarea.finalizador:
+        finalizador_nombre = f"{tarea.finalizador.nombre} {tarea.finalizador.apellido}"
+
+    # Eventos de ciclo de vida (finalizaciones, reactivaciones)
+    eventos = db.query(models.EventoTarea).filter(models.EventoTarea.id_tarea_fk == id_tarea).order_by(models.EventoTarea.fecha).all()
+    eventos_historial = []
+    for ev in eventos:
+        nombre_usuario = f"{ev.usuario.nombre} {ev.usuario.apellido}" if ev.usuario else "Desconocido"
+        eventos_historial.append({
+            "tipo": ev.tipo,
+            "motivo": ev.motivo,
+            "nombre_usuario": nombre_usuario,
+            "fecha": ev.fecha.isoformat() if ev.fecha else None
         })
 
     return {
@@ -100,7 +121,10 @@ async def get_my_task_detail(
         "prioridad": tarea.prioridad,
         "horas_totales": horas_totales,
         "materiales_totales": list(materiales_map.values()),
-        "historial_reportes": historial_final
+        "historial_reportes": historial_final,
+        "finalizador_nombre": finalizador_nombre,
+        "motivo_finalizacion": tarea.motivo_finalizacion,
+        "eventos_historial": eventos_historial
     }
 
 @router.post("/tareas", response_model=schemas.Tarea)
@@ -211,10 +235,15 @@ async def update_tarea(
     # REGLA DE AUDITORÍA: Si el estado cambia a 'finalizada', grabamos quién lo hizo
     if tarea_update.estado == "finalizada":
         db_tarea.id_usuario_finalizado_fk = current_user.id_usuario
+        db_tarea.motivo_finalizacion = "finalizado_por_lider"
         db_tarea.avance = 100
+        db.add(models.EventoTarea(id_tarea_fk=db_tarea.id_tarea, tipo="finalizada", motivo="finalizado_por_lider", id_usuario_fk=current_user.id_usuario))
     elif estado_anterior == "finalizada" and tarea_update.estado and tarea_update.estado != "finalizada":
-        # Si se reactiva, limpiamos el finalizador
+        # Evento de reactivación
+        db.add(models.EventoTarea(id_tarea_fk=db_tarea.id_tarea, tipo="reactivada", id_usuario_fk=current_user.id_usuario))
+        # Si se reactiva, limpiamos el finalizador y el motivo
         db_tarea.id_usuario_finalizado_fk = None
+        db_tarea.motivo_finalizacion = None
         # Si el líder reactiva la tarea, esta debe volver a 0% de avance
         db_tarea.avance = 0
         # Limpiar los operarios asociados para que se deba reasignar

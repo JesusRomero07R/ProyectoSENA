@@ -116,6 +116,7 @@ export async function setupTasksPage() {
         }; 
     }
     if (document.getElementById("closeNewTaskModal")) document.getElementById("closeNewTaskModal").onclick = () => document.getElementById("newTaskModal").style.display = "none";
+    if (document.getElementById("closeTaskDetailModal")) document.getElementById("closeTaskDetailModal").onclick = () => document.getElementById("taskDetailModal").style.display = "none";
     
     const btnAddMat = document.getElementById("btnModalAddMaterial");
     const materialsList = document.getElementById("modalMaterialsList");
@@ -150,7 +151,7 @@ export async function setupTasksPage() {
             const projIdSelect = document.getElementById("task_project_id");
             const finalProjId = projIdSelect ? projIdSelect.value : data.id_proyecto_fk;
             const res = await fetch(`${API_URL}/tareas`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ ...data, id_operarios: ops, id_proyecto_fk: parseInt(finalProjId) }) });
-            if (res.ok) { toast("Tarea creada", 'success'); document.getElementById("newTaskModal").style.display = "none"; newTaskForm.reset(); cargarTareas(); }
+            if (res.ok) { toast("Tarea creada", 'success'); document.getElementById("newTaskModal").style.display = "none"; newTaskForm.reset(); cargarTareas(document.querySelector("#taskFilters .chip-active")?.dataset.status || 'active', "", finalProjId); }
         };
     }
     if (document.getElementById("closeReportModal")) document.getElementById("closeReportModal").onclick = () => document.getElementById("reportModal").style.display = "none";
@@ -332,7 +333,7 @@ async function cargarTareas(status = 'active', search = '', projectId = 'all') {
             const isLider = payload.role === 2;
             const isProjActive = t.proyecto_estado ? t.proyecto_estado.toLowerCase() !== 'finalizado' : true;
             container.innerHTML += `<div class="task-card">
-                <div class="task-header"><strong>${t.nombre_proyecto || 'S/P'}</strong><span class="status-pill-task ${sClass}">${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</span></div>
+                <div class="task-header">${projectId === 'all' ? `<strong>${t.nombre_proyecto || 'S/P'}</strong>` : ''}<span class="status-pill-task ${sClass}">${t.estado.toUpperCase()} ${t.finalizador_nombre ? `(Por: ${t.finalizador_nombre})` : ''}</span></div>
                 <div class="task-title">${t.titulo}</div>
                 <div class="task-meta"><span>Avance: ${t.avance}% | Prioridad: ${t.prioridad}</span><span>Equipo: ${t.operarios_nombres && t.operarios_nombres.length ? t.operarios_nombres.join(", ") : 'Sin asignar'}</span></div>
                 <div class="task-actions">
@@ -377,7 +378,10 @@ async function reactivarTarea(id) {
 async function abrirModalDetalleTask(id) {
     try {
         const res = await fetch(`${API_URL}/tareas/mis-tareas/${id}`, { headers: getAuthHeaders() });
-        if (!res.ok) throw new Error("Error al obtener detalles");
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(`HTTP ${res.status}: ${err.detail || 'Error al obtener detalles'}`);
+        }
         const t = await res.json();
 
         document.getElementById("detail_task_title_h2").textContent = t.titulo;
@@ -391,21 +395,52 @@ async function abrirModalDetalleTask(id) {
             : '<span style="font-size:0.8rem; color:var(--muted);">Sin materiales</span>';
 
         // Historial de reportes
-        const user = await ensureLoggedInUser();
-        const userId = user ? user.id_usuario : null;
+        const payload = getPayload();
+        const userId = payload ? payload.id : null;
 
         const histCont = document.getElementById("detail_reports_history");
-        histCont.innerHTML = t.historial_reportes.length
-            ? t.historial_reportes.map(r => {
+        const unifiedHistory = [];
+
+        // Add reports
+        if (t.historial_reportes && t.historial_reportes.length) {
+            t.historial_reportes.forEach(r => {
+                unifiedHistory.push({
+                    type: 'report',
+                    date: new Date(r.fecha_reporte),
+                    data: r
+                });
+            });
+        }
+
+        // Add events
+        if (t.eventos_historial && t.eventos_historial.length) {
+            t.eventos_historial.forEach(ev => {
+                unifiedHistory.push({
+                    type: 'event',
+                    date: new Date(ev.fecha),
+                    data: ev
+                });
+            });
+        }
+
+        // Sort descending (newest first)
+        unifiedHistory.sort((a, b) => b.date - a.date);
+
+        const reportItems = unifiedHistory.map(item => {
+            if (item.type === 'report') {
+                const r = item.data;
                 const canDelete = userId && r.id_operario_fk === userId && t.estado !== 'finalizada';
                 return `
                 <div class="report-item">
                     <div class="report-item-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                         <div>
-                            <strong class="report-date">${new Date(r.fecha_reporte).toLocaleDateString()} ${new Date(r.fecha_reporte).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
+                            <strong class="report-date">${item.date.toLocaleDateString()} ${item.date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</strong>
                             <span class="report-percentage">Avance: ${r.porcentaje}%</span>
                         </div>
                         ${canDelete ? `<button class="btn-danger btn-small" style="padding: 2px 6px; font-size: 0.75rem; width: auto; height: auto; border-radius: 4px;" data-action="eliminar-reporte" data-id="${r.id_reporte}" data-tarea="${id}">Eliminar</button>` : ''}
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--accent); margin-bottom:4px;">
+                        👷 ${r.nombre_operario || 'Operario desconocido'}
                     </div>
                     <p class="notification-text" style="margin-bottom:5px;">${r.observaciones || 'Sin observaciones'}</p>
                     <div style="font-size:0.75rem; color:var(--muted);">
@@ -414,8 +449,43 @@ async function abrirModalDetalleTask(id) {
                     </div>
                 </div>
                 `;
-            }).join('')
+            } else {
+                const ev = item.data;
+                const esFinalizada = ev.tipo === 'finalizada';
+                const esProgreso = ev.motivo === 'progreso_completado';
+                let color, icono, etiqueta, descripcion;
+
+                if (esFinalizada) {
+                    color = '#22c55e';
+                    icono = '✅';
+                    etiqueta = esProgreso ? 'Progreso Completado (100%)' : 'Finalizado por Líder';
+                    descripcion = esProgreso
+                        ? `Registrado por <strong>${ev.nombre_usuario}</strong> al alcanzar el 100% de avance.`
+                        : `Finalización manual por el líder <strong>${ev.nombre_usuario}</strong>.`;
+                } else {
+                    color = '#f59e0b';
+                    icono = '🔄';
+                    etiqueta = 'Tarea Reactivada';
+                    descripcion = `Reactivada por <strong>${ev.nombre_usuario}</strong>.`;
+                }
+
+                const fechaStr = `${item.date.toLocaleDateString()} ${item.date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+
+                return `
+                <div class="report-item" style="border-left: 3px solid ${color}; padding-left: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:0.8rem; color:${color}; font-weight:600;">${icono} ${etiqueta}</div>
+                        <span style="font-size:0.7rem; color:var(--muted);">${fechaStr}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--muted); margin-top:2px;">${descripcion}</div>
+                </div>`;
+            }
+        });
+
+        histCont.innerHTML = reportItems.length
+            ? reportItems.join('')
             : "<p style='text-align:center; color:var(--muted); padding:20px;'>No hay reportes registrados.</p>";
+
 
         document.getElementById("taskDetailModal").style.display = "block";
         
@@ -427,8 +497,8 @@ async function abrirModalDetalleTask(id) {
             });
         }
     } catch (e) {
-        console.error(e);
-        toast("No se pudo cargar el historial de la tarea.", 'error');
+        console.error('abrirModalDetalleTask error:', e);
+        toast(`Error: ${e.message}`, 'error');
     }
 }
 
