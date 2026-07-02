@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 export async function exportarProyectoPDF(idProyecto) {
     try {
@@ -10,7 +11,7 @@ export async function exportarProyectoPDF(idProyecto) {
         });
         if (!res.ok) {
             const err = await res.json();
-            alert("Error al cargar reporte: " + (err.detail || "No autorizado"));
+            toast("Error al actualizar el stock: " + (err.detail || "No autorizado"), 'error');
             return;
         }
         const p = await res.json();
@@ -18,7 +19,7 @@ export async function exportarProyectoPDF(idProyecto) {
         // Generar ventana de impresión
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
-            alert("El navegador bloqueó la ventana emergente. Por favor permita las ventanas emergentes para este sitio.");
+            toast("El navegador bloqueó la ventana emergente. Por favor permita las ventanas emergentes para este sitio.", 'warn');
             return;
         }
         
@@ -271,15 +272,11 @@ export async function exportarProyectoPDF(idProyecto) {
                 <div class="section-title">Personal Asignado (Equipo)</div>
                 ${operariosHTML}
 
-                <div class="page-break"></div>
-
                 <div class="section-title">Inventario en Obra</div>
                 ${inventarioHTML}
 
                 <div class="section-title">Control de Tareas</div>
                 ${tareasHTML}
-
-                <div class="page-break"></div>
 
                 <div class="section-title">Historial de Avances y Novedades</div>
                 ${reportesHTML}
@@ -297,7 +294,7 @@ export async function exportarProyectoPDF(idProyecto) {
         printWindow.document.close();
     } catch (e) {
         console.error("Error al exportar PDF:", e);
-        alert("Error de conexión al generar el reporte en PDF.");
+        toast("Error de conexión al generar el reporte en PDF.", 'error');
     }
 }
 

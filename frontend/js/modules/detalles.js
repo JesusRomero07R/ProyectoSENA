@@ -1,6 +1,8 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
+import { exportarProyectoPDF } from './pdf.js';
 
 export async function setupProjectDetailPage() {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -23,14 +25,14 @@ export async function setupProjectDetailPage() {
                     body: JSON.stringify({ id_proyecto: parseInt(id), id_usuarios: ids }) 
                 });
                 if (res.ok) { 
-                    alert("Equipo actualizado correctamente."); 
+                    toast("Equipo actualizado correctamente.", 'success'); 
                     document.getElementById("teamModal").style.display = "none"; 
                     cargarEquipoProyecto(id); 
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo actualizar el equipo"));
+                    toast("Error: " + (err.detail || "No se pudo actualizar el equipo"), 'error');
                 }
-            } catch (err) { alert("Error de conexión"); }
+            } catch (err) { toast("Error de conexión", 'error'); }
         };
     }
     const btnPDF = document.getElementById("btnGenerarPDF");
@@ -51,13 +53,58 @@ async function refrescarDetallesProyecto(id) {
             document.getElementById("detNombre").textContent = p.nombre;
             document.getElementById("detEstado").textContent = p.estado;
             document.getElementById("detAvance").textContent = `${p.avance_general}%`;
-            document.getElementById("detLider").textContent = p.lider ? `${p.lider.nombre} ${p.lider.apellido}` : 'No asignado';
-            document.getElementById("detPresupuesto").textContent = `$${p.presupuesto.toLocaleString()}`;
-            const isProjectActive = p.estado.toLowerCase() !== 'finalizado';
-            
-            // Ocultar botón de asignación de equipo si el proyecto está finalizado o el usuario no es Admin
             const payload = getPayload();
             const isAdmin = payload && payload.role === 1;
+            const isProjectActive = p.estado.toLowerCase() !== 'finalizado';
+
+            let liderHtml = p.lider ? `${p.lider.nombre} ${p.lider.apellido}` : 'No asignado';
+            if (isAdmin && isProjectActive) {
+                liderHtml += ` <button id="btnChangeLider" class="btn-ghost btn-sm" style="padding:0 5px; font-size:0.8rem; margin-left:5px; color:var(--primary);">✏️ Cambiar</button>`;
+            }
+            document.getElementById("detLider").innerHTML = liderHtml;
+
+            const btnChangeLider = document.getElementById("btnChangeLider");
+            if (btnChangeLider) {
+                btnChangeLider.onclick = async () => {
+                    try {
+                        const resL = await fetch(`${API_URL}/usuarios?id_rol_fk=2`, { headers: getAuthHeaders() });
+                        const leaders = await resL.json();
+                        const options = leaders.map(l => `<option value="${l.id_usuario}" ${p.id_lider_fk === l.id_usuario ? 'selected' : ''}>${l.nombre} ${l.apellido}</option>`).join('');
+                        
+                        document.getElementById("detLider").innerHTML = `
+                            <select id="selNewLider" style="padding:2px 4px; font-size:0.85rem; border-radius:4px; border:1px solid var(--border); background:var(--bg-card); color:var(--text);">
+                                <option value="">-- Seleccionar --</option>
+                                ${options}
+                            </select> 
+                            <button id="btnSaveLider" style="background:none; border:none; color:var(--success); cursor:pointer; font-size:1rem; margin-left:4px;">✓</button> 
+                            <button id="btnCancelLider" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:1rem; margin-left:4px;">✕</button>
+                        `;
+                        
+                        document.getElementById("btnCancelLider").onclick = () => refrescarDetallesProyecto(id);
+                        document.getElementById("btnSaveLider").onclick = async () => {
+                            const newLiderId = document.getElementById("selNewLider").value;
+                            if (!newLiderId) return;
+                            try {
+                                const updateRes = await fetch(`${API_URL}/proyectos/${id}`, {
+                                    method: 'PUT',
+                                    headers: getAuthHeaders(),
+                                    body: JSON.stringify({ id_lider_fk: parseInt(newLiderId) })
+                                });
+                                if (updateRes.ok) {
+                                    import('../toast.js').then(m => m.toast("Líder actualizado", "success"));
+                                    refrescarDetallesProyecto(id);
+                                } else {
+                                    import('../toast.js').then(m => m.toast("Error al cambiar líder", "error"));
+                                }
+                            } catch (e) { console.error(e); }
+                        };
+                    } catch (e) { console.error(e); }
+                };
+            }
+
+            document.getElementById("detPresupuesto").textContent = `$${p.presupuesto.toLocaleString()}`;
+            
+            // Ocultar botón de asignación de equipo si el proyecto está finalizado o el usuario no es Admin
             const btnManageTeam = document.getElementById("btnManageTeam");
             if (btnManageTeam) {
                 btnManageTeam.style.display = (isProjectActive && isAdmin) ? "block" : "none";
@@ -160,17 +207,17 @@ function abrirModalConfirmacionEstado(id, nombre, nuevoEstado) {
             });
 
             if (res.ok) {
-                alert(`Proyecto marcado como ${nuevoEstado.toUpperCase()} exitosamente.`);
+                toast(`Proyecto marcado como ${nuevoEstado.toUpperCase()} exitosamente.`, 'success');
                 cerrar();
                 // Recargar detalles
                 refrescarDetallesProyecto(id);
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.detail || "No se pudo cambiar el estado del proyecto"));
+                toast("Error: " + (err.detail || "No se pudo cambiar el estado del proyecto"), 'error');
             }
         } catch (err) {
             console.error("Error al cambiar estado de proyecto:", err);
-            alert("Error de conexión al servidor.");
+            toast("Error de conexión al servidor.", 'error');
         }
     };
 
@@ -210,11 +257,20 @@ async function cargarEquipoProyecto(id, isProjectActive = true) {
     try {
         const res = await fetch(`${API_URL}/proyectos/${id}/estado-equipo`, { headers: getAuthHeaders() });
         const team = await res.json();
+        const payload = getPayload();
+        const canManage = payload && payload.role !== 3 && isProjectActive;
         eCont.innerHTML = team.length ? "" : "<p>Sin personal.</p>";
         team.forEach(e => {
             const tareasText = e.tareas_activas && e.tareas_activas.length ? `En: ${e.tareas_activas.join(", ")}` : 'Disponible';
-            eCont.innerHTML += `<div class="list-item"><div><strong>${e.nombre} ${e.apellido}</strong><br><small class="${e.en_tarea ? 'badge-status-inactive' : 'badge-status-active'}">${tareasText}</small></div></div>`;
+            const btn = canManage ? `<button data-action="desvincular" data-user="${e.id_usuario}" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;font-weight:bold;">✕ Quitar</button>` : '';
+            eCont.innerHTML += `<div class="list-item" style="display:flex; justify-content:space-between; align-items:center;"><div><strong>${e.nombre} ${e.apellido}</strong><br><small class="${e.en_tarea ? 'badge-status-inactive' : 'badge-status-active'}">${tareasText}</small></div>${btn}</div>`;
         });
+        if (!eCont.dataset.bound) {
+            eCont.dataset.bound = "true";
+            eCont.addEventListener('click', e => {
+                if (e.target.dataset.action === "desvincular") desvincularOperario(id, e.target.dataset.user);
+            });
+        }
     } catch (e) { console.error(e); }
 }
 
@@ -234,13 +290,13 @@ async function desvincularOperario(projectId, userId) {
         try {
             const res = await fetch(`${API_URL}/proyectos/${projectId}/equipo/${userId}`, { method: 'DELETE', headers: getAuthHeaders() });
             if (res.ok) {
-                alert("Operario desvinculado.");
+                toast("Operario desvinculado.", 'success');
                 await refrescarDetallesProyecto(projectId);
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.detail || "No se pudo desvincular"));
+                toast("Error: " + (err.detail || "No se pudo desvincular"), 'error');
             }
-        } catch (e) { alert("Error de conexión"); }
+        } catch (e) { toast("Error de conexión", 'error'); }
     }
 }
 
@@ -252,28 +308,11 @@ async function cargarOperariosDisponibles(currentProjectId) {
         const resDisp = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
         const disponibles = await resDisp.json();
 
-        // 2. Obtener operarios ya asignados a este proyecto para mantenerlos marcados
-        const resProj = await fetch(`${API_URL}/proyectos/${currentProjectId}`, { headers: getAuthHeaders() });
-        const proyecto = await resProj.json();
-        const asignadosIds = proyecto.id_operarios || [];
-
-        // 3. Obtener nombres de los ya asignados (usamos /usuarios?id_rol_fk=3 para todos los operarios)
-        const resAll = await fetch(`${API_URL}/usuarios?id_rol_fk=3`, { headers: getAuthHeaders() });
-        const todos = await resAll.json();
-        const misAsignados = todos.filter(u => asignadosIds.includes(u.id_usuario));
-
-        // Combinar listas sin duplicados
-        const listaCompleta = [...disponibles];
-        misAsignados.forEach(a => {
-            if (!listaCompleta.find(l => l.id_usuario === a.id_usuario)) listaCompleta.push(a);
-        });
-
-        container.innerHTML = listaCompleta.length ? "" : "<p>No hay operarios disponibles.</p>";
-        listaCompleta.forEach(op => {
-            const isChecked = asignadosIds.includes(op.id_usuario) ? "checked" : "";
+        container.innerHTML = disponibles.length ? "" : "<p>No hay operarios disponibles.</p>";
+        disponibles.forEach(op => {
             container.innerHTML += `
                 <div class="notification-card">
-                    <input type="checkbox" value="${op.id_usuario}" ${isChecked}>
+                    <input type="checkbox" value="${op.id_usuario}">
                     <div class="flex-column">
                         <span class="notification-title">${op.nombre} ${op.apellido}</span>
                         <span class="notification-text">${op.correo}</span>

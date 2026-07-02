@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List
 from datetime import date, datetime
-from models import UserStatus, UserAvailability, ProyectoEstado, TareaEstado, TareaPrioridad
+from app.models import UserStatus, UserAvailability, ProyectoEstado, TareaEstado, TareaPrioridad
 
 # --- Auth ---
 class Token(BaseModel):
@@ -26,6 +26,7 @@ class UsuarioCreate(UsuarioBase):
 class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
     apellido: Optional[str] = None
+    correo: Optional[EmailStr] = None
     telefono: Optional[str] = None
     password: Optional[str] = None
     id_rol_fk: Optional[int] = None
@@ -74,6 +75,7 @@ class ProyectoUpdate(BaseModel):
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     estado: Optional[ProyectoEstado] = None
+    id_lider_fk: Optional[int] = None
 
 class Proyecto(ProyectoBase):
     id_proyecto: int
@@ -122,6 +124,7 @@ class TareaDetallada(BaseModel):
     avance: int = 0
     prioridad: TareaPrioridad
     operarios_nombres: List[str] = []
+    operarios_ids: List[int] = []
     finalizador_nombre: Optional[str] = None
 
     class Config:

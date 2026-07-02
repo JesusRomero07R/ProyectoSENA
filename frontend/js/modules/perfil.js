@@ -1,11 +1,12 @@
-import { API_URL, fetchJSON } from '../api.js';
-import { getPayload } from '../auth.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
+import { getPayload, goToLogin } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 export async function setupProfilePage() {
     const params = new URLSearchParams(window.location.search);
     const targetUserId = params.get("id");
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("token");
     if (!token) return goToLogin();
     try {
         const payload = getPayload();
@@ -23,40 +24,9 @@ export async function setupProfilePage() {
             document.getElementById("profile-name").textContent = `${u.nombre} ${u.apellido}`;
             if (document.getElementById("profile-avatar-large")) document.getElementById("profile-avatar-large").textContent = u.nombre[0] + (u.apellido ? u.apellido[0] : '');
             
-            // Actualizar etiquetas según rol
-            const labelTasks = document.getElementById("label-kpi-tasks");
-            const labelCompleted = document.getElementById("label-kpi-completed");
-            const labelProjects = document.getElementById("label-kpi-projects");
-            const labelPerformance = document.getElementById("label-kpi-performance");
-            const kpiDesc = document.getElementById("kpi-desc");
-
-            if (u.id_rol_fk === 1) { // ADMIN
-                if(labelTasks) labelTasks.textContent = "Usuarios Activos";
-                if(labelCompleted) labelCompleted.textContent = "Proyectos Terminados";
-                if(labelProjects) labelProjects.textContent = "Proyectos Activos";
-                if(labelPerformance) labelPerformance.textContent = "Avance Global";
-                if(kpiDesc) kpiDesc.textContent = "Promedio de avance en todas las obras";
-            } else if (u.id_rol_fk === 2) { // LIDER
-                if(labelTasks) labelTasks.textContent = "Tareas a Cargo";
-                if(labelCompleted) labelCompleted.textContent = "Tareas Finalizadas";
-                if(labelProjects) labelProjects.textContent = "Mis Proyectos";
-                if(labelPerformance) labelPerformance.textContent = "Eficiencia Obra";
-                if(kpiDesc) kpiDesc.textContent = "Avance promedio de sus proyectos";
-            } else { // OPERARIO
-                if(labelTasks) labelTasks.textContent = "Tareas Totales";
-                if(labelCompleted) labelCompleted.textContent = "Completadas";
-                if(labelProjects) labelProjects.textContent = "Proyectos en curso";
-                if(labelPerformance) labelPerformance.textContent = "Rendimiento (KPI)";
-                if(kpiDesc) kpiDesc.textContent = "Tareas completadas vs totales";
-            }
-
             document.getElementById("profile-role").textContent = `${u.id_rol_fk === 3 ? 'Operario' : u.id_rol_fk === 2 ? 'Líder' : 'Administrador'} · Miembro ${u.activo ? 'activo' : 'inactivo'}`;
-            document.getElementById("profile-email").textContent = u.correo;
-            document.getElementById("profile-phone").textContent = u.telefono || "Sin teléfono";
-            document.getElementById("kpi-tasks").textContent = u.tareas_totales || 0;
-            document.getElementById("kpi-completed").textContent = u.tareas_completadas || 0;
-            document.getElementById("kpi-projects").textContent = u.proyectos_activos || 0;
-            document.getElementById("kpi-performance").textContent = `${u.rendimiento || 0}%`;
+            if(document.getElementById("profile-email")) document.getElementById("profile-email").textContent = u.correo;
+            if(document.getElementById("profile-phone")) document.getElementById("profile-phone").textContent = u.telefono || "Sin teléfono";
 
             const footerActions = document.getElementById("profile-footer-actions");
             const selfActions = document.getElementById("self-actions-container");
@@ -108,8 +78,8 @@ export async function setupProfilePage() {
                     const confirm = document.getElementById("edit_password_confirm").value;
                     
                     if (pass) {
-                        if (pass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres.");
-                        if (pass !== confirm) return alert("Las contraseñas no coinciden.");
+                        if (pass.length < 6) return toast("La contraseña debe tener al menos 6 caracteres.", 'warn');
+                        if (pass !== confirm) return toast("Las contraseñas no coinciden.", 'warn');
                     } else {
                         delete formData.password; // No enviar si está vacío
                     }
@@ -121,19 +91,19 @@ export async function setupProfilePage() {
                             body: JSON.stringify(formData)
                         });
                         if (res.ok) {
-                            alert("Perfil actualizado correctamente.");
+                            toast("Perfil actualizado correctamente.", 'success');
                             if (pass) {
-                                alert("Como cambiaste tu contraseña, por seguridad debes iniciar sesión nuevamente.");
+                                toast("Como cambiaste tu contraseña, por seguridad debes iniciar sesión nuevamente.", 'warn');
                                 goToLogin();
                             } else {
                                 location.reload();
                             }
                         } else {
                             const err = await res.json();
-                            alert("Error: " + (err.detail || "No se pudo actualizar el perfil"));
+                            toast("Error: " + (err.detail || "No se pudo actualizar el perfil"), 'error');
                         }
                     } catch (err) {
-                        alert("Error de conexión al actualizar perfil");
+                        toast("Error de conexión al actualizar perfil", 'error');
                     }
                 };
             }

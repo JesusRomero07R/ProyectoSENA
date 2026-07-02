@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 export async function setupEquipoPage(projectId = 'all') {
     const filters = document.querySelectorAll("#teamFilters .chip");
@@ -63,16 +64,16 @@ export async function setupEquipoPage(projectId = 'all') {
                     body: JSON.stringify({ id_proyecto: parseInt(projectId), id_usuarios: ids }) 
                 });
                 if (res.ok) { 
-                    alert("Equipo actualizado correctamente."); 
+                    toast("Equipo actualizado correctamente.", 'success'); 
                     document.getElementById("teamModal").style.display = "none"; 
                     cargarEquipoPagina('all', '', projectId);
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo actualizar el equipo"));
+                    toast("Error: " + (err.detail || "No se pudo actualizar el equipo"), 'error');
                 }
             } catch (err) {
                 console.error("Error al configurar equipo desde página de equipo:", err);
-                alert("Error de conexión");
+                toast("Error de conexión", 'error');
             }
         };
     }

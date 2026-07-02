@@ -1,8 +1,8 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 
-async function cargarDashboardResumen() {
+export async function cargarDashboardResumen() {
     const container = document.getElementById("dashboardProjectList");
     const notifContainer = document.getElementById("adminNotificationsList");
     if (!container) return;

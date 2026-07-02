@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Constructora GG – Gestión de Usuarios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../styles.css?v=1.0.3" />
+  <link rel="stylesheet" href="../styles.css?v=1.1.0" />
   
 </head>
 <body class="role-admin">
@@ -65,22 +65,22 @@
           <form id="userForm">
               <div class="input-group">
                   <label for="nombre">Nombre</label>
-                  <input type="text" id="nombre" name="nombre" required>
+                  <input type="text" id="nombre" name="nombre" required pattern="^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$" title="Solo letras, sin números">
               </div>
               <div class="input-group">
                   <label for="apellido">Apellido</label>
-                  <input type="text" id="apellido" name="apellido" required>
+                  <input type="text" id="apellido" name="apellido" required pattern="^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$" title="Solo letras, sin números">
               </div>
               <div class="input-group">
                   <label for="correo">Correo Electrónico (Usuario)</label>
                   <div class="input-email-wrapper">
-                      <input type="text" id="correo" name="correo_prefix" placeholder="ejemplo.nombre" required>
+                      <input type="text" id="correo" name="correo_prefix" placeholder="ejemplo.nombre" required pattern="^[a-zA-Z0-9._-]+$" title="Solo letras, números, puntos y guiones">
                       <span class="email-suffix">@constructora-gg.com</span>
                   </div>
               </div>
               <div class="input-group">
                   <label for="telefono">Teléfono</label>
-                  <input type="text" id="telefono" name="telefono">
+                  <input type="text" id="telefono" name="telefono" pattern="^[0-9]+$" title="Solo números permitidos">
               </div>
               <div class="input-group">
                   <label for="id_rol_fk">Rol</label>
@@ -110,15 +110,19 @@
               <input type="hidden" id="edit_user_id">
               <div class="input-group">
                   <label for="edit_u_nombre">Nombre</label>
-                  <input type="text" id="edit_u_nombre" name="nombre" required>
+                  <input type="text" id="edit_u_nombre" name="nombre" required pattern="^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$" title="Solo letras, sin números">
+              </div>
+              <div class="input-group">
+                  <label for="edit_u_correo">Correo Electrónico (Login)</label>
+                  <input type="email" id="edit_u_correo" name="correo" required title="Correo único de inicio de sesión">
               </div>
               <div class="input-group">
                   <label for="edit_u_apellido">Apellido</label>
-                  <input type="text" id="edit_u_apellido" name="apellido" required>
+                  <input type="text" id="edit_u_apellido" name="apellido" required pattern="^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+$" title="Solo letras, sin números">
               </div>
               <div class="input-group">
                   <label for="edit_u_telefono">Teléfono</label>
-                  <input type="text" id="edit_u_telefono" name="telefono">
+                  <input type="text" id="edit_u_telefono" name="telefono" pattern="^[0-9]+$" title="Solo números permitidos">
               </div>
               <div class="input-group">
                   <label for="edit_u_rol">Rol</label>
@@ -138,6 +142,6 @@
         </div>
         </div>
 
-        <script type="module" src="../js/main.js"></script>
+        <script type="module" src="../js/main.js?v=1.1.0"></script>
         </body>
         </html>

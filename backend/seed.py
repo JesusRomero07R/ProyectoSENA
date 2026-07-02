@@ -1,5 +1,4 @@
-import models
-import database
+from app import models, database
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 

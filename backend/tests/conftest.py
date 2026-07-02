@@ -13,9 +13,11 @@ import os
 # Añadir el directorio backend al path para importaciones
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from main import app, get_db, settings, get_password_hash
-from database import Base
-import models
+from main import app
+from app.database import get_db, Base
+from app.config import settings
+from app.security import get_password_hash
+from app import models
 
 # Configuración de base de datos para tests (SQLite en memoria)
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

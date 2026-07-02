@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 export async function setupMaterialesPage() {
     const params = new URLSearchParams(window.location.search);
@@ -64,16 +65,16 @@ export async function setupMaterialesPage() {
                 }
                 
                 if (res.ok) { 
-                    alert("Solicitud procesada: " + responseData.message); 
+                    toast("Solicitud procesada: " + responseData.message, 'success'); 
                     document.getElementById("transferModal").style.display = "none"; 
                     cargarMaterialesProyectos(pid); 
                     transForm.reset();
                 } else { 
-                    alert(responseData.detail || "Error en la solicitud"); 
+                    toast(responseData.detail || "Error en la solicitud", 'error'); 
                 }
             } catch (err) { 
                 console.error("Transfer error:", err);
-                alert(err.message.includes("servidor devolvió") ? err.message : "No se pudo completar la solicitud. Verifica la conexión."); 
+                toast(err.message.includes("servidor devolvió", 'error') ? err.message : "No se pudo completar la solicitud. Verifica la conexión."); 
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Confirmar Solicitud";

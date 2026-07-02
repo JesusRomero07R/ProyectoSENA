@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy the requirements file
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire project
+COPY . .
+
+# Change working directory to backend so relative paths work (e.g., ../database)
+WORKDIR /app/backend
+
+# Expose port 8000
+EXPOSE 8000
+
+# Ejecutamos el seed de la base de datos antes de iniciar el servidor
+CMD sh -c "python seed.py && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"

@@ -117,7 +117,7 @@ async def test_asignar_operario_tarea_y_acceso_inventario(client_admin, client_l
 @pytest.mark.asyncio
 async def test_reportar_avance_con_materiales_insuficientes(client_admin, client_lider, client_operario):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     # 1. Crear categoría y material en DB
@@ -184,7 +184,7 @@ async def test_reportar_avance_con_materiales_insuficientes(client_admin, client
 @pytest.mark.asyncio
 async def test_reportar_avance_con_materiales_suficientes(client_admin, client_lider, client_operario):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     # 1. Crear categoría y material
@@ -256,7 +256,7 @@ async def test_reportar_avance_con_materiales_suficientes(client_admin, client_l
 @pytest.mark.asyncio
 async def test_eliminar_reporte_avance(client_admin, client_lider, client_operario):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     # 1. Crear categoría y material
@@ -344,7 +344,7 @@ async def test_eliminar_reporte_avance(client_admin, client_lider, client_operar
 @pytest.mark.asyncio
 async def test_eliminar_reporte_tarea_finalizada_fail(client_admin, client_lider, client_operario):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     # 1. Crear categoría y material
@@ -424,7 +424,7 @@ async def test_eliminar_reporte_tarea_finalizada_fail(client_admin, client_lider
 @pytest.mark.asyncio
 async def test_reactivar_tarea_restaura_avance_y_finalizador(client_admin, client_lider, client_operario):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     # 1. Crear categoría y material
@@ -520,7 +520,7 @@ async def test_reactivar_tarea_restaura_avance_y_finalizador(client_admin, clien
 @pytest.mark.asyncio
 async def test_operario_reporte_100_finaliza_y_asigna_finalizador(client_operario, client_lider):
     from tests.conftest import override_get_db_sync
-    import models
+    from app import models
     db = next(override_get_db_sync())
     
     proyecto = models.Proyecto(

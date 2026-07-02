@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 let cachedUsers = [];
 
@@ -31,6 +32,8 @@ export async function setupUserPage() {
             cargarUsuarios();
         });
     }
+
+    cargarUsuarios();
     
     // Configurar event delegation
     const container = document.getElementById("userList");
@@ -44,7 +47,7 @@ export async function setupUserPage() {
             
             if (action === 'editar') {
                 const u = cachedUsers.find(user => user.id_usuario === id);
-                if (u) abrirModalEditarUsuario(u.id_usuario, u.nombre || '', u.apellido || '', u.telefono || '', u.id_rol_fk);
+                if (u) abrirModalEditarUsuario(u.id_usuario, u.nombre || '', u.apellido || '', u.correo || '', u.telefono || '', u.id_rol_fk);
             } else if (action === 'desactivar') {
                 desactivarUsuario(id);
             } else if (action === 'reactivar') {
@@ -79,15 +82,15 @@ export async function setupUserPage() {
                     body: JSON.stringify(formData)
                 });
                 if (res.ok) {
-                    alert("Usuario creado correctamente.");
+                    toast("Usuario creado correctamente.", 'success');
                     document.getElementById("userModal").style.display = "none";
                     userForm.reset();
                     cargarUsuarios();
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo crear el usuario"));
+                    toast("Error: " + (err.detail || "No se pudo crear el usuario"), 'error');
                 }
-            } catch (err) { alert("Error de conexión"); }
+            } catch (err) { toast("Error de conexión", 'error'); }
         };
     }
 
@@ -112,14 +115,14 @@ export async function setupUserPage() {
                     body: JSON.stringify(formData)
                 });
                 if (res.ok) {
-                    alert("Usuario actualizado correctamente.");
+                    toast("Usuario actualizado correctamente.", 'success');
                     document.getElementById("editUserModal").style.display = "none";
                     cargarUsuarios();
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo actualizar"));
+                    toast("Error: " + (err.detail || "No se pudo actualizar"), 'error');
                 }
-            } catch (err) { alert("Error de conexión"); }
+            } catch (err) { toast("Error de conexión", 'error'); }
         };
     }
 }
@@ -226,8 +229,7 @@ async function cargarUsuarios() {
                 }
             }
 
-            container.innerHTML += `<div class="user-card">
-                <div class="user-avatar-small">${u.nombre ? u.nombre[0].toUpperCase() : 'U'}</div>
+            container.innerHTML += `<div class="user-card ${u.activo ? '' : 'inactive'}">
                 <div class="user-details">
                     <strong>${u.nombre || ''} ${u.apellido || ''}</strong>
                     <span>${u.correo || ''} | ${roleName}</span>
@@ -247,10 +249,12 @@ async function cargarUsuarios() {
     }
 }
 
-function abrirModalEditarUsuario(id, nombre, apellido, telefono, role) {
+function abrirModalEditarUsuario(id, nombre, apellido, correo, telefono, role) {
     document.getElementById("edit_user_id").value = id;
     document.getElementById("edit_u_nombre").value = nombre;
     document.getElementById("edit_u_apellido").value = apellido;
+    const inputCorreo = document.getElementById("edit_u_correo");
+    if(inputCorreo) inputCorreo.value = correo;
     document.getElementById("edit_u_telefono").value = telefono;
     document.getElementById("edit_u_rol").value = role;
     document.getElementById("edit_u_password").value = ""; // Siempre vacío al abrir
@@ -265,15 +269,15 @@ async function desactivarUsuario(id) {
                 headers: getAuthHeaders()
             });
             if (res.ok) {
-                alert("Usuario desactivado con éxito.");
+                toast("Usuario desactivado con éxito.", 'success');
                 cargarUsuarios();
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.detail || "No se pudo desactivar el usuario"));
+                toast("Error: " + (err.detail || "No se pudo desactivar el usuario"), 'error');
             }
         } catch (err) {
             console.error("Error al desactivar usuario:", err);
-            alert("Error de conexión");
+            toast("Error de conexión", 'error');
         }
     }
 }
@@ -286,15 +290,15 @@ async function reactivarUsuario(id) {
                 headers: getAuthHeaders()
             });
             if (res.ok) {
-                alert("Usuario reactivado con éxito.");
+                toast("Usuario reactivado con éxito.", 'success');
                 cargarUsuarios();
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.detail || "No se pudo reactivar el usuario"));
+                toast("Error: " + (err.detail || "No se pudo reactivar el usuario"), 'error');
             }
         } catch (err) {
             console.error("Error al reactivar usuario:", err);
-            alert("Error de conexión");
+            toast("Error de conexión", 'error');
         }
     }
 }

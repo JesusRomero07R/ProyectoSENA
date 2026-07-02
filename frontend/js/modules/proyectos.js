@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 export function setupProjectPage() {
     if (document.getElementById("btnNewProject")) {
@@ -35,8 +36,8 @@ export function setupProjectPage() {
                 id_lider_fk: parseInt(data.id_lider_fk)
             };
 
-            if (isNaN(payload.presupuesto)) { alert("Presupuesto no válido"); return; }
-            if (isNaN(payload.id_lider_fk)) { alert("Debe seleccionar un líder"); return; }
+            if (isNaN(payload.presupuesto)) { toast("Presupuesto no válido", 'warn'); return; }
+            if (isNaN(payload.id_lider_fk)) { toast("Debe seleccionar un líder", 'warn'); return; }
 
             try {
                 const res = await fetch(`${API_URL}/proyectos`, { 
@@ -46,26 +47,28 @@ export function setupProjectPage() {
                 });
                 
                 if (res.ok) {
-                    alert("Proyecto creado exitosamente.");
+                    toast("Proyecto creado exitosamente.", 'success');
                     document.getElementById("projectModal").style.display = "none";
                     form.reset();
                     cargarProyectos();
                 } else {
                     const err = await res.json();
                     console.error("Error API Proyectos:", err);
-                    alert("Error: " + (err.detail || "No se pudo crear el proyecto"));
+                    toast("Error: " + (err.detail || "No se pudo crear el proyecto"), 'error');
                 }
             } catch (err) {
                 console.error("Error conexión:", err);
-                alert("Error de conexión con el servidor");
+                toast("Error de conexión con el servidor", 'error');
             }
         };
     }
-    document.querySelectorAll("#projectFilters .chip").forEach(chip => chip.onclick = () => { 
-        document.querySelectorAll("#projectFilters .chip").forEach(c => c.classList.remove("chip-active")); 
-        chip.classList.add("chip-active"); 
-        cargarProyectos(chip.dataset.status, searchInput ? searchInput.value : ''); 
+    document.querySelectorAll("#projectFilters .chip").forEach(chip => chip.onclick = () => {
+        document.querySelectorAll("#projectFilters .chip").forEach(c => c.classList.remove("chip-active"));
+        chip.classList.add("chip-active");
+        cargarProyectos(chip.dataset.status, searchInput ? searchInput.value : '');
     });
+
+    cargarProyectos('activo');
 
     // Event delegation
     const container = document.getElementById("projectList");
@@ -165,16 +168,16 @@ async function cambiarEstadoProyecto(id, nuevo) {
             });
             
             if (res.ok) {
-                alert(`Proyecto marcado como ${nuevo.toUpperCase()} exitosamente.`);
+                toast(`Proyecto marcado como ${nuevo.toUpperCase()} exitosamente.`, 'success');
                 cargarProyectos();
             } else {
                 const err = await res.json();
                 console.error("Error al cambiar estado:", err);
-                alert("Error: " + (err.detail || "No se pudo cambiar el estado"));
+                toast("Error: " + (err.detail || "No se pudo cambiar el estado"), 'error');
             }
         } catch (err) {
             console.error("Error de conexión:", err);
-            alert("Error de conexión con el servidor. Asegúrese de que el backend esté corriendo.");
+            toast("Error de conexión con el servidor. Asegúrese de que el backend esté corriendo.", 'error');
         }
     }
 }

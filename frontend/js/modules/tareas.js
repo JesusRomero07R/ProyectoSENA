@@ -1,7 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
-import { getPayload } from '../auth.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 let modalProjectMaterials = [];
 
@@ -89,7 +89,7 @@ export async function setupTasksPage() {
         document.getElementById("btnNewTask").onclick = async () => { 
             const currentProjId = urlProjectId !== "all" ? urlProjectId : (projectFilter ? projectFilter.value : "all");
             if (currentProjId === "all") {
-                alert("Por favor, selecciona un proyecto en el filtro superior antes de crear una tarea.");
+                toast("Por favor, selecciona un proyecto en el filtro superior antes de crear una tarea.", 'warn');
                 return;
             }
             
@@ -146,11 +146,11 @@ export async function setupTasksPage() {
             e.preventDefault();
             const data = Object.fromEntries(new FormData(newTaskForm));
             const ops = Array.from(document.getElementById("taskOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
-            if (!ops.length) return alert("Asigna operarios");
+            if (!ops.length) return toast("Asigna operarios", 'warn');
             const projIdSelect = document.getElementById("task_project_id");
             const finalProjId = projIdSelect ? projIdSelect.value : data.id_proyecto_fk;
             const res = await fetch(`${API_URL}/tareas`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ ...data, id_operarios: ops, id_proyecto_fk: parseInt(finalProjId) }) });
-            if (res.ok) { alert("Tarea creada"); document.getElementById("newTaskModal").style.display = "none"; newTaskForm.reset(); cargarTareas(); }
+            if (res.ok) { toast("Tarea creada", 'success'); document.getElementById("newTaskModal").style.display = "none"; newTaskForm.reset(); cargarTareas(); }
         };
     }
     if (document.getElementById("closeReportModal")) document.getElementById("closeReportModal").onclick = () => document.getElementById("reportModal").style.display = "none";
@@ -181,8 +181,8 @@ export async function setupTasksPage() {
                     materiales_usados: materiales_usados 
                 }) 
             });
-            if (res.ok) { alert("Reporte enviado"); document.getElementById("reportModal").style.display = "none"; reportForm.reset(); cargarTareas(); }
-            else { const err = await res.json(); alert(err.detail || "Error al enviar"); }
+            if (res.ok) { toast("Reporte enviado", 'success'); document.getElementById("reportModal").style.display = "none"; reportForm.reset(); cargarTareas(); }
+            else { const err = await res.json(); toast(err.detail || "Error al enviar", 'error'); }
         };
     }
 
@@ -200,7 +200,7 @@ export async function setupTasksPage() {
             const selectedCheckbox = Array.from(document.getElementById("reassignOperatorsList").querySelectorAll('input:checked'));
             const ops = selectedCheckbox.map(cb => parseInt(cb.value));
 
-            if (!ops.length) return alert("Por favor selecciona al menos un operario.");
+            if (!ops.length) return toast("Por favor selecciona al menos un operario.", 'warn');
 
             try {
                 const res = await fetch(`${API_URL}/tareas/${taskId}`, {
@@ -210,17 +210,19 @@ export async function setupTasksPage() {
                 });
 
                 if (res.ok) {
-                    alert("Operarios reasignados con éxito.");
+                    toast("Operarios reasignados con éxito.", 'success');
                     document.getElementById("reassignModal").style.display = "none";
                     reassignForm.reset();
                     cargarTareas(document.querySelector("#taskFilters .chip-active").dataset.status, "", projectFilter ? projectFilter.value : "all");
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo reasignar operarios"));
+                    let errMsg = err.detail || "No se pudo reasignar operarios";
+                    if (Array.isArray(err.detail)) errMsg = err.detail.map(e => e.msg).join(", ");
+                    toast("Error: " + errMsg, 'error');
                 }
             } catch (err) {
                 console.error("Error de conexión al reasignar:", err);
-                alert("Error de conexión");
+                toast("Error de conexión", 'error');
             }
         };
     }
@@ -336,7 +338,7 @@ async function cargarTareas(status = 'active', search = '', projectId = 'all') {
                 <div class="task-actions">
                     ${payload.role === 3 && t.estado !== 'finalizada' && isProjActive ? `<button class="btn-primary btn-small" data-action="reportar" data-id="${t.id_tarea}" data-title="${t.titulo.replace(/'/g, "\\'").replace(/"/g, "&quot;")}" data-avance="${t.avance}" data-proyecto="${t.id_proyecto_fk}">Reportar</button>` : ''}
                     <button class="btn-small-muted" data-action="historial" data-id="${t.id_tarea}">Historial</button>
-                    ${isLider && t.estado !== 'finalizada' && isProjActive && (!t.operarios_nombres || t.operarios_nombres.length === 0) ? `<button class="btn-primary btn-small" data-action="reasignar" data-id="${t.id_tarea}" data-proyecto="${t.id_proyecto_fk}">Reasignar Operario</button>` : ''}
+                    ${isLider && t.estado !== 'finalizada' && isProjActive ? `<button class="btn-primary btn-small" data-action="reasignar" data-id="${t.id_tarea}" data-proyecto="${t.id_proyecto_fk}" data-operarios='${JSON.stringify(t.operarios_ids || [])}'>Modificar Operarios</button>` : ''}
                     ${isLider && t.estado !== 'finalizada' && isProjActive ? `<button class="btn-success btn-small" data-action="finalizar" data-id="${t.id_tarea}">Finalizar Tarea</button>` : ''}
                     ${isLider && t.estado === 'finalizada' && isProjActive ? `<button class="btn-success btn-small" data-action="reactivar" data-id="${t.id_tarea}">Reactivar</button>` : ''}
                 </div></div>`;
@@ -354,7 +356,7 @@ async function cargarTareas(status = 'active', search = '', projectId = 'all') {
                 
                 if (action === 'reportar') abrirModalReporte(id, btn.dataset.title, parseInt(btn.dataset.avance), parseInt(btn.dataset.proyecto));
                 else if (action === 'historial') abrirModalDetalleTask(id);
-                else if (action === 'reasignar') abrirModalReasignarOperario(id, parseInt(btn.dataset.proyecto));
+                else if (action === 'reasignar') abrirModalReasignarOperario(id, parseInt(btn.dataset.proyecto), JSON.parse(btn.dataset.operarios || "[]"));
                 else if (action === 'finalizar') finalizarTarea(id);
                 else if (action === 'reactivar') reactivarTarea(id);
             });
@@ -426,7 +428,7 @@ async function abrirModalDetalleTask(id) {
         }
     } catch (e) {
         console.error(e);
-        alert("No se pudo cargar el historial de la tarea.");
+        toast("No se pudo cargar el historial de la tarea.", 'error');
     }
 }
 
@@ -438,18 +440,18 @@ async function eliminarReporteAvance(idReporte, idTarea) {
                 headers: getAuthHeaders()
             });
             if (res.ok) {
-                alert("Reporte de avance eliminado exitosamente.");
+                toast("Reporte de avance eliminado exitosamente.", 'success');
                 await abrirModalDetalleTask(idTarea);
                 if (typeof cargarTareas === 'function') {
                     cargarTareas();
                 }
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.detail || "No se pudo eliminar el reporte"));
+                toast("Error: " + (err.detail || "No se pudo eliminar el reporte"), 'error');
             }
         } catch (e) {
             console.error("Error al eliminar reporte:", e);
-            alert("Error de conexión");
+            toast("Error de conexión", 'error');
         }
     }
 }
@@ -514,16 +516,16 @@ function actualizarOpcionesMateriales() {
     });
 }
 
-async function abrirModalReasignarOperario(taskId, projectId) {
+async function abrirModalReasignarOperario(taskId, projectId, assignedOps = []) {
     const modal = document.getElementById("reassignModal");
     if (!modal) return;
     document.getElementById("reassign_task_id").value = taskId;
     document.getElementById("reassign_project_id").value = projectId;
     modal.style.display = "block";
-    await cargarOperariosParaReasignar(projectId);
+    await cargarOperariosParaReasignar(projectId, assignedOps);
 }
 
-async function cargarOperariosParaReasignar(projectId) {
+async function cargarOperariosParaReasignar(projectId, assignedOps = []) {
     const container = document.getElementById("reassignOperatorsList");
     if (!container) return;
     try {
@@ -536,18 +538,19 @@ async function cargarOperariosParaReasignar(projectId) {
         container.innerHTML = team.length ? "" : "<p style='font-size: 0.8rem; color: var(--muted); text-align: center;'>No hay operarios vinculados a este proyecto.</p>";
         team.forEach(op => {
             const tareasText = op.en_tarea ? `En tarea(s): ${op.tareas_activas.join(", ")}` : 'Disponible';
+            const isChecked = assignedOps.includes(op.id_usuario) ? 'checked' : '';
             container.innerHTML += `
                 <div class="flex-row" style="padding: 8px 5px; gap: 10px; align-items: center; border-bottom: 1px solid var(--border); width: 100%;">
-                    <input type="checkbox" value="${op.id_usuario}">
-                    <div class="flex-column" style="font-size: 0.85rem; flex-grow: 1; text-align: left;">
-                        <strong>${op.nombre} ${op.apellido}</strong>
+                    <input type="checkbox" name="operarios" value="${op.id_usuario}" id="reop_${op.id_usuario}" ${isChecked}>
+                    <label for="reop_${op.id_usuario}" style="flex: 1; margin: 0; cursor: pointer; display: flex; flex-direction: column;">
+                        <span style="font-weight: 500;">${op.nombre}</span>
                         <span style="font-size: 0.75rem; color: var(--muted);">${tareasText}</span>
-                    </div>
+                    </label>
                 </div>`;
         });
     } catch (e) {
         console.error("Error al cargar operarios para reasignar:", e);
         container.innerHTML = "<p style='font-size: 0.8rem; color: var(--danger); text-align: center;'>Error al cargar operarios.</p>";
     }
-}
 
+}

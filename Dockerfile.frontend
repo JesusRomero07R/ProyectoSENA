@@ -1,0 +1,7 @@
+FROM nginx:alpine
+
+# Copiamos los archivos estáticos del frontend al directorio de Nginx
+COPY frontend/ /usr/share/nginx/html/
+
+# Exponemos el puerto 80
+EXPOSE 80

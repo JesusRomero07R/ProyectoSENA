@@ -1,6 +1,7 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
 
 async function cargarInventarioGlobal(filter = 'all', term = '') {
     const container = document.getElementById("inventoryList");
@@ -15,7 +16,6 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
             const low = i.stock_actual <= i.stock_minimo;
             container.innerHTML += `<div class="material-card">
                 <div class="material-info">
-                    <span class="material-category">${i.categoria_nombre}</span>
                     <strong class="material-name">${i.nombre_material}</strong>
                 </div>
                 <div class="material-stock">
@@ -32,6 +32,7 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
 }
 
 export async function setupInventoryPage() {
+    cargarInventarioGlobal('all', '');
     const filters = document.querySelectorAll("#inventoryFilters .chip");
     filters.forEach(chip => chip.onclick = () => {
         document.querySelectorAll("#inventoryFilters .chip").forEach(c => c.classList.remove("chip-active"));
@@ -75,7 +76,7 @@ export async function setupInventoryPage() {
                     body: JSON.stringify(formData)
                 });
                 if (res.ok) {
-                    alert("Material creado correctamente.");
+                    toast("Material creado correctamente.", 'success');
                     modalCreate.style.display = "none";
                     materialForm.reset();
                     cargarInventarioGlobal();
@@ -94,53 +95,88 @@ export async function setupInventoryPage() {
                     } catch (jsonErr) {
                         msg = `Error del servidor (${res.status})`;
                     }
-                    alert("Error: " + msg);
+                    toast("Error: " + msg, 'error');
                 }
             } catch (err) {
-                alert("Error de conexión al crear el material");
+                toast("Error de conexión al crear el material", 'error');
+            }
+        };
+    }
+
+    // Lógica del Modal de Ajuste de Stock
+    const adjustModal = document.getElementById("adjustStockModal");
+    const closeAdjustModal = document.getElementById("closeAdjustModal");
+    const adjustForm = document.getElementById("adjustStockForm");
+
+    if(closeAdjustModal && adjustModal) closeAdjustModal.onclick = () => adjustModal.style.display = "none";
+
+    if(adjustForm) {
+        adjustForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const id = adjustForm.dataset.idMaterial;
+            const actual = parseInt(adjustForm.dataset.stockActual);
+            const operacion = adjustForm.dataset.operacion;
+            const cantidad = parseInt(document.getElementById("adj_cantidad").value);
+
+            if (isNaN(cantidad) || cantidad <= 0) {
+                toast("Ingrese una cantidad válida mayor a cero.", 'warn');
+                return;
+            }
+
+            let nuevoStock = actual;
+            if (operacion === 'subir') nuevoStock = actual + cantidad;
+            else {
+                if (cantidad > actual) {
+                    toast(`No puede restar ${cantidad}, solo hay ${actual}.`, 'warn');
+                    return;
+                }
+                nuevoStock = actual - cantidad;
+            }
+
+            const btn = adjustForm.querySelector("button[type='submit']");
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Guardando...";
+
+            try {
+                const res = await fetch(`${API_URL}/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders()
+                });
+                if (res.ok) {
+                    toast("Stock actualizado", 'success');
+                    adjustModal.style.display = "none";
+                    cargarInventarioGlobal();
+                } else {
+                    toast("Error al actualizar", 'error');
+                }
+            } catch (err) {
+                toast("Error de conexión", 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
             }
         };
     }
 }
 
 async function modificarStock(id, actual, operacion, nombre) {
-    const verboAccion = operacion === 'subir' ? 'agregar' : 'restar';
-    const cantidadStr = prompt(`Stock actual de "${nombre}": ${actual} unidades.\n¿Cuántas unidades desea ${verboAccion}?`);
-    if (cantidadStr === null || cantidadStr === "") return;
+    const verboAccion = operacion === 'subir' ? 'Agregar a' : 'Restar de';
     
-    const cantidad = parseInt(cantidadStr);
-    if (isNaN(cantidad) || cantidad <= 0) {
-        alert("Por favor ingrese una cantidad válida mayor a cero.");
-        return;
-    }
+    const modal = document.getElementById("adjustStockModal");
+    if(!modal) return;
     
-    let nuevoStock = actual;
-    if (operacion === 'subir') {
-        nuevoStock = actual + cantidad;
-    } else {
-        if (cantidad > actual) {
-            alert(`No es posible restar ${cantidad} unidades. El stock actual es de solo ${actual} unidades.`);
-            return;
-        }
-        nuevoStock = actual - cantidad;
-    }
+    modal.querySelector("h2").textContent = `${verboAccion} Inventario`;
+    document.getElementById("adj_material_nombre").value = `${nombre} (Actual: ${actual})`;
+    modal.querySelector("label[for='adj_cantidad']").textContent = `Cantidad a ${operacion === 'subir' ? 'agregar' : 'restar'}`;
     
-    const confirmacion = confirm(`¿Confirmas que deseas ${verboAccion} ${cantidad} unidades al material "${nombre}"?\nEl stock final cambiará de ${actual} a ${nuevoStock} unidades.`);
-    if (!confirmacion) return;
+    const form = document.getElementById("adjustStockForm");
+    form.dataset.idMaterial = id;
+    form.dataset.stockActual = actual;
+    form.dataset.operacion = operacion;
+    document.getElementById("adj_cantidad").value = "";
     
-    try {
-        const res = await fetch(`${API_URL}/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, {
-            method: 'PUT',
-            headers: getAuthHeaders()
-        });
-        if (res.ok) {
-            cargarInventarioGlobal();
-        } else {
-            const err = await res.json();
-            alert("Error al actualizar el stock: " + (err.detail || "Error desconocido"));
-        }
-    } catch (e) {
-        alert("Error de conexión al actualizar el stock.");
-    }
+    modal.style.display = "block";
 }
+window.modificarStock = modificarStock;
 

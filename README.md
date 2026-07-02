@@ -9,133 +9,105 @@ Constructora GG es una solución integral diseñada para optimizar la gestión d
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
-### 🏗️ Gestión de Proyectos y Tareas
+### Gestión de Proyectos y Tareas
 - Creación y seguimiento detallado de proyectos de construcción.
-- Asignación de tareas con prioridades, fechas límite y seguimiento de tiempo real.
-- Control de avance acumulado y **historial de reportes no editable** para trazabilidad.
+- Asignación de tareas con prioridades, fechas límite y seguimiento en tiempo real.
+- Control de avance acumulado e historial de reportes no editable para trazabilidad.
 
-### 📦 Control de Inventario Inteligente
+### Control de Inventario Inteligente
 - **Inventario Global vs Proyecto:** Asignación específica de materiales a frentes de obra.
-- **Reporte de Uso:** Los operarios pueden reportar múltiples materiales utilizados directamente desde la tarea.
+- **Reporte de Uso:** Los operarios reportan múltiples materiales utilizados directamente desde la tarea.
 - **Alertas de Stock:** Notificaciones automáticas al administrador cuando un pedido supera las existencias globales.
 
-### 👥 Gestión de Usuarios y Roles (Optimizada)
+### Gestión de Usuarios y Roles
 - **Administrador:** Control total, reset de contraseñas, auditoría de alertas y gestión global.
 - **Líder de Proyecto:** Supervisión de equipos, gestión de tareas y solicitudes de materiales.
-- **Operario:** Interfaz simplificada y eficiente para reporte de avances y materiales.
+- **Operario:** Interfaz simplificada para reporte de avances y materiales.
 
-### 🔐 Seguridad y Accesibilidad
-- **Shorthand Login:** Inicio de sesión rápido usando solo el nombre de usuario (sin necesidad de escribir @constructora-gg.com).
+### Seguridad
+- **Shorthand Login:** Inicio de sesión rápido usando solo el nombre de usuario (sin escribir `@constructora-gg.com`).
 - **Recuperación Asistida:** Solicitud de cambio de contraseña directa al administrador mediante alertas internas.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
-- **Backend:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.10+) con SQLAlchemy ORM.
-- **Base de Datos:** SQLite (Embebida, no requiere instalación de motor externo).
-- **Seguridad:** Autenticación JWT (JSON Web Tokens) y Hashing Bcrypt.
-- **Frontend:** HTML5 moderno, CSS3 (Variables y Grid) y JavaScript ES6+ (Vanilla JS).
-
----
-
-## ⚙️ Instalación y Configuración Paso a Paso
-
-### 1. Requisitos Previos
-- **Python 3.10** o superior.
-- **Git** instalado.
+- **Backend:** FastAPI (Python 3.11) con SQLAlchemy ORM
+- **Base de Datos:** SQLite (embebida, no requiere motor externo)
+- **Seguridad:** JWT + Bcrypt
+- **Frontend:** HTML5, CSS3 (variables + grid), JavaScript ES6+ vanilla
 
 ---
 
-### 2. Preparar el Entorno
+## Requisitos Previos
 
-Abre una terminal en la carpeta raíz del proyecto (`constructora/`) y ejecuta:
+Solo necesitas tener instalado en tu máquina:
 
-#### 🐧 En Linux / macOS
+| Herramienta | Versión mínima | Instalación |
+| :--- | :--- | :--- |
+| **Docker** | 24.x | https://docs.docker.com/get-docker/ |
+| **Docker Compose** | v2 (incluido en Docker Desktop) | Incluido con Docker Desktop |
+
+> No se requiere Python, Node.js, ni ninguna otra dependencia en el host.
+
+Verifica que estén disponibles:
 ```bash
-# 1. Crear entorno virtual
-python3 -m venv venv
-
-# 2. ACTIVAR entorno virtual (Debes ver '(venv)' en tu terminal)
-source venv/bin/activate
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-```
-
-#### 🪟 En Windows (PowerShell)
-```powershell
-# 1. Crear entorno virtual
-python -m venv venv
-
-# 2. ACTIVAR entorno virtual
-.\venv\Scripts\Activate.ps1
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
+docker --version
+docker compose version
 ```
 
 ---
 
-### 3. Configuración de Variables (.env) ⚠️ IMPORTANTE
-Asegúrate de seguir en la raíz del proyecto. Copia y pega este comando para crear el archivo de configuración en la carpeta correcta:
+## Instalación y Puesta en Marcha
 
-**Linux / macOS / PowerShell:**
+### 1. Clonar el repositorio
 ```bash
-echo "SECRET_KEY=super_secret_key_constructora_gg_2026
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60" > backend/.env
+git clone <url-del-repositorio>
+cd Cris
 ```
 
----
-
-### 4. Inicializar Base de Datos
-Desde la raíz del proyecto, entra a la carpeta `backend` y ejecuta el script de inicialización.
-
-**Linux / macOS / Windows (Con venv activado):**
+### 2. Iniciar el proyecto
 ```bash
-cd backend
-python seed.py
+./start.sh
 ```
-*Si esto funciona, verás mensajes de "Tablas verificadas" y "Administrador creado".*
+
+Esto hace automáticamente:
+- Crea `backend/.env` con valores por defecto si no existe
+- Construye las imágenes Docker (solo la primera vez o tras cambios en dependencias)
+- Levanta los contenedores en segundo plano
+- El backend ejecuta `seed.py` al arrancar (crea tablas y datos iniciales)
+
+### 3. Abrir en el navegador
+```
+http://localhost:8080
+```
 
 ---
 
-## 🏃 Cómo ejecutar el proyecto
+## Detener el Proyecto
 
-Para que el sistema funcione, **DEBES tener dos terminales abiertas** al mismo tiempo:
-
-### Terminal 1: Servidor Backend (API)
-1. Abre una terminal en `constructora/`.
-2. Activa el entorno virtual: `source venv/bin/activate` (o `.\venv\Scripts\Activate.ps1` en Windows).
-3. Entra a la carpeta backend: `cd backend`.
-4. Ejecuta el servidor:
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+./stop.sh
 ```
 
-### Terminal 2: Servidor Frontend (Interfaz)
-1. Abre otra terminal en `constructora/`.
-2. Entra a la carpeta frontend: `cd frontend`.
-3. Ejecuta el servidor de archivos:
-```bash
-python3 -m http.server 8080
-```
-*(Si `python3` no funciona en Windows, usa `python`)*
-
+Detiene y elimina los contenedores. Los datos de la base de datos persisten en `database/`.
 
 ---
 
-## 🔗 Acceso al Sistema
-Una vez ambos servidores estén corriendo, abre tu navegador en:
+## Desarrollo: Cambios en Caliente
 
-👉 **http://localhost:8080**
+No es necesario reconstruir las imágenes para cambios de código:
+
+- **Frontend** (`frontend/`): los cambios se reflejan inmediatamente al recargar el navegador.
+- **Backend** (`backend/`): uvicorn detecta los cambios en archivos `.py` y reinicia el servidor automáticamente en segundos.
+
+Solo se necesita reconstruir (`./start.sh` vuelve a hacer `--build`) cuando cambien las dependencias en `requirements.txt` o los `Dockerfile`.
 
 ---
 
-## 🔐 Credenciales de Prueba
+## Credenciales de Prueba
 
 | Rol | Usuario | Contraseña |
 | :--- | :--- | :--- |
@@ -145,18 +117,32 @@ Una vez ambos servidores estén corriendo, abre tu navegador en:
 
 ---
 
-## 🛠️ Solución de Problemas (FAQ)
+## Solución de Problemas
 
-### ❓ Error: "Address already in use" (Puerto ocupado)
-Si ves este error, significa que el puerto 8000 o 8080 está bloqueado por otro proceso.
-- **Solución rápida (Linux):** Ejecuta `fuser -k 8000/tcp` y `fuser -k 8080/tcp`.
-- **Solución general:** Reinicia tu terminal o cierra cualquier otro servidor que tengas abierto.
+### Puerto 8000 u 8080 ya en uso
+```bash
+# Ver qué proceso usa el puerto
+sudo lsof -i :8000
+sudo lsof -i :8080
 
-### ❓ Error: "ModuleNotFoundError"
-Asegúrate de haber activado el entorno virtual (`source venv/bin/activate`) antes de instalar las dependencias con `pip`.
+# Liberar puerto (Linux)
+fuser -k 8000/tcp
+fuser -k 8080/tcp
+```
 
-### ❓ No carga la base de datos
-Verifica que el archivo `database/constructora_gg.db` exista. Si no existe, vuelve a ejecutar el **Paso 4** (seed.py).
+### Reinicio limpio (eliminar imágenes y reconstruir todo)
+```bash
+./stop.sh
+docker compose down --volumes --rmi all
+./start.sh
+```
+
+### Ver logs de los contenedores
+```bash
+docker compose logs -f backend
+docker compose logs -f frontend
+```
 
 ---
+
 Desarrollado como proyecto formativo SENA ADSO - 2025/2026.

@@ -1,6 +1,8 @@
-import { API_URL, fetchJSON } from '../api.js';
+import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { toast } from '../toast.js';
+import { exportarProyectoPDF } from './pdf.js';
 
 async function generarReporteInventario() {
     try {
@@ -53,7 +55,7 @@ export async function setupReportsPage() {
         btnPDF.onclick = () => {
             const pId = document.getElementById("proyectoReporteSelect").value;
             if (!pId) {
-                alert("Por favor seleccione un proyecto.");
+                toast("Por favor seleccione un proyecto.", 'warn');
                 return;
             }
             exportarProyectoPDF(pId);
@@ -133,7 +135,7 @@ export async function setupAvancesPage() {
 
     if (btnAddMat && materialsList) {
         btnAddMat.onclick = () => {
-            if (!select.value) return alert("Primero selecciona una tarea.");
+            if (!select.value) return toast("Primero selecciona una tarea.", 'warn');
             let opts = projectMaterials.map(m => `<option value="${m.id_material_fk}" data-unit="${m.unidad_medida}">${m.nombre_material} (Disp: ${m.stock_actual})</option>`).join('');
             
             let div = document.createElement('div');
@@ -192,7 +194,7 @@ export async function setupAvancesPage() {
     if (btnEnviar) {
         btnEnviar.onclick = async () => {
             const tId = document.getElementById("tareaSelect").value;
-            if(!tId) return alert("Selecciona una tarea para reportar.");
+            if(!tId) return toast("Selecciona una tarea para reportar.", 'warn');
             
             const matRows = document.querySelectorAll(".material-usage-row");
             const materiales_usados = [];
@@ -221,16 +223,16 @@ export async function setupAvancesPage() {
                 });
                 
                 if(res.ok) {
-                    alert("Reporte enviado con éxito.");
+                    toast("Reporte enviado con éxito.", 'success');
                     window.location.href = '../dashboard.html';
                 } else {
                     const err = await res.json();
-                    alert("Error: " + (err.detail || "No se pudo enviar el reporte."));
+                    toast("Error: " + (err.detail || "No se pudo enviar el reporte."), 'error');
                     btnEnviar.disabled = false;
                     btnEnviar.textContent = "Enviar reporte";
                 }
             } catch (e) {
-                alert("Error de conexión al enviar el reporte.");
+                toast("Error de conexión al enviar el reporte.", 'error');
                 btnEnviar.disabled = false;
                 btnEnviar.textContent = "Enviar reporte";
             }

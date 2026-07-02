@@ -2,7 +2,6 @@ import { getPayload, goToLogin, setupLogin, setupRecovery } from './auth.js';
 import { loadComponent, setupUIByRole } from './ui.js';
 
 // Import modules
-import { setupDashboard } from './modules/dashboard.js';
 import { setupProfilePage } from './modules/perfil.js';
 import { setupEquipoPage } from './modules/equipo.js';
 import { setupProjectPage } from './modules/proyectos.js';
@@ -13,11 +12,21 @@ import { setupInventoryPage } from './modules/inventario.js';
 import { setupUserPage } from './modules/usuarios.js';
 import { setupReportsPage, setupAvancesPage } from './modules/reportes.js';
 
+function applyTheme(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    const icon = document.getElementById('themeIcon');
+    if (icon) icon.textContent = dark ? '☀️' : '🌙';
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
+    // Aplicar tema guardado antes de renderizar componentes
+    const savedDark = localStorage.getItem('theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', savedDark ? 'dark' : 'light');
+
     // 1. Cargar fragmentos compartidos si existen
     const isPages = window.location.pathname.includes('/pages/') || window.location.pathname.includes('/shared/');
     const basePath = isPages ? '../' : './';
-    
+
     await loadComponent('#app-header', `${basePath}components/header.html`);
     await loadComponent('#app-sidebar', `${basePath}components/sidebar.html`);
     await loadComponent('#app-footer', `${basePath}components/footer.html`);
@@ -34,15 +43,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (payload) {
         setupUIByRole(payload.role);
+        document.body.classList.add('js-roles-ready');
         
         // Setup header info
-        const userNameEl = document.getElementById("headerUserName");
-        const userRoleEl = document.getElementById("headerUserRole");
-        const userAvatar = document.querySelector(".user-avatar");
-        
-        if (userNameEl) userNameEl.textContent = `${payload.nombre || ''} ${payload.apellido || ''}`;
-        if (userRoleEl) userRoleEl.textContent = payload.role === 1 ? 'Administrador' : (payload.role === 2 ? 'Líder de Proyecto' : 'Operario');
-        if (userAvatar) userAvatar.textContent = payload.nombre ? payload.nombre[0].toUpperCase() : 'U';
+        const userNameEl   = document.getElementById("user-full-name");
+        const userRoleEl   = document.getElementById("user-role-label");
+        const userAvatar   = document.getElementById("user-initials");
+        const roleDisplay  = document.getElementById("role-display-name");
+        const roleLabel    = payload.role === 1 ? 'Administrador' : (payload.role === 2 ? 'Líder de Proyecto' : 'Operario');
+
+        const fullName = `${payload.nombre || ''} ${payload.apellido || ''}`.trim();
+        if (userNameEl)  userNameEl.textContent  = fullName;
+        if (userRoleEl)  userRoleEl.textContent  = roleLabel;
+        if (userAvatar)  userAvatar.textContent  = payload.nombre ? payload.nombre[0].toUpperCase() : 'U';
+        if (roleDisplay) roleDisplay.textContent = roleLabel;
+
+        const roleHint = document.getElementById('role-hint');
+        if (roleHint) roleHint.textContent = `${fullName} · ${roleLabel}`;
+
+        // Sync theme icon after header loads
+        applyTheme(localStorage.getItem('theme') === 'dark');
+
+        const btnTheme = document.getElementById('btnToggleTheme');
+        if (btnTheme) {
+            btnTheme.addEventListener('click', () => {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                applyTheme(!isDark);
+            });
+        }
     }
 
     // Bind logout a cualquier botón logout (incluso los inyectados en header)
@@ -56,6 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const path = window.location.pathname;
     
     if (path.endsWith('index.html') || path === '/') {
+        if (payload) { window.location.href = 'dashboard.html'; return; }
         setupLogin("loginForm");
     } else if (path.includes('recuperar_contrasena.html')) {
         setupRecovery("recoveryForm");

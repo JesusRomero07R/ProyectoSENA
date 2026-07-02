@@ -1,29 +1,40 @@
 import { getPayload } from './auth.js';
 
 export function setupUIByRole(roleId) {
-    // 1: Admin, 2: Lider, 3: Operario
-    const adminOnly = document.querySelectorAll('.role-admin-only');
-    const liderOnly = document.querySelectorAll('.role-lider-only');
+    const adminOnly    = document.querySelectorAll('.role-admin-only');
+    const liderOnly    = document.querySelectorAll('.role-lider-only');
     const operarioOnly = document.querySelectorAll('.role-operario-only');
-    const noOperario = document.querySelectorAll('.role-no-operario');
-    const liderYAdmin = document.querySelectorAll('.role-lider-admin');
-    
-    // Reset - hide all restricted elements initially
-    [...adminOnly, ...liderOnly, ...operarioOnly, ...noOperario, ...liderYAdmin].forEach(el => {
-        el.style.display = 'none';
-    });
+    const noOperario   = document.querySelectorAll('.role-no-operario');
+    const liderYAdmin  = document.querySelectorAll('.role-lider-admin');
+    const noAdmin      = document.querySelectorAll('.role-no-admin');
 
-    if (roleId === 1) { // Admin
+    [...adminOnly, ...liderOnly, ...operarioOnly, ...noOperario, ...liderYAdmin, ...noAdmin]
+        .forEach(el => { el.style.display = 'none'; });
+
+    const roleClass = roleId === 1 ? 'role-admin' : (roleId === 2 ? 'role-lider' : 'role-operario');
+    document.querySelectorAll(`.role-section.${roleClass}`).forEach(el => el.style.display = 'block');
+
+    if (roleId === 1) {
         adminOnly.forEach(el => el.style.display = '');
         noOperario.forEach(el => el.style.display = '');
         liderYAdmin.forEach(el => el.style.display = '');
-    } else if (roleId === 2) { // Lider
+    } else if (roleId === 2) {
         liderOnly.forEach(el => el.style.display = '');
         noOperario.forEach(el => el.style.display = '');
         liderYAdmin.forEach(el => el.style.display = '');
-    } else if (roleId === 3) { // Operario
+        noAdmin.forEach(el => el.style.display = '');
+    } else if (roleId === 3) {
         operarioOnly.forEach(el => el.style.display = '');
+        noAdmin.forEach(el => el.style.display = '');
     }
+}
+
+function setActiveNav() {
+    const current = window.location.pathname.split('/').pop() || 'dashboard.html';
+    document.querySelectorAll('.nav-link').forEach(link => {
+        const href = link.getAttribute('href')?.split('/').pop() || '';
+        link.classList.toggle('nav-active', href === current);
+    });
 }
 
 export async function loadComponent(selector, url) {
@@ -48,6 +59,7 @@ export async function loadComponent(selector, url) {
                 }
             }
             el.innerHTML = html;
+            if (selector === '#app-sidebar') setActiveNav();
         } else {
             console.error(`Failed to load component from ${url}`);
         }
@@ -91,5 +103,24 @@ export function renderProjectSubNavigation(activeTab) {
         </a>
     `).join('');
 
-    contentSec.prepend(nav);
+    // Envolver en un contenedor centrado para no estirar el fondo gris
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "flex";
+    wrapper.style.width = "100%";
+    wrapper.style.justifyContent = "center";
+    wrapper.style.marginBottom = "20px";
+    wrapper.id = "projectSubNavWrapper";
+    
+    wrapper.appendChild(nav);
+
+    const header = document.querySelector(".content-header");
+    const projectHeader = document.querySelector(".project-header-detail");
+    
+    if (header) {
+        header.insertAdjacentElement('beforebegin', wrapper);
+    } else if (projectHeader) {
+        projectHeader.insertAdjacentElement('beforebegin', wrapper);
+    } else {
+        contentSec.prepend(wrapper);
+    }
 }

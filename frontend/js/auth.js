@@ -28,7 +28,10 @@ export function setupLogin(formId) {
 
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const correo = document.getElementById("correo").value.trim();
+        let correo = document.getElementById("username").value.trim();
+        if (correo && !correo.includes("@")) {
+            correo += "@constructora-gg.com";
+        }
         const pwd = document.getElementById("password").value;
         const msgBox = document.getElementById("loginMsg");
         const submitBtn = loginForm.querySelector("button[type='submit']");
@@ -47,7 +50,7 @@ export function setupLogin(formId) {
             fd.append("username", correo);
             fd.append("password", pwd);
             
-            const res = await fetch(`${API_URL}/login`, {
+            const res = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: fd
