@@ -14,17 +14,18 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
         container.innerHTML = "";
         items.forEach(i => {
             const low = i.stock_actual <= i.stock_minimo;
-            container.innerHTML += `<div class="material-card">
-                <div class="material-info">
-                    <strong class="material-name">${i.nombre_material}</strong>
+            container.innerHTML += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                <div style="flex:1; min-width: 200px;">
+                    <strong style="color:var(--text); font-size:1.1rem; display:block; margin-bottom:6px;">${i.nombre_material}</strong>
+                    <div style="color:var(--muted); font-size:0.9rem; display:flex; align-items:center; gap:8px;">
+                        <span class="${low ? 'badge-status-inactive' : 'badge-status-active'}" style="padding:2px 8px; border-radius:4px; font-weight:bold; color:#fff;">${i.stock_actual}</span> 
+                        <span>${i.unidad_medida}</span>
+                    </div>
                 </div>
-                <div class="material-stock">
-                    <span class="stock-value ${low ? 'badge-status-inactive' : 'badge-status-active'}">${i.stock_actual}</span>
-                    <span class="stock-unit">${i.unidad_medida}</span>
-                </div>
-                <div class="flex-row" style="grid-column: 1 / 3; margin-top:10px; gap:8px;">
-                    <button class="btn-success btn-small role-admin-only" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'subir', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">+ Agregar</button>
-                    <button class="btn-danger btn-small role-admin-only" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'bajar', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">- Restar</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-success btn-small role-admin-only" style="padding:6px 12px;" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'subir', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">+ Agregar</button>
+                    <button class="btn-danger btn-small role-admin-only" style="padding:6px 12px;" onclick="modificarStock(${i.id_material_fk}, ${i.stock_actual}, 'bajar', '${i.nombre_material.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')">- Restar</button>
                 </div>
             </div>`;
         });

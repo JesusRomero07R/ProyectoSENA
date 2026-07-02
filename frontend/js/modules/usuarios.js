@@ -229,18 +229,18 @@ async function cargarUsuarios() {
                 }
             }
 
-            container.innerHTML += `<div class="user-card ${u.activo ? '' : 'inactive'}">
-                <div class="user-details">
-                    <strong>${u.nombre || ''} ${u.apellido || ''}</strong>
-                    <span>${u.correo || ''} | ${roleName}</span>
+            container.innerHTML += `<div class="user-card ${u.activo ? '' : 'inactive'}" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:12px; flex-wrap:wrap; gap:15px;">
+                <div class="user-details" style="flex:2; min-width:250px;">
+                    <strong style="color:var(--text); font-size:1.1rem; display:block; margin-bottom:4px;">${u.nombre || ''} ${u.apellido || ''}</strong>
+                    <span style="color:var(--muted); font-size:0.9rem;">${u.correo || ''} | <span style="color:var(--primary); font-weight:600;">${roleName}</span></span>
                 </div>
-                <div class="user-role-status">
-                    <span class="status-tag ${u.activo ? 'badge-status-active' : 'badge-status-inactive'}">${u.activo ? 'Activo':'Inactivo'}</span>
-                    ${availabilityTag}
+                <div class="user-role-status" style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:8px;">
+                    <div><span class="status-tag ${u.activo ? 'badge-status-active' : 'badge-status-inactive'}" style="padding:2px 8px; border-radius:4px; font-weight:bold; color:#fff;">${u.activo ? 'Activo':'Inactivo'}</span></div>
+                    ${availabilityTag ? `<div>${availabilityTag}</div>` : ''}
                 </div>
-                <div class="user-actions flex-row" style="gap:8px;">
-                    <button class="btn-small-muted" data-action="editar" data-id="${u.id_usuario}">Editar</button>
-                    <button class="${u.activo ? 'btn-danger':'btn-success'} btn-small" data-action="${u.activo ? 'desactivar':'reactivar'}" data-id="${u.id_usuario}">${u.activo ? 'Desactivar':'Reactivar'}</button>
+                <div class="user-actions flex-row" style="display:flex; gap:8px;">
+                    <button class="btn-small-muted" style="padding:6px 12px;" data-action="editar" data-id="${u.id_usuario}">Editar</button>
+                    <button class="${u.activo ? 'btn-danger':'btn-success'} btn-small" style="padding:6px 12px;" data-action="${u.activo ? 'desactivar':'reactivar'}" data-id="${u.id_usuario}">${u.activo ? 'Desactivar':'Reactivar'}</button>
                 </div>
             </div>`;
         });

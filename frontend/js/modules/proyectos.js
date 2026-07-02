@@ -140,7 +140,37 @@ async function cargarProyectos(status = 'activo', search = '') {
                 `;
             }
             
-            container.innerHTML += `<div class="project-card clickable-card" data-id="${p.id_proyecto}"><div class="project-header"><div class="project-title"><strong>${p.nombre}</strong><span>${p.ciudad}</span></div><span class="status-tag ${isFin ? 'status-tag-finalizado':''}">${p.estado.toUpperCase()}</span></div><div class="progress-section"><div class="progress-header"><span>Avance General</span><span class="progress-percentage">${p.avance_general}%</span></div><div class="project-progress-bar"><div class="progress-fill" style="width:${p.avance_general}%"></div></div></div><div class="project-meta-grid"><div class="meta-item"><span class="label">Presupuesto</span><span class="value">$${p.presupuesto.toLocaleString()}</span></div><div class="meta-item"><span class="label">Líder</span><span class="value">${p.lider ? p.lider.nombre : 'S/A'}</span></div></div><div class="task-actions" style="margin-top:10px; display: flex; flex-wrap: wrap; gap: 8px;">${canManage && !isFin ? `<button class="btn-danger btn-small" data-action="estado" data-status="finalizado" data-id="${p.id_proyecto}">Finalizar</button>` : ''}${canManage && isFin ? `<button class="btn-success btn-small" data-action="estado" data-status="activo" data-id="${p.id_proyecto}">Reactivar</button>` : ''}${leaderProjectLinks}</div></div>`;
+            container.innerHTML += `
+            <div class="project-card clickable-card" data-id="${p.id_proyecto}" style="background:var(--bg); padding:20px; border-radius:var(--radius-md); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:15px; display:flex; flex-direction:column; gap:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="color:var(--text); font-size:1.2rem; display:block; margin-bottom:4px;">${p.nombre}</strong>
+                        <span style="color:var(--muted); font-size:0.9rem;"><span style="color:var(--primary);">📍</span> ${p.ciudad}</span>
+                    </div>
+                    <div><span class="status-tag ${isFin ? 'status-tag-finalizado':'badge-status-active'}" style="padding:4px 10px; border-radius:15px; font-weight:bold; font-size:0.8rem; color:#fff;">${p.estado.toUpperCase()}</span></div>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; background:rgba(0,0,0,0.1); padding:12px; border-radius:var(--radius-sm);">
+                    <div style="flex:1; min-width:150px;">
+                        <span style="color:var(--muted); font-size:0.8rem; display:block;">Presupuesto</span>
+                        <span style="color:var(--text); font-weight:600; font-size:1.05rem;">$${p.presupuesto.toLocaleString()}</span>
+                    </div>
+                    <div style="flex:1; min-width:150px;">
+                        <span style="color:var(--muted); font-size:0.8rem; display:block;">Líder Asignado</span>
+                        <span style="color:var(--text); font-weight:600; font-size:1.05rem;">${p.lider ? p.lider.nombre : 'S/A'}</span>
+                    </div>
+                    <div style="flex:1; min-width:150px; text-align:right;">
+                        <span style="color:var(--muted); font-size:0.8rem; display:block;">Avance General</span>
+                        <span style="color:var(--primary); font-weight:bold; font-size:1.2rem;">${p.avance_general}%</span>
+                    </div>
+                </div>
+
+                <div class="task-actions" style="display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px;">
+                    ${canManage && !isFin ? `<button class="btn-danger btn-small" style="padding:6px 12px;" data-action="estado" data-status="finalizado" data-id="${p.id_proyecto}">Finalizar</button>` : ''}
+                    ${canManage && isFin ? `<button class="btn-success btn-small" style="padding:6px 12px;" data-action="estado" data-status="activo" data-id="${p.id_proyecto}">Reactivar</button>` : ''}
+                    ${leaderProjectLinks}
+                </div>
+            </div>`;
         });
     } catch (e) { console.error("Error cargando proyectos:", e); }
 }

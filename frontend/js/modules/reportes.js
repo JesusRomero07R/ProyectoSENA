@@ -77,7 +77,17 @@ async function cargarDatosReportes() {
         if(document.getElementById("valAvancePromedio")) { const avg = projects.length ? (projects.reduce((s,p)=>s+p.avance_general,0)/projects.length).toFixed(1)+'%' : '0%'; document.getElementById("valAvancePromedio").textContent = avg; }
         if(document.getElementById("valMaterialesCriticos")) document.getElementById("valMaterialesCriticos").textContent = inventory.filter(i=>i.stock_actual<=i.stock_minimo).length;
         const cont = document.getElementById("latestReportsList");
-        if(cont) cont.innerHTML = reports.map(r => `<div class="latest-report-item"><strong>${r.nombre_proyecto}</strong><p>${r.titulo_tarea}</p><small>${r.porcentaje}% - ${r.nombre_operario}</small></div>`).join('');
+        if(cont) cont.innerHTML = reports.map(r => `
+            <div class="latest-report-item" style="background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:12px; display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="color:var(--text); font-size:1.1rem;">${r.nombre_proyecto}</strong>
+                    <span style="color:var(--primary); font-weight:bold; font-size:1.1rem;">${r.porcentaje}%</span>
+                </div>
+                <div style="color:var(--muted); font-size:0.95rem;">${r.titulo_tarea}</div>
+                <div style="color:var(--muted); font-size:0.85rem; display:flex; align-items:center; gap:6px;">
+                    <span style="color:var(--primary);">👤</span> ${r.nombre_operario}
+                </div>
+            </div>`).join('');
     } catch(e) {}
 }
 

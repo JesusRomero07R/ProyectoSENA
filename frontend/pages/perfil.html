@@ -23,41 +23,40 @@
         </header>
 
         <section>
-          <div class="card">
-            <div class="profile-header">
-              <div class="profile-avatar" id="profile-avatar-large">U</div>
+          <div class="card" style="background:var(--bg-card); border-radius:var(--radius-lg); overflow:hidden; border:1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <div class="profile-header" style="display:flex; align-items:center; gap:20px; padding:30px; background:linear-gradient(to right, rgba(99,102,241,0.1), transparent); border-bottom:1px solid rgba(255, 255, 255, 0.05); flex-wrap:wrap;">
+              <div class="profile-avatar" id="profile-avatar-large" style="width:80px; height:80px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2.5rem; font-weight:bold; box-shadow:0 4px 10px rgba(99,102,241,0.3);">U</div>
               <div>
-                <div class="profile-name" id="profile-name">Cargando...</div>
-                <div class="profile-role" id="profile-role">Cargando...</div>
-                <div class="profile-badges">
-                  <span class="badge">Activo</span>
-                  <span class="badge badge-secondary" id="profile-dept">Constructora GG</span>
+                <div class="profile-name" id="profile-name" style="font-size:1.8rem; font-weight:bold; color:var(--text); margin-bottom:5px;">Cargando...</div>
+                <div class="profile-role" id="profile-role" style="color:var(--muted); font-size:1rem; margin-bottom:10px;">Cargando...</div>
+                <div class="profile-badges" style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <span class="badge" style="background:rgba(34,197,94,0.2); color:#4ade80; padding:4px 10px; border-radius:15px; font-size:0.8rem; font-weight:bold;">Activo</span>
+                  <span class="badge badge-secondary" id="profile-dept" style="background:rgba(255,255,255,0.1); color:var(--text); padding:4px 10px; border-radius:15px; font-size:0.8rem;">Constructora GG</span>
                 </div>
               </div>
             </div>
 
-            <div class="profile-grid">
+            <div class="profile-grid" style="padding:30px;">
               <!-- Info personal -->
-              <div class="profile-info-list">
-                <div class="profile-info-row">
-                  <span class="profile-info-label">Email</span>
-                  <span id="profile-email">--</span>
+              <div class="profile-info-list" style="display:flex; flex-direction:column; gap:15px; max-width:500px;">
+                <div class="profile-info-row" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                  <span class="profile-info-label" style="color:var(--muted); font-weight:600;">Email</span>
+                  <span id="profile-email" style="color:var(--text); font-weight:500;">--</span>
                 </div>
-                <div class="profile-info-row">
-                  <span class="profile-info-label">Teléfono</span>
-                  <span id="profile-phone">--</span>
+                <div class="profile-info-row" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                  <span class="profile-info-label" style="color:var(--muted); font-weight:600;">Teléfono</span>
+                  <span id="profile-phone" style="color:var(--text); font-weight:500;">--</span>
                 </div>
               </div>
-
             </div>
 
-            <div class="profile-footer" id="profile-footer-actions">
-              <span id="motivational-msg">
+            <div class="profile-footer" id="profile-footer-actions" style="padding:20px 30px; background:var(--bg); border-top:1px solid rgba(255, 255, 255, 0.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+              <span id="motivational-msg" style="color:var(--muted);">
                 ¡Buen trabajo! Has completado el
-                <span class="profile-highlight" id="footer-percentage">0%</span> de tus tareas asignadas.
+                <span class="profile-highlight" id="footer-percentage" style="color:var(--primary); font-weight:bold;">0%</span> de tus tareas asignadas.
               </span>
               <div id="self-actions-container">
-                <button class="btn-ghost" id="btnEditProfile">Configuración de cuenta</button>
+                <button class="btn-primary" id="btnEditProfile">Configuración de cuenta</button>
               </div>
             </div>
           </div>

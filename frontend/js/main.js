@@ -93,8 +93,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         // En los módulos, la función puede llamarse setupDashboard o similar.
         // Dado que se exportaron con los nombres originales de app.js, vamos a ajustarlos.
         // Aquí uso los nombres de las funciones que extrajimos de app.js:
-        import('./modules/dashboard.js').then(m => m.cargarDashboardResumen && m.cargarDashboardResumen());
-        import('./modules/dashboard.js').then(m => m.setupKPIShortcuts && m.setupKPIShortcuts());
+        import('./modules/dashboard.js?v=' + Date.now()).then(m => m.cargarDashboardResumen && m.cargarDashboardResumen());
+        import('./modules/dashboard.js?v=' + Date.now()).then(m => m.setupKPIShortcuts && m.setupKPIShortcuts());
     } else if (path.includes('perfil.html')) {
         setupProfilePage();
     } else if (path.includes('equipo.html')) {

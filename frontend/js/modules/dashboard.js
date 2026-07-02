@@ -32,12 +32,16 @@ export async function cargarDashboardResumen() {
         container.innerHTML = projects.length ? "" : "<p style='text-align:center; padding:15px; color:var(--muted);'>No hay proyectos activos asignados.</p>";
         if (Array.isArray(projects)) {
             projects.forEach(p => {
-                container.innerHTML += `<div class="project-item clickable-card" onclick="window.location.href='pages/detalles_proyecto.html?id=${p.id_proyecto}'">
+                container.innerHTML += `
+                <div class="clickable-card" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:15px; border-radius:var(--radius-sm); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:12px;" onclick="window.location.href='pages/detalles_proyecto.html?id=${p.id_proyecto}'">
                     <div>
-                        <div class="project-title">${p.nombre}</div>
-                        <div class="project-leader">Líder: ${p.lider ? p.lider.nombre : 'S/A'}</div>
+                        <strong style="color:var(--text); font-size:1.05rem; display:block; margin-bottom:4px;">${p.nombre}</strong>
+                        <span style="color:var(--muted); font-size:0.8rem;">Líder: ${p.lider ? p.lider.nombre : 'S/A'}</span>
                     </div>
-                    <div class="project-progress-value">${p.avance_general}%</div>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.1rem; font-weight:bold; color:var(--primary);">${p.avance_general}%</div>
+                        <div style="font-size:0.7rem; color:var(--muted);">Progreso</div>
+                    </div>
                 </div>`;
             });
         }
