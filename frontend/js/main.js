@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (payload) { window.location.href = 'dashboard.html'; return; }
         setupLogin("loginForm");
     } else if (path.includes('recuperar_contrasena.html')) {
-        setupRecovery("recoveryForm");
+        setupRecovery("recovery-form");
     } else if (path.includes('dashboard.html')) {
         // En los módulos, la función puede llamarse setupDashboard o similar.
         // Dado que se exportaron con los nombres originales de app.js, vamos a ajustarlos.

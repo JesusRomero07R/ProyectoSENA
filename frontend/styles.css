@@ -962,7 +962,7 @@ body:not(.js-roles-ready) .role-no-admin {
 
 /* Notification Item / Activity Card */
 .notification-card {
-    background: #fff;
+    background: var(--bg-card);
     border: 1px solid var(--danger-light);
     border-radius: var(--radius-sm);
     padding: 12px;

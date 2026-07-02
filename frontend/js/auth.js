@@ -99,8 +99,15 @@ export function setupRecovery(formId) {
     
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("recoveryEmail").value.trim();
-        const msgBox = document.getElementById("recoveryMsg");
+        const email = document.getElementById("username").value.trim();
+        let msgBox = document.getElementById("recoveryMsg");
+        
+        if (!msgBox) {
+            msgBox = document.createElement("div");
+            msgBox.id = "recoveryMsg";
+            form.insertBefore(msgBox, form.firstChild);
+        }
+        
         const submitBtn = form.querySelector("button[type='submit']");
         
         if (msgBox) msgBox.style.display = "none";
@@ -110,10 +117,10 @@ export function setupRecovery(formId) {
         }
 
         try {
-            const res = await fetch(`${API_URL}/recuperar-password`, {
+            const res = await fetch(`${API_URL}/auth/solicitar-recuperacion`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ correo: email })
+                body: JSON.stringify({ username: email })
             });
 
             if (msgBox) msgBox.style.display = "block";

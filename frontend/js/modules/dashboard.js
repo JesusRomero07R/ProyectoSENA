@@ -220,10 +220,10 @@ export async function cargarDashboardResumen() {
     }
 }
 
-async function marcarNotificacionLeida(id) {
+window.marcarNotificacionLeida = async function(id) {
     await fetch(`${API_URL}/notificaciones/${id}/leer`, { method: 'PATCH', headers: getAuthHeaders() });
     cargarDashboardResumen();
-}
+};
 
 export function setupKPIShortcuts() {
     const ids = { 'kpi-usuarios': 'pages/usuarios.html', 'kpi-proyectos': 'pages/proyectos.html', 'kpi-inventario': 'pages/inventario.html', 'kpi-avance': 'pages/reportes.html' };
