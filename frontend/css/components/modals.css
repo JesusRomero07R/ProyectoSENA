@@ -1,0 +1,128 @@
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.25s ease;
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  margin: 6% auto;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  position: relative;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Animaciones y Utilidades extra */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* =========================================
+   NUEVAS CLASES UTILITARIAS PARA app.js
+========================================= */
+
+/* Notification Item / Activity Card */
+.notification-card {
+    background: var(--bg-card);
+    border: 1px solid var(--danger-light);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.notification-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+    border-color: var(--danger);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.notification-title {
+    color: var(--danger);
+    font-size: 0.85rem;
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 700;
+}
+
+.notification-text {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--text);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-header h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+}
+
+.close-modal {
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.2s;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg);
+}
+
+.close-modal:hover {
+    color: var(--text);
+    background-color: var(--border);
+}
+.role-section {
+    display: none;
+}
+

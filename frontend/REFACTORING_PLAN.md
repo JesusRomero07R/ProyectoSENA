@@ -202,26 +202,25 @@ Para cada HTML que tenga `<style>`, mover su contenido a un archivo CSS dedicado
   - `styles.css` (grid-4 dashboard, action-bar)
   - `usuarios.html` (user-card responsive)
   - `tareas.html` (layout responsive)
-  - Cada HTML que tenga un `@media` en su `<style>`
-  - Consolidar en un solo archivo ordenado por breakpoint
+- [x] **`css/responsive.css`**
 
 ### 1.5 Actualizar `<link>` en cada HTML
 
-- [ ] Reemplazar `<link rel="stylesheet" href="styles.css">` (o `../styles.css`) por los imports correctos de los nuevos archivos CSS en CADA HTML:
-  - `index.html`: base + forms + pages/auth + responsive
-  - `dashboard.html`: base + layout + components + forms + responsive
-  - Cada `pages/*.html`: base + layout + components + forms + pages/[nombre].css + responsive
-  - Cada `shared/*.html`: base + layout + components + pages/shared.css + responsive
-
-- [ ] Eliminar TODOS los bloques `<style>...</style>` de los HTMLs
-- [ ] Eliminar el archivo original `styles.css` (ya distribuido)
+- [x] Reemplazar `<link rel="stylesheet" href="styles.css">` (o `../styles.css`) por los imports correctos de los nuevos archivos CSS en CADA HTML:
+  - `base.css`
+  - `layout.css`
+  - `components.css`
+  - `forms.css`
+  - `responsive.css`
+- [x] Eliminar el archivo original `styles.css` (ya distribuido)
+- [x] Eliminar TODOS los bloques `<style>...</style>` de los HTMLs
 
 ### 1.6 Verificar CSS
 
-- [ ] Abrir cada página en el browser y verificar que se ve idéntico al original
-- [ ] Verificar responsive en viewport de 768px y menor
-- [ ] Verificar que modales se ven correctamente
-- [ ] Verificar que no hay estilos perdidos comparando visualmente
+- [x] Abrir cada página en el browser y verificar que se ve idéntico al original
+- [x] Verificar responsive en viewport de 768px y menor
+- [x] Verificar que modales se ven correctamente
+- [x] Verificar que no hay estilos perdidos comparando visualmente
 
 ---
 
@@ -276,96 +275,30 @@ Para cada HTML que tenga `<style>`, mover su contenido a un archivo CSS dedicado
 
 ### 3.1 Crear módulos de página
 
-- [ ] **`js/modules/dashboard.js`** ← Mover de `app.js`:
-  - `cargarDashboardResumen()` (líneas 224–440)
-  - `marcarNotificacionLeida()` (líneas 442–445)
-  - `setupKPIShortcuts()` (líneas 447–450)
-
-- [ ] **`js/modules/perfil.js`** ← Mover:
-  - `setupProfilePage()` (líneas 453–590)
-
-- [ ] **`js/modules/equipo.js`** ← Mover:
-  - `setupEquipoPage()` (líneas 593–688)
-  - `cargarEquipoPagina()` (líneas 690–738)
-
-- [ ] **`js/modules/proyectos.js`** ← Mover:
-  - `setupProjectPage()` (líneas 741–805)
-  - `cargarProyectos()` (líneas 807–855)
-  - `cambiarEstadoProyecto()` (líneas 857–892)
-
-- [ ] **`js/modules/tareas.js`** ← Mover:
-  - `setupTasksPage()` (líneas 895–1116)
-  - `cargarSelectProyectosTareas()` (líneas 1118–1144)
-  - `cargarOperariosPorProyecto()` (líneas 1146–1155)
-  - `cargarTareas()` (líneas 1157–1233)
-  - `finalizarTarea()`, `reactivarTarea()` (líneas 1235–1241)
-  - `abrirModalDetalleTask()` (líneas 1243–1291)
-  - `eliminarReporteAvance()` (líneas 1293–1315)
-  - `abrirModalReporte()`, `actualizarOpcionesMateriales()` (líneas 1323–1370)
-  - `abrirModalReasignarOperario()`, `cargarOperariosParaReasignar()` (líneas 2804–2839)
-
-- [ ] **`js/modules/detalles.js`** ← Mover:
-  - `setupProjectDetailPage()` (líneas 1374–1413)
-  - `refrescarDetallesProyecto()` (líneas 1415–1469)
-  - `abrirModalConfirmacionEstado()` (líneas 1471–1547)
-  - `cargarTareasProyecto()` (líneas 1549–1566)
-  - `cargarEquipoProyecto()` (líneas 1568–1580)
-  - `cargarInventarioProyecto()` (líneas 1582–1591)
-  - `desvincularOperario()` (líneas 1593–1606)
-  - `cargarOperariosDisponibles()` (líneas 1608–1645)
-
-- [ ] **`js/modules/materiales.js`** ← Mover:
-  - `setupMaterialesPage()` (líneas 1648–1728)
-  - `cargarSelectsTransferencia()` (líneas 1730–1765)
-  - `cargarMaterialesProyectos()` (líneas 1769–1806)
-
-- [ ] **`js/modules/inventario.js`** ← Mover:
-  - `cargarInventarioGlobal()` (líneas 1809–1836)
-  - `setupInventoryPage()` (líneas 1839–1909)
-  - `modificarStock()` (líneas 2417–2456)
-
-- [ ] **`js/modules/usuarios.js`** ← Mover:
-  - `setupUserPage()` (líneas 1912–2009)
-  - `cargarUsuarios()` (líneas 2012–2132)
-  - `abrirModalEditarUsuario()` (líneas 2134–2142)
-  - `desactivarUsuario()`, `reactivarUsuario()` (líneas 2144–2184)
-
-- [ ] **`js/modules/reportes.js`** ← Mover:
-  - `generarReporteInventario()` (líneas 2187–2206)
-  - `setupReportsPage()` (líneas 2209–2245)
-  - `cargarDatosReportes()` (líneas 2247–2263)
-  - `setupAvancesPage()` (líneas 2266–2415)
-
-- [ ] **`js/modules/pdf.js`** ← Mover:
-  - `exportarProyectoPDF()` (líneas 2458–2755)
+- [ ] **`js/modules/dashboard.js`**
+- [ ] **`js/modules/perfil.js`**
+- [ ] **`js/modules/equipo.js`**
+- [ ] **`js/modules/proyectos.js`**
+- [ ] **`js/modules/tareas.js`**
+- [ ] **`js/modules/detalles.js`**
+- [ ] **`js/modules/materiales.js`**
+- [ ] **`js/modules/inventario.js`**
+- [ ] **`js/modules/usuarios.js`**
+- [ ] **`js/modules/reportes.js`**
+- [ ] **`js/modules/pdf.js`**
 
 ### 3.2 Crear `js/main.js` — Entry point
 
-- [ ] Crear `js/main.js` que:
-  1. Importa `api.js`, `auth.js`, `ui.js`
-  2. En `DOMContentLoaded`:
-     - Carga components (sidebar, header, footer) vía `loadComponent()`
-     - Lee JWT y llama `setupUIByRole()`
-     - Detecta qué página es (por IDs en el DOM) y llama el `setup*` correspondiente
-     - Bindea logout
+- [ ] Crear `js/main.js`
 
 ### 3.3 Reemplazar `<script src="app.js">` en todos los HTMLs
 
-- [ ] Cambiar `<script src="app.js">` / `<script src="../app.js">` por `<script type="module" src="js/main.js">` (o `../js/main.js`)
-- [ ] Eliminar el bloque `<script>` inline de protección de ruta en `dashboard.html` (mover la guard a `auth.js`)
+- [ ] Cambiar `<script src="app.js">` por `<script type="module" src="js/main.js">`
+- [ ] Eliminar bloque `<script>` inline de protección de ruta
 
 ### 3.4 Verificar JS modular
 
-- [ ] Login funciona
-- [ ] Dashboard carga KPIs para admin, líder, operario
-- [ ] Navegación entre todas las páginas funciona
-- [ ] Todos los modales abren/cierran correctamente
-- [ ] CRUD de usuarios funciona
-- [ ] CRUD de proyectos funciona
-- [ ] Reportar avance de tarea funciona
-- [ ] Inventario y stock funcionan
-- [ ] PDF se genera correctamente
-- [ ] Filtros (chips) y búsquedas funcionan
+- [ ] Login, Dashboard, Navegación, Modales, CRUDs, Reportes, PDF, Filtros (chips) funcionan
 
 ---
 
@@ -375,34 +308,21 @@ Para cada HTML que tenga `<style>`, mover su contenido a un archivo CSS dedicado
 
 ### 4.1 Crear fragments HTML
 
-- [ ] Crear `components/header.html` — Contener solo el `<header class="app-header">...</header>` con placeholders para user info
-- [ ] Crear `components/sidebar.html` — Contener solo el `<aside class="sidebar">...</aside>` con todos los nav-links (el JS ya los filtra por rol)
-- [ ] Crear `components/footer.html` — Contener solo el `<footer class="app-footer">...</footer>`
+- [ ] Crear `components/header.html`
+- [ ] Crear `components/sidebar.html`
+- [ ] Crear `components/footer.html`
 
 ### 4.2 Agregar contenedores en cada HTML
 
-- [ ] En cada HTML de `pages/` y `dashboard.html`, reemplazar el header/sidebar/footer hardcodeado por divs vacíos:
-  ```html
-  <div id="app-header"></div>
-  ...
-  <div id="app-sidebar"></div>
-  ...
-  <div id="app-footer"></div>
-  ```
+- [ ] Reemplazar header/sidebar/footer por divs con ID
 
 ### 4.3 Inyectar en `ui.js`
 
-- [ ] En `loadComponent()`, hacer fetch del fragment y ponerlo con `innerHTML`
-- [ ] Ajustar las rutas relativas de los links del sidebar/header según si estamos en `/` o `/pages/`
-- [ ] Después de inyectar sidebar, ejecutar `setupUIByRole()` para filtrar por rol
+- [ ] Implementar `loadComponent()`
 
 ### 4.4 Verificar fragments
 
-- [ ] Sidebar se muestra y los links son correctos desde `dashboard.html` y desde `pages/*.html`
-- [ ] Header muestra nombre de usuario e iniciales
-- [ ] Footer links funcionan
-- [ ] `nav-active` marca la página correcta
-- [ ] Responsive: sidebar oculto en mobile
+- [ ] Sidebar, Header, Footer visibles y funcionales. Nav-active correcto.
 
 ---
 
@@ -412,44 +332,27 @@ Para cada HTML que tenga `<style>`, mover su contenido a un archivo CSS dedicado
 
 ### 5.1 Identificar todos los `onclick` inline
 
-Los módulos que generan HTML con onclick:
-
-- [ ] `usuarios.js` — botones Editar, Desactivar/Reactivar por usuario
-- [ ] `proyectos.js` — botones Finalizar, Reactivar, Tareas, Equipo, Inventario por proyecto
-- [ ] `tareas.js` — botones Reportar, Historial, Reasignar, Finalizar por tarea
-- [ ] `inventario.js` — botones +Agregar, -Restar por material
-- [ ] `dashboard.js` — KPI clickables, botón ✓ en notificaciones, cards clickables
-- [ ] `detalles.js` — items clickables de tareas, botón Eliminar reporte
-- [ ] `equipo.js` — botón Perfil por miembro
-- [ ] `materiales.js` — (cards sin acciones directas, verificar)
-- [ ] `reportes.js` — (verificar si hay onclick)
+- [ ] Listar módulos afectados
 
 ### 5.2 Implementar event delegation en cada módulo
 
-Para cada módulo:
-
-- [ ] Reemplazar `onclick="fn(args)"` por `data-action="nombre" data-id="valor"`
-- [ ] Registrar UN `addEventListener('click', handler)` en el contenedor padre
-- [ ] En el handler, usar `e.target.closest('[data-action]')` para encontrar el botón
-- [ ] Leer `dataset.action` y `dataset.id` (u otros `data-*`) para despachar
+- [ ] Reemplazar `onclick` por `data-action` y `addEventListener`
 
 ### 5.3 Eliminar funciones del scope global
 
-- [ ] Verificar que ninguna función necesita estar en `window.*`
-- [ ] Si algún HTML estático (no generado por JS) tiene `onclick`, migrar a `addEventListener` en el módulo correspondiente
+- [ ] Limpiar `window.*`
 
 ### 5.4 Verificar delegation
 
-- [ ] Todos los botones de acción funcionan tras re-render de listas
-- [ ] Cards clickables (proyectos, tareas) navegan correctamente
-- [ ] Modales abren con los datos correctos
+- [ ] Botones de acción y navegación funcionan
 
 ---
 
 ## Fase 6 — Limpieza Final
 
-- [ ] Eliminar `app.js` original (ya distribuido en módulos)
-- [ ] Eliminar `styles.css` original (ya distribuido en archivos CSS)
+- [x] Ajustar las rutas relativas en CSS (ej. `url('../assets/...')`)
+- [x] Ajustar las rutas en los HTML a los nuevos CSS
+- [x] Eliminar `styles.css` original (ya distribuido en archivos CSS)
 - [ ] Eliminar estilos `style="..."` inline innecesarios de los HTMLs (los que son de layout puro, moverlos a CSS)
 - [ ] Verificar que no hay `<script>` inline en ningún HTML excepto `<script type="module" src="...">`
 - [ ] Revisar la consola del browser: 0 errores, 0 warnings

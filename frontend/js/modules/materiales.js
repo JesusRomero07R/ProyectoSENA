@@ -1,7 +1,7 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
+import { api } from '../services/api.js';
 
 export async function setupMaterialesPage() {
     const params = new URLSearchParams(window.location.search);
@@ -11,17 +11,14 @@ export async function setupMaterialesPage() {
 
     if (pid !== "all") {
         try {
-            const pRes = await fetch(`${API_URL}/proyectos/${pid}`, { headers: getAuthHeaders() });
-            if (pRes.ok) {
-                const project = await pRes.json();
-                const subtitle = document.querySelector(".content-title p");
-                if (subtitle) {
-                    subtitle.innerHTML = `Inventario y existencias en obra para el proyecto <strong>${project.nombre}</strong>.`;
-                }
-                if (project.estado && project.estado.toLowerCase() === "finalizado") {
-                    const btnRequestGlobal = document.getElementById("btnRequestGlobal");
-                    if (btnRequestGlobal) btnRequestGlobal.style.display = "none";
-                }
+            const project = await api.get(`/proyectos/${pid}`);
+            const subtitle = document.querySelector(".content-title p");
+            if (subtitle) {
+                subtitle.innerHTML = `Inventario y existencias en obra para el proyecto <strong>${project.nombre}</strong>.`;
+            }
+            if (project.estado && project.estado.toLowerCase() === "finalizado") {
+                const btnRequestGlobal = document.getElementById("btnRequestGlobal");
+                if (btnRequestGlobal) btnRequestGlobal.style.display = "none";
             }
         } catch (err) {
             console.error("Error al cargar nombre del proyecto para materiales:", err);
@@ -45,36 +42,18 @@ export async function setupMaterialesPage() {
 
             try {
                 const data = Object.fromEntries(new FormData(transForm));
-                const res = await fetch(`${API_URL}/proyectos/trasladar-material`, { 
-                    method: 'POST', 
-                    headers: getAuthHeaders(), 
-                    body: JSON.stringify({ 
-                        id_proyecto: parseInt(pid !== "all" ? pid : data.id_proyecto), 
-                        id_material: parseInt(data.id_material), 
-                        cantidad: parseInt(data.cantidad) 
-                    }) 
+                const responseData = await api.post('/proyectos/trasladar-material', {
+                    id_proyecto: parseInt(pid !== "all" ? pid : data.id_proyecto),
+                    id_material: parseInt(data.id_material),
+                    cantidad: parseInt(data.cantidad)
                 });
-                
-                let responseData;
-                const text = await res.text();
-                try {
-                    responseData = JSON.parse(text);
-                } catch (e) {
-                    console.error("Non-JSON response:", text);
-                    throw new Error("El servidor devolvió un error inesperado.");
-                }
-                
-                if (res.ok) { 
-                    toast("Solicitud procesada: " + responseData.message, 'success'); 
-                    document.getElementById("transferModal").style.display = "none"; 
-                    cargarMaterialesProyectos(pid); 
-                    transForm.reset();
-                } else { 
-                    toast(responseData.detail || "Error en la solicitud", 'error'); 
-                }
-            } catch (err) { 
+                toast("Solicitud procesada: " + responseData.message, 'success');
+                document.getElementById("transferModal").style.display = "none";
+                cargarMaterialesProyectos(pid);
+                transForm.reset();
+            } catch (err) {
                 console.error("Transfer error:", err);
-                toast(err.message.includes("servidor devolvió", 'error') ? err.message : "No se pudo completar la solicitud. Verifica la conexión."); 
+                toast(err.message || "No se pudo completar la solicitud.", 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Confirmar Solicitud";
@@ -89,10 +68,10 @@ async function cargarSelectsTransferencia() {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get("project_id") || "all";
 
-    const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-    const invRes = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
-    const projects = await projRes.json();
-    const inventory = await invRes.json();
+    const [projects, inventory] = await Promise.all([
+        api.get('/proyectos?estado=activo'),
+        api.get('/inventario')
+    ]);
     
     const projectSelect = document.getElementById("trans_project");
     const materialSelect = document.getElementById("trans_material");
@@ -126,9 +105,8 @@ async function cargarMaterialesProyectos(projectId = 'all') {
     const container = document.getElementById("projectMaterialsContainer");
     if(!container) return;
     try {
-        const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-        if (!projRes.ok) throw new Error("Error cargando proyectos");
-        let projects = await projRes.json();
+        let projects = await api.get('/proyectos?estado=activo');
+        if (!projects || !Array.isArray(projects)) throw new Error("Error cargando proyectos");
         
         if (projectId !== 'all') {
             projects = projects.filter(p => p.id_proyecto == projectId);
@@ -141,8 +119,8 @@ async function cargarMaterialesProyectos(projectId = 'all') {
 
         container.innerHTML = "";
         for (const p of projects) {
-            const res = await fetch(`${API_URL}/inventario/proyecto/${p.id_proyecto}`, { headers: getAuthHeaders() });
-            const materials = res.ok ? await res.json() : [];
+            let materials = [];
+            try { materials = await api.get(`/inventario/proyecto/${p.id_proyecto}`); } catch(e) {}
             const section = document.createElement("div");
             section.className = "project-section";
             section.innerHTML = `<div class="project-header-title">${p.nombre}</div><div class="materials-grid"></div>`;

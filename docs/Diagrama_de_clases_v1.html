@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagrama de Clases - Constructora GG</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#1e3a5f',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#2563eb',
+        lineColor: '#94a3b8',
+        secondaryColor: '#1e40af',
+        tertiaryColor: '#1e293b',
+        background: '#0f172a',
+        mainBkg: '#1e293b',
+        nodeBorder: '#334155',
+        titleColor: '#f1f5f9',
+        edgeLabelBackground: '#1e293b',
+        fontFamily: 'Segoe UI, Roboto, sans-serif',
+        fontSize: '13px'
+      },
+      flowchart: { curve: 'linear' }
+    });
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; color: #f1f5f9; font-family: "Segoe UI", Roboto, sans-serif; }
+    header { background: linear-gradient(135deg, #1e3a5f, #1d4ed8); padding: 28px 40px; border-bottom: 2px solid #2563eb; }
+    header h1 { font-size: 1.75rem; margin-bottom: 6px; }
+    header p { color: #94a3b8; font-size: .88rem; }
+    .diagram-wrap { padding: 32px 24px; overflow: auto; background: #1e293b; }
+    .notes { padding: 20px 40px 28px; background: #0f172a; border-top: 1px solid #1e293b; }
+    .notes h3 { font-size: .82rem; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .notes ul { padding-left: 18px; color: #94a3b8; font-size: .82rem; line-height: 1.9; }
+    .notes li ul { margin-top: 4px; }
+    .notes code { color: #7dd3fc; }
+    footer { text-align: center; padding: 14px; font-size: .75rem; color: #475569; border-top: 1px solid #1e293b; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Diagrama de Clases - Constructora GG</h1>
+  <p>Basado en backend/app/models.py - v1 - 2026-07-02</p>
+</header>
+
+<div class="diagram-wrap">
+<pre class="mermaid">
+classDiagram
+  direction TB
+
+  class Rol {
+    +int id_rol
+    +String nombre_rol
+  }
+
+  class Usuario {
+    +int id_usuario
+    +String nombre
+    +String apellido
+    +String correo
+    +String password_hash
+    +String telefono
+    +int id_rol_fk
+    +String estado
+    +String disponibilidad
+    +bool activo
+  }
+
+  Rol "1" -- "*" Usuario : rol
+
+  class Proyecto {
+    +int id_proyecto
+    +String nombre
+    +String descripcion
+    +String ciudad
+    +String direccion
+    +Decimal presupuesto
+    +Date fecha_inicio
+    +Date fecha_fin
+    +String estado
+    +int id_lider_fk
+  }
+
+  Usuario "1" -- "*" Proyecto : lidera
+  Usuario "*" -- "*" Proyecto : operarios
+
+  class Tarea {
+    +int id_tarea
+    +String titulo
+    +String descripcion
+    +String estado
+    +String prioridad
+    +Date fecha_limite
+    +int avance
+    +int id_proyecto_fk
+    +int id_usuario_finalizado_fk
+    +String motivo_finalizacion
+  }
+
+  Proyecto "1" -- "*" Tarea : tareas
+  Usuario "*" -- "*" Tarea : asignados
+  Usuario "1" -- "*" Tarea : finaliza
+
+  class EventoTarea {
+    +int id_evento
+    +int id_tarea_fk
+    +String tipo
+    +String motivo
+    +int id_usuario_fk
+    +DateTime fecha
+  }
+
+  Tarea "1" -- "*" EventoTarea : eventos
+  EventoTarea "*" -- "1" Usuario : autor
+
+  class ArchivoProyecto {
+    +int id_archivo
+    +int id_proyecto_fk
+    +int id_tarea_fk
+    +String nombre_archivo
+    +String tipo_mime
+    +String ruta_url
+    +int tamanio_bytes
+    +DateTime fecha_subida
+  }
+
+  Proyecto "1" -- "*" ArchivoProyecto : archivos
+  Tarea "1" -- "*" ArchivoProyecto : adjuntos
+
+  class ReporteAvance {
+    +int id_reporte
+    +int id_tarea_fk
+    +int id_operario_fk
+    +DateTime fecha_reporte
+    +int porcentaje
+    +String observaciones
+    +String foto_url
+    +float horas_trabajadas
+  }
+
+  Tarea "1" -- "*" ReporteAvance : reportes
+  Usuario "1" -- "*" ReporteAvance : reporta
+
+  class CategoriaMaterial {
+    +int id_categoria
+    +String nombre_categoria
+  }
+
+  class Material {
+    +int id_material
+    +String nombre
+    +int id_categoria_fk
+    +int stock_minimo
+    +String unidad_medida
+  }
+
+  CategoriaMaterial "1" -- "*" Material : categoria
+
+  class ReporteMaterial {
+    +int id_reporte_material
+    +int id_reporte_fk
+    +int id_material_fk
+    +int cantidad_usada
+  }
+
+  ReporteAvance "1" -- "*" ReporteMaterial : detalle
+  Material "1" -- "*" ReporteMaterial : usado
+
+  class InventarioGlobal {
+    +int id_inventario
+    +int id_material_fk
+    +int stock_actual
+    +String unidad_medida
+  }
+
+  Material "1" -- "1" InventarioGlobal : stock
+
+  class InventarioProyecto {
+    +int id_inv_proy
+    +int id_proyecto_fk
+    +int id_material_fk
+    +int stock_actual
+    +String unidad_medida
+  }
+
+  Proyecto "1" -- "*" InventarioProyecto : inventario
+  Material "1" -- "*" InventarioProyecto : asignado
+
+  class SolicitudMaterial {
+    +int id_solicitud
+    +int id_proyecto_fk
+    +int id_material_fk
+    +int cantidad_solicitada
+    +String estado_solicitud
+    +DateTime fecha_solicitud
+  }
+
+  Proyecto "1" -- "*" SolicitudMaterial : solicita
+  Material "1" -- "*" SolicitudMaterial : solicitado
+
+  class Notificacion {
+    +int id_notificacion
+    +String titulo
+    +String mensaje
+    +String tipo
+    +bool leida
+    +DateTime fecha_creacion
+    +int id_material_fk
+    +int stock_actual
+    +String unidad_medida
+  }
+
+  Material "1" -- "*" Notificacion : alerta
+</pre>
+</div>
+
+<div class="notes">
+  <h3>Notas del diagrama</h3>
+  <ul>
+    <li><strong>Enumeraciones utilizadas</strong> (documentadas, no mostradas como clases):
+      <ul>
+        <li><code>UserStatus</code>: activo, inactivo, vacaciones, licencia</li>
+        <li><code>UserAvailability</code>: disponible, ocupado</li>
+        <li><code>ProyectoEstado</code>: activo, pausado, finalizado</li>
+        <li><code>TareaEstado</code>: pendiente, en_progreso, finalizada</li>
+        <li><code>TareaPrioridad</code>: baja, media, alta</li>
+      </ul>
+    </li>
+    <li><strong>Tablas intermedias N:N</strong>:
+      <ul>
+        <li><code>proyectos_usuarios</code>: entre Proyecto y Usuario (operarios del proyecto)</li>
+        <li><code>tareas_operarios</code>: entre Tarea y Usuario (operarios asignados a la tarea)</li>
+      </ul>
+    </li>
+    <li><strong>EventoTarea.tipo</strong>: <code>finalizada</code> | <code>reactivada</code></li>
+    <li><strong>SolicitudMaterial.estado_solicitud</strong>: <code>pendiente</code> | <code>aprobado</code> | <code>rechazado</code> | <code>insuficiente</code></li>
+    <li><strong>Notificacion.tipo</strong>: <code>alarma_stock</code> | <code>aviso</code></li>
+    <li><strong>ReporteMaterial</strong>: tiene propiedades calculadas <code>@property</code> (<code>nombre_material</code>, <code>unidad_medida</code>) delegadas a Material</li>
+    <li><strong>ArchivoProyecto</strong>: puede vincularse a Proyecto y/o Tarea (ambas FK opcionales)</li>
+  </ul>
+</div>
+
+<footer>Constructora GG - FastAPI + SQLAlchemy - v1 - 2026-07-02</footer>
+
+</body>
+</html>

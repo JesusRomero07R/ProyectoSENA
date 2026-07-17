@@ -1,7 +1,7 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload, goToLogin } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
+import { perfilService } from '../services/perfil.js';
 
 export async function setupProfilePage() {
     const params = new URLSearchParams(window.location.search);
@@ -12,12 +12,9 @@ export async function setupProfilePage() {
         const payload = getPayload();
         if (!payload) return goToLogin();
         const myEmail = payload.sub;
-        let url = targetUserId ? `${API_URL}/usuarios/${targetUserId}` : `${API_URL}/usuarios/me`;
-        
-        const resUser = await fetch(url, { headers: getAuthHeaders() });
-        const u = await resUser.json();
+        const u = await perfilService.getProfile(targetUserId);
 
-        if (resUser.ok) {
+        if (u) {
             const isMyProfile = (u.correo.toLowerCase() === myEmail.toLowerCase());
             console.log("Perfil: ¿Es mi perfil?", isMyProfile, u.correo, myEmail);
 
@@ -50,17 +47,18 @@ export async function setupProfilePage() {
                     selfActions.style.display = "block";
                     selfActions.innerHTML = `<button class="btn-primary" id="btnEditProfile">Configuración de cuenta</button>`;
                 }
-                
-                const btnEdit = document.getElementById("btnEditProfile");
-                if (btnEdit) {
-                    btnEdit.onclick = () => {
-                        document.getElementById("edit_nombre").value = u.nombre;
-                        document.getElementById("edit_apellido").value = u.apellido;
-                        document.getElementById("edit_telefono").value = u.telefono || "";
-                        document.getElementById("editProfileModal").style.display = "block";
-                    };
-                }
             }
+
+            // Pre-llenar modal siempre que haya datos del usuario
+            const elNombre = document.getElementById("edit_nombre");
+            const elApellido = document.getElementById("edit_apellido");
+            const elTelefono = document.getElementById("edit_telefono");
+            if (elNombre)   { elNombre.value   = u.nombre   || ""; elNombre.placeholder   = u.nombre   || "Nombre"; }
+            if (elApellido) { elApellido.value = u.apellido || ""; elApellido.placeholder = u.apellido || "Apellido"; }
+            if (elTelefono) { elTelefono.value = u.telefono || ""; elTelefono.placeholder = u.telefono || "Sin teléfono registrado"; }
+
+            const btnEdit = document.getElementById("btnEditProfile");
+            if (btnEdit) btnEdit.onclick = () => document.getElementById("editProfileModal").style.display = "block";
 
             // Manejo del Modal de Edición
             const modal = document.getElementById("editProfileModal");
@@ -85,25 +83,16 @@ export async function setupProfilePage() {
                     }
 
                     try {
-                        const res = await fetch(`${API_URL}/usuarios/${u.id_usuario}`, {
-                            method: 'PUT',
-                            headers: getAuthHeaders(),
-                            body: JSON.stringify(formData)
-                        });
-                        if (res.ok) {
-                            toast("Perfil actualizado correctamente.", 'success');
-                            if (pass) {
-                                toast("Como cambiaste tu contraseña, por seguridad debes iniciar sesión nuevamente.", 'warn');
-                                goToLogin();
-                            } else {
-                                location.reload();
-                            }
+                        await perfilService.update(u.id_usuario, formData);
+                        toast("Perfil actualizado correctamente.", 'success');
+                        if (pass) {
+                            toast("Como cambiaste tu contraseña, por seguridad debes iniciar sesión nuevamente.", 'warn');
+                            goToLogin();
                         } else {
-                            const err = await res.json();
-                            toast("Error: " + (err.detail || "No se pudo actualizar el perfil"), 'error');
+                            location.reload();
                         }
                     } catch (err) {
-                        toast("Error de conexión al actualizar perfil", 'error');
+                        toast("Error: " + (err.message || "No se pudo actualizar el perfil"), 'error');
                     }
                 };
             }

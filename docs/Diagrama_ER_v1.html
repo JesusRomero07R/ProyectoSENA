@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagrama Entidad-Relación - Constructora GG</title>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        fontFamily: 'Segoe UI, Roboto, sans-serif',
+        fontSize: '13px',
+        primaryColor: '#1e3a5f',
+        primaryBorderColor: '#3b82f6',
+        lineColor: '#94a3b8',
+        tertiaryColor: '#0f172a'
+      }
+    });
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; color: #f1f5f9; font-family: "Segoe UI", Roboto, sans-serif; }
+    header { background: linear-gradient(135deg, #1e3a5f, #1d4ed8); padding: 28px 40px; border-bottom: 2px solid #2563eb; }
+    header h1 { font-size: 1.75rem; margin-bottom: 6px; }
+    header p { color: #94a3b8; font-size: .88rem; }
+    .diagram-wrap { padding: 32px 24px; overflow: auto; background: #1e293b; min-height: 70vh; }
+    
+    /* Forzar visibilidad del texto en el diagrama ER por si el tema falla */
+    .mermaid [class^="entityBox"] { fill: #1e3a5f !important; stroke: #3b82f6 !important; }
+    .mermaid [class^="entityLabel"] { fill: #ffffff !important; }
+    .mermaid [class^="attributeBoxOdd"] { fill: #1e293b !important; stroke: #334155 !important; }
+    .mermaid [class^="attributeBoxEven"] { fill: #0f172a !important; stroke: #334155 !important; }
+    .mermaid text { fill: #e2e8f0 !important; }
+
+    .mermaid { min-width: 1200px; display: flex; justify-content: center; }
+    .notes { padding: 20px 40px 28px; background: #0f172a; border-top: 1px solid #1e293b; }
+    .notes h3 { font-size: .82rem; color: #60a5fa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .notes ul { padding-left: 18px; color: #94a3b8; font-size: .82rem; line-height: 1.9; }
+    .notes code { color: #7dd3fc; }
+    footer { text-align: center; padding: 14px; font-size: .75rem; color: #475569; border-top: 1px solid #1e293b; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Diagrama Entidad-Relación - Constructora GG</h1>
+  <p>Basado en backend/app/models.py - v1 - 2026-07-02</p>
+</header>
+
+<div class="diagram-wrap">
+<pre class="mermaid">
+erDiagram
+  roles {
+    Integer id_rol PK
+    String nombre_rol
+  }
+  
+  usuarios {
+    Integer id_usuario PK
+    String nombre
+    String apellido
+    String correo
+    String password_hash
+    String telefono
+    Integer id_rol_fk FK
+    String estado
+    String disponibilidad
+    Boolean activo
+  }
+  roles ||--o{ usuarios : "asigna_a"
+
+  proyectos {
+    Integer id_proyecto PK
+    String nombre
+    String descripcion
+    String ciudad
+    String direccion
+    Numeric presupuesto
+    Date fecha_inicio
+    Date fecha_fin
+    String estado
+    Integer id_lider_fk FK
+  }
+  usuarios ||--o{ proyectos : "lidera"
+
+  proyectos_usuarios {
+    Integer id_proyecto PK,FK
+    Integer id_usuario PK,FK
+  }
+  proyectos ||--o{ proyectos_usuarios : "tiene_asignacion"
+  usuarios ||--o{ proyectos_usuarios : "pertenece_a"
+
+  tareas {
+    Integer id_tarea PK
+    String titulo
+    String descripcion
+    String estado
+    String prioridad
+    Date fecha_limite
+    Integer avance
+    Integer id_proyecto_fk FK
+    Integer id_usuario_finalizado_fk FK
+    String motivo_finalizacion
+  }
+  proyectos ||--o{ tareas : "contiene"
+  usuarios ||--o{ tareas : "finaliza"
+
+  tareas_operarios {
+    Integer id_tarea PK,FK
+    Integer id_usuario PK,FK
+  }
+  tareas ||--o{ tareas_operarios : "tiene_asignacion"
+  usuarios ||--o{ tareas_operarios : "asignado_a"
+
+  eventos_tarea {
+    Integer id_evento PK
+    Integer id_tarea_fk FK
+    String tipo
+    String motivo
+    Integer id_usuario_fk FK
+    DateTime fecha
+  }
+  tareas ||--o{ eventos_tarea : "registra"
+  usuarios ||--o{ eventos_tarea : "autor_de"
+
+  archivos_proyecto {
+    Integer id_archivo PK
+    Integer id_proyecto_fk FK
+    Integer id_tarea_fk FK
+    String nombre_archivo
+    String tipo_mime
+    String ruta_url
+    Integer tamanio_bytes
+    DateTime fecha_subida
+  }
+  proyectos ||--o{ archivos_proyecto : "adjunta"
+  tareas ||--o{ archivos_proyecto : "adjunta"
+
+  reportes_avance {
+    Integer id_reporte PK
+    Integer id_tarea_fk FK
+    Integer id_operario_fk FK
+    DateTime fecha_reporte
+    Integer porcentaje
+    String observaciones
+    String foto_url
+    Float horas_trabajadas
+  }
+  tareas ||--o{ reportes_avance : "documenta"
+  usuarios ||--o{ reportes_avance : "reporta"
+
+  categorias_material {
+    Integer id_categoria PK
+    String nombre_categoria
+  }
+  
+  materiales {
+    Integer id_material PK
+    String nombre
+    Integer id_categoria_fk FK
+    Integer stock_minimo
+    String unidad_medida
+  }
+  categorias_material ||--o{ materiales : "clasifica"
+
+  reportes_materiales {
+    Integer id_reporte_material PK
+    Integer id_reporte_fk FK
+    Integer id_material_fk FK
+    Integer cantidad_usada
+  }
+  reportes_avance ||--o{ reportes_materiales : "detalla"
+  materiales ||--o{ reportes_materiales : "usado_en"
+
+  inventario_global {
+    Integer id_inventario PK
+    Integer id_material_fk FK
+    Integer stock_actual
+    String unidad_medida
+  }
+  materiales ||--|| inventario_global : "stock_en"
+
+  inventario_proyecto {
+    Integer id_inv_proy PK
+    Integer id_proyecto_fk FK
+    Integer id_material_fk FK
+    Integer stock_actual
+    String unidad_medida
+  }
+  proyectos ||--o{ inventario_proyecto : "inventario_de"
+  materiales ||--o{ inventario_proyecto : "asignado_a"
+
+  solicitudes_material {
+    Integer id_solicitud PK
+    Integer id_proyecto_fk FK
+    Integer id_material_fk FK
+    Integer cantidad_solicitada
+    String estado_solicitud
+    DateTime fecha_solicitud
+  }
+  proyectos ||--o{ solicitudes_material : "solicita"
+  materiales ||--o{ solicitudes_material : "solicitado_en"
+
+  notificaciones {
+    Integer id_notificacion PK
+    String titulo
+    String mensaje
+    String tipo
+    Boolean leida
+    DateTime fecha_creacion
+    Integer id_material_fk FK
+    Integer stock_actual
+    String unidad_medida
+  }
+  materiales ||--o{ notificaciones : "alerta_de"
+</pre>
+</div>
+
+<div class="notes">
+  <h3>Notas del Diagrama ER</h3>
+  <ul>
+    <li>Este diagrama muestra las <strong>tablas</strong> físicas en base de datos.</li>
+    <li>A diferencia del diagrama de clases, aquí las tablas intermedias (<code>proyectos_usuarios</code> y <code>tareas_operarios</code>) se muestran explícitamente para representar las relaciones N:N.</li>
+    <li>Las llaves foráneas (FK) y llaves primarias (PK) se indican junto a las columnas.</li>
+    <li>Las enumeraciones en SQLAlchemy (como <code>UserStatus</code>, <code>ProyectoEstado</code>) se guardan como cadenas de texto (String) en la base de datos.</li>
+  </ul>
+</div>
+
+<footer>Constructora GG - FastAPI + SQLAlchemy - v1 - 2026-07-02</footer>
+
+</body>
+</html>

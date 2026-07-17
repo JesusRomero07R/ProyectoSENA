@@ -1,8 +1,8 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
 import { exportarProyectoPDF } from './pdf.js';
+import { api } from '../services/api.js';
 
 export async function setupProjectDetailPage() {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -19,20 +19,11 @@ export async function setupProjectDetailPage() {
             e.preventDefault();
             const ids = Array.from(document.getElementById("availableOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
             try {
-                const res = await fetch(`${API_URL}/proyectos/configurar-equipo`, { 
-                    method: 'POST', 
-                    headers: getAuthHeaders(), 
-                    body: JSON.stringify({ id_proyecto: parseInt(id), id_usuarios: ids }) 
-                });
-                if (res.ok) { 
-                    toast("Equipo actualizado correctamente.", 'success'); 
-                    document.getElementById("teamModal").style.display = "none"; 
-                    cargarEquipoProyecto(id); 
-                } else {
-                    const err = await res.json();
-                    toast("Error: " + (err.detail || "No se pudo actualizar el equipo"), 'error');
-                }
-            } catch (err) { toast("Error de conexión", 'error'); }
+                await api.post('/proyectos/configurar-equipo', { id_proyecto: parseInt(id), id_usuarios: ids });
+                toast("Equipo actualizado correctamente.", 'success');
+                document.getElementById("teamModal").style.display = "none";
+                cargarEquipoProyecto(id);
+            } catch (err) { toast("Error: " + (err.message || "No se pudo actualizar el equipo"), 'error'); }
         };
     }
     const btnPDF = document.getElementById("btnGenerarPDF");
@@ -47,9 +38,8 @@ export async function setupProjectDetailPage() {
 
 async function refrescarDetallesProyecto(id) {
     try {
-        const res = await fetch(`${API_URL}/proyectos/${id}`, { headers: getAuthHeaders() });
-        const p = await res.json();
-        if (res.ok) {
+        const p = await api.get(`/proyectos/${id}`);
+        if (p) {
             document.getElementById("detNombre").textContent = p.nombre;
             document.getElementById("detEstado").textContent = p.estado;
             document.getElementById("detAvance").textContent = `${p.avance_general}%`;
@@ -67,8 +57,7 @@ async function refrescarDetallesProyecto(id) {
             if (btnChangeLider) {
                 btnChangeLider.onclick = async () => {
                     try {
-                        const resL = await fetch(`${API_URL}/usuarios?id_rol_fk=2`, { headers: getAuthHeaders() });
-                        const leaders = await resL.json();
+                        const leaders = await api.get('/usuarios?id_rol_fk=2');
                         const options = leaders.map(l => `<option value="${l.id_usuario}" ${p.id_lider_fk === l.id_usuario ? 'selected' : ''}>${l.nombre} ${l.apellido}</option>`).join('');
                         
                         document.getElementById("detLider").innerHTML = `
@@ -85,18 +74,12 @@ async function refrescarDetallesProyecto(id) {
                             const newLiderId = document.getElementById("selNewLider").value;
                             if (!newLiderId) return;
                             try {
-                                const updateRes = await fetch(`${API_URL}/proyectos/${id}`, {
-                                    method: 'PUT',
-                                    headers: getAuthHeaders(),
-                                    body: JSON.stringify({ id_lider_fk: parseInt(newLiderId) })
-                                });
-                                if (updateRes.ok) {
-                                    import('../toast.js').then(m => m.toast("Líder actualizado", "success"));
-                                    refrescarDetallesProyecto(id);
-                                } else {
-                                    import('../toast.js').then(m => m.toast("Error al cambiar líder", "error"));
-                                }
-                            } catch (e) { console.error(e); }
+                                await api.put(`/proyectos/${id}`, { id_lider_fk: parseInt(newLiderId) });
+                                import('../toast.js').then(m => m.toast("Líder actualizado", "success"));
+                                refrescarDetallesProyecto(id);
+                            } catch (e) {
+                                import('../toast.js').then(m => m.toast("Error al cambiar líder", "error"));
+                            }
                         };
                     } catch (e) { console.error(e); }
                 };
@@ -188,36 +171,19 @@ function abrirModalConfirmacionEstado(id, nombre, nuevoEstado) {
     btnClose.onclick = cerrar;
     
     // Ejecutar acción al confirmar
-    btnExecute.onclick = async () => {
+        btnExecute.onclick = async () => {
         try {
-            let url = `${API_URL}/proyectos/${id}`;
-            let method = 'PUT';
-            let body = JSON.stringify({ estado: nuevoEstado });
-
             if (nuevoEstado === 'finalizado') {
-                url = `${API_URL}/proyectos/${id}/finalizar`;
-                method = 'POST';
-                body = null;
-            }
-
-            const res = await fetch(url, {
-                method: method,
-                headers: getAuthHeaders(),
-                body: body
-            });
-
-            if (res.ok) {
-                toast(`Proyecto marcado como ${nuevoEstado.toUpperCase()} exitosamente.`, 'success');
-                cerrar();
-                // Recargar detalles
-                refrescarDetallesProyecto(id);
+                await api.post(`/proyectos/${id}/finalizar`, null);
             } else {
-                const err = await res.json();
-                toast("Error: " + (err.detail || "No se pudo cambiar el estado del proyecto"), 'error');
+                await api.put(`/proyectos/${id}`, { estado: nuevoEstado });
             }
+            toast(`Proyecto marcado como ${nuevoEstado.toUpperCase()} exitosamente.`, 'success');
+            cerrar();
+            refrescarDetallesProyecto(id);
         } catch (err) {
             console.error("Error al cambiar estado de proyecto:", err);
-            toast("Error de conexión al servidor.", 'error');
+            toast("Error: " + (err.message || "No se pudo cambiar el estado del proyecto"), 'error');
         }
     };
 
@@ -228,8 +194,7 @@ async function cargarTareasProyecto(id, isProjectActive = true) {
     const tCont = document.getElementById("listadoTareas");
     if (!tCont) return;
     try {
-        const res = await fetch(`${API_URL}/proyectos/${id}/tareas`, { headers: getAuthHeaders() });
-        const tasks = await res.json();
+        const tasks = await api.get(`/proyectos/${id}/tareas`);
         const payload = getPayload();
         if (!payload) return goToLogin();
         tCont.innerHTML = tasks.length ? "" : "<p>No hay tareas.</p>";
@@ -255,8 +220,7 @@ async function cargarEquipoProyecto(id, isProjectActive = true) {
     const eCont = document.getElementById("listadoEquipo");
     if (!eCont) return;
     try {
-        const res = await fetch(`${API_URL}/proyectos/${id}/estado-equipo`, { headers: getAuthHeaders() });
-        const team = await res.json();
+        const team = await api.get(`/proyectos/${id}/estado-equipo`);
         const payload = getPayload();
         const canManage = payload && payload.role !== 3 && isProjectActive;
         eCont.innerHTML = team.length ? "" : "<p>Sin personal.</p>";
@@ -278,8 +242,7 @@ async function cargarInventarioProyecto(id) {
     const iCont = document.getElementById("listadoInventario");
     if (!iCont) return;
     try {
-        const res = await fetch(`${API_URL}/inventario/proyecto/${id}`, { headers: getAuthHeaders() });
-        const inv = await res.json();
+        const inv = await api.get(`/inventario/proyecto/${id}`);
         iCont.innerHTML = inv.length ? "" : "<p>Sin materiales.</p>";
         inv.forEach(i => iCont.innerHTML += `<div class="list-item"><div><strong>${i.nombre_material}</strong></div><span>${i.stock_actual} ${i.unidad_medida}</span></div>`);
     } catch (e) { console.error(e); }
@@ -288,15 +251,10 @@ async function cargarInventarioProyecto(id) {
 async function desvincularOperario(projectId, userId) {
     if (confirm("¿Sacar del proyecto?")) {
         try {
-            const res = await fetch(`${API_URL}/proyectos/${projectId}/equipo/${userId}`, { method: 'DELETE', headers: getAuthHeaders() });
-            if (res.ok) {
-                toast("Operario desvinculado.", 'success');
-                await refrescarDetallesProyecto(projectId);
-            } else {
-                const err = await res.json();
-                toast("Error: " + (err.detail || "No se pudo desvincular"), 'error');
-            }
-        } catch (e) { toast("Error de conexión", 'error'); }
+            await api.del(`/proyectos/${projectId}/equipo/${userId}`);
+            toast("Operario desvinculado.", 'success');
+            await refrescarDetallesProyecto(projectId);
+        } catch (e) { toast("Error: " + (e.message || "No se pudo desvincular"), 'error'); }
     }
 }
 
@@ -304,10 +262,7 @@ async function cargarOperariosDisponibles(currentProjectId) {
     const container = document.getElementById("availableOperatorsList");
     if(!container) return;
     try {
-        // 1. Obtener operarios libres (sin proyecto activo)
-        const resDisp = await fetch(`${API_URL}/usuarios/operarios-disponibles`, { headers: getAuthHeaders() });
-        const disponibles = await resDisp.json();
-
+        const disponibles = await api.get('/usuarios/operarios-disponibles');
         container.innerHTML = disponibles.length ? "" : "<p>No hay operarios disponibles.</p>";
         disponibles.forEach(op => {
             container.innerHTML += `

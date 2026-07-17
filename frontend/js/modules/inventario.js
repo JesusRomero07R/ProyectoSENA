@@ -1,14 +1,14 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
+import { api } from '../services/api.js';
+import { stockBadge } from '../components/badges.js';
 
 async function cargarInventarioGlobal(filter = 'all', term = '') {
     const container = document.getElementById("inventoryList");
     if(!container) return;
     try {
-        const res = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
-        let items = await res.json();
+        let items = await api.get('/inventario');
         if (filter === 'low') items = items.filter(i => i.stock_actual <= i.stock_minimo);
         if (term) { const t = term.toLowerCase(); items = items.filter(i => i.nombre_material.toLowerCase().includes(t) || i.categoria_nombre.toLowerCase().includes(t)); }
         container.innerHTML = "";
@@ -19,7 +19,7 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
                 <div style="flex:1; min-width: 200px;">
                     <strong style="color:var(--text); font-size:1.1rem; display:block; margin-bottom:6px;">${i.nombre_material}</strong>
                     <div style="color:var(--muted); font-size:0.9rem; display:flex; align-items:center; gap:8px;">
-                        <span class="${low ? 'badge-status-inactive' : 'badge-status-active'}" style="padding:2px 8px; border-radius:4px; font-weight:bold; color:#fff;">${i.stock_actual}</span> 
+                        ${stockBadge(i.stock_actual, low)}
                         <span>${i.unidad_medida}</span>
                     </div>
                 </div>
@@ -71,35 +71,13 @@ export async function setupInventoryPage() {
             formData.stock_minimo = parseInt(formData.stock_minimo || 0);
 
             try {
-                const res = await fetch(`${API_URL}/materiales`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(formData)
-                });
-                if (res.ok) {
-                    toast("Material creado correctamente.", 'success');
-                    modalCreate.style.display = "none";
-                    materialForm.reset();
-                    cargarInventarioGlobal();
-                } else {
-                    let msg = "No se pudo crear el material";
-                    try {
-                        const err = await res.json();
-                        msg = err.detail;
-                        if (typeof msg === 'object') {
-                            if (Array.isArray(msg)) {
-                                msg = msg.map(m => (m.msg || JSON.stringify(m))).join(', ');
-                            } else {
-                                msg = JSON.stringify(msg);
-                            }
-                        }
-                    } catch (jsonErr) {
-                        msg = `Error del servidor (${res.status})`;
-                    }
-                    toast("Error: " + msg, 'error');
-                }
+                await api.post('/materiales', formData);
+                toast("Material creado correctamente.", 'success');
+                modalCreate.style.display = "none";
+                materialForm.reset();
+                cargarInventarioGlobal();
             } catch (err) {
-                toast("Error de conexión al crear el material", 'error');
+                toast("Error: " + (err.message || "No se pudo crear el material"), 'error');
             }
         };
     }
@@ -140,19 +118,12 @@ export async function setupInventoryPage() {
             btn.textContent = "Guardando...";
 
             try {
-                const res = await fetch(`${API_URL}/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, {
-                    method: 'PUT',
-                    headers: getAuthHeaders()
-                });
-                if (res.ok) {
-                    toast("Stock actualizado", 'success');
-                    adjustModal.style.display = "none";
-                    cargarInventarioGlobal();
-                } else {
-                    toast("Error al actualizar", 'error');
-                }
+                await api.patch(`/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, null);
+                toast("Stock actualizado", 'success');
+                adjustModal.style.display = "none";
+                cargarInventarioGlobal();
             } catch (err) {
-                toast("Error de conexión", 'error');
+                toast("Error al actualizar o de conexión", 'error');
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;

@@ -3,5 +3,7 @@
     
     .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
     .project-card-list { display: flex; flex-direction: column; gap: 12px; }
-    .project-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px; border-radius: var(--radius-md); background: #f9fafb; border: 1px solid var(--border); }
+    .project-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border); }
+    .project-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .project-leader { font-size: 0.75rem; color: var(--muted); }
     .project-progress-value { font-weight: 700; font-size: 1.2rem; color: var(--primary); align-self: center; }

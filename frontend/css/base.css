@@ -64,3 +64,59 @@ body {
 .mt-20 {
   margin-top: 20px;
 }
+
+/* Utilities y dinámicos */
+.role-section {
+    display: none;
+}
+
+/* Oculta nav items por rol hasta que JS los clasifique */
+body:not(.js-roles-ready) .role-admin-only,
+body:not(.js-roles-ready) .role-lider-only,
+body:not(.js-roles-ready) .role-operario-only,
+body:not(.js-roles-ready) .role-no-operario,
+body:not(.js-roles-ready) .role-lider-admin,
+body:not(.js-roles-ready) .role-no-admin {
+    display: none;
+}
+
+
+/* Dark mode tokens */
+[data-theme="dark"] {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-light: #1e3a5f;
+  --accent: #f59e0b;
+  --accent-light: #451a03;
+  --bg: #0f172a;
+  --bg-card: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #334155;
+  --shadow-soft: 0 10px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2);
+  --shadow-hover: 0 20px 25px -5px rgba(0,0,0,0.4), 0 10px 10px -6px rgba(0,0,0,0.3);
+  --shadow-premium: 0 20px 40px -15px rgba(59,130,246,0.25);
+  --success-light: #052e16;
+  --danger-light: #450a0a;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top left, #1e3a5f, transparent 60%),
+    linear-gradient(#0f172a, #0f172a);
+  background-size: 100% 100%, 100% 100%;
+}
+
+[data-theme="dark"] .app-header {
+  background: rgba(15, 23, 42, 0.85);
+}
+
+[data-theme="dark"] .sidebar {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+[data-theme="dark"] .content {
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(51, 65, 85, 0.8);
+}

@@ -1,6 +1,6 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
+import { api } from '../services/api.js';
 
 export async function cargarDashboardResumen() {
     const container = document.getElementById("dashboardProjectList");
@@ -17,13 +17,7 @@ export async function cargarDashboardResumen() {
         // 1. Cargar proyectos activos (compartido por admin y líder)
         let projects = [];
         try {
-            const projRes = await fetch(`${API_URL}/proyectos?estado=activo`, { headers: getAuthHeaders() });
-            if (projRes.ok) {
-                projects = await projRes.json();
-                console.log("Proyectos activos cargados:", projects.length);
-            } else {
-                console.error("Error al buscar proyectos activos:", projRes.status);
-            }
+            projects = await api.get('/proyectos?estado=activo');
         } catch (err) {
             console.error("Excepción al cargar proyectos activos:", err);
         }
@@ -56,27 +50,17 @@ export async function cargarDashboardResumen() {
 
             // KPI: Usuarios Registrados (val-usuarios)
             try {
-                const uRes = await fetch(`${API_URL}/usuarios`, { headers: getAuthHeaders() });
-                if (uRes.ok) {
-                    const users = await uRes.json();
-                    const valUsers = document.getElementById('val-usuarios');
-                    if (valUsers) {
-                        valUsers.textContent = Array.isArray(users) ? users.length : 0;
-                    }
-                    console.log("Usuarios cargados para KPI:", Array.isArray(users) ? users.length : 0);
-                } else {
-                    console.error("Error al buscar usuarios:", uRes.status);
-                }
+                const users = await api.get('/usuarios');
+                const valUsers = document.getElementById('val-usuarios');
+                if (valUsers) valUsers.textContent = Array.isArray(users) ? users.length : 0;
             } catch (err) {
                 console.error("Excepción al buscar usuarios:", err);
             }
 
             // KPI: Alertas Pendientes (val-avance) y lista de notificaciones de admin
             try {
-                const nRes = await fetch(`${API_URL}/notificaciones`, { headers: getAuthHeaders() });
-                if (nRes.ok) {
-                    const notifications = await nRes.json();
-                    if (Array.isArray(notifications)) {
+                const notifications = await api.get('/notificaciones');
+                if (Array.isArray(notifications)) {
                         const pending = notifications.filter(n => !n.leida);
                         
                         // Badge de acción requerida en la sección de alertas del sistema
@@ -124,9 +108,6 @@ export async function cargarDashboardResumen() {
                             });
                         }
                         console.log("Alertas cargadas para KPI:", pending.length);
-                    }
-                } else {
-                    console.error("Error al buscar notificaciones:", nRes.status);
                 }
             } catch (err) {
                 console.error("Excepción al cargar notificaciones:", err);
@@ -139,12 +120,7 @@ export async function cargarDashboardResumen() {
             let myTasks = [];
             try {
                 if (payload.role === 3) {
-                    const tRes = await fetch(`${API_URL}/tareas/mis-tareas`, { headers: getAuthHeaders() });
-                    if (tRes.ok) {
-                        myTasks = await tRes.json();
-                    } else {
-                        console.error("Error al buscar mis tareas:", tRes.status);
-                    }
+                    myTasks = await api.get('/tareas/mis-tareas');
                     
                     // Poblar lista de tareas de hoy para el operario
                     const taskContainer = document.getElementById("operarioTodayTasks");
@@ -161,16 +137,10 @@ export async function cargarDashboardResumen() {
                         });
                     }
                 } else if (Array.isArray(projects)) {
-                    // Para líderes, obtenemos las tareas de cada proyecto activo
                     for (const p of projects) {
                         try {
-                            const tasksR = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/tareas`, { headers: getAuthHeaders() });
-                            if (tasksR.ok) {
-                                const pTasks = await tasksR.json();
-                                if (Array.isArray(pTasks)) {
-                                    myTasks = myTasks.concat(pTasks);
-                                }
-                            }
+                            const pTasks = await api.get(`/proyectos/${p.id_proyecto}/tareas`);
+                            if (Array.isArray(pTasks)) myTasks = myTasks.concat(pTasks);
                         } catch (err) {
                             console.error(`Excepción al obtener tareas del proyecto ${p.id_proyecto}:`, err);
                         }
@@ -200,18 +170,11 @@ export async function cargarDashboardResumen() {
         const valI = document.getElementById('val-inventario');
         if (valI) {
             try {
-                const invRes = await fetch(`${API_URL}/inventario`, { headers: getAuthHeaders() });
-                if (invRes.ok) {
-                    const inventory = await invRes.json();
-                    if (Array.isArray(inventory)) {
-                        // Materiales críticos son aquellos donde stock_actual <= stock_minimo
-                        const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
-                        valI.textContent = lowCount;
-                        valI.style.color = lowCount > 0 ? "#ef4444" : "#059669";
-                        console.log("Materiales críticos cargados:", lowCount);
-                    }
-                } else {
-                    console.error("Error al buscar inventario:", invRes.status);
+                const inventory = await api.get('/inventario');
+                if (Array.isArray(inventory)) {
+                    const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
+                    valI.textContent = lowCount;
+                    valI.style.color = lowCount > 0 ? "#ef4444" : "#059669";
                 }
             } catch (err) {
                 console.error("Excepción al cargar inventario:", err);
@@ -225,7 +188,7 @@ export async function cargarDashboardResumen() {
 }
 
 window.marcarNotificacionLeida = async function(id) {
-    await fetch(`${API_URL}/notificaciones/${id}/leer`, { method: 'PATCH', headers: getAuthHeaders() });
+    try { await api.patch(`/notificaciones/${id}/leer`, null); } catch(e) {}
     cargarDashboardResumen();
 };
 

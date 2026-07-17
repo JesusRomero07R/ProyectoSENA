@@ -1,0 +1,28 @@
+/* ── Toast notifications ────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  min-width: 240px;
+  max-width: 380px;
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  box-shadow: var(--shadow-hover);
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+}
+.toast.toast-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast-success { background: var(--success); }
+.toast-error   { background: var(--danger); }
+.toast-warn    { background: var(--warning); color: var(--text); }
+.toast-info    { background: var(--primary); }

@@ -1,7 +1,7 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
+import { api } from '../services/api.js';
 
 export async function setupEquipoPage(projectId = 'all') {
     if (projectId === 'all') {
@@ -30,11 +30,8 @@ export async function setupEquipoPage(projectId = 'all') {
         let isProjectActive = true;
         if (projectId !== "all") {
             try {
-                const pRes = await fetch(`${API_URL}/proyectos/${projectId}`, { headers: getAuthHeaders() });
-                if (pRes.ok) {
-                    const project = await pRes.json();
-                    isProjectActive = project.estado && project.estado.toLowerCase() !== "finalizado";
-                }
+                const project = await api.get(`/proyectos/${projectId}`);
+                isProjectActive = project.estado && project.estado.toLowerCase() !== "finalizado";
             } catch (err) {
                 console.error("Error al validar estado del proyecto para botón de asignación:", err);
             }
@@ -63,35 +60,23 @@ export async function setupEquipoPage(projectId = 'all') {
             e.preventDefault();
             const ids = Array.from(document.getElementById("availableOperatorsList").querySelectorAll('input:checked')).map(cb => parseInt(cb.value));
             try {
-                const res = await fetch(`${API_URL}/proyectos/configurar-equipo`, { 
-                    method: 'POST', 
-                    headers: getAuthHeaders(), 
-                    body: JSON.stringify({ id_proyecto: parseInt(projectId), id_usuarios: ids }) 
-                });
-                if (res.ok) { 
-                    toast("Equipo actualizado correctamente.", 'success'); 
-                    document.getElementById("teamModal").style.display = "none"; 
-                    cargarEquipoPagina('all', '', projectId);
-                } else {
-                    const err = await res.json();
-                    toast("Error: " + (err.detail || "No se pudo actualizar el equipo"), 'error');
-                }
+                await api.post('/proyectos/configurar-equipo', { id_proyecto: parseInt(projectId), id_usuarios: ids });
+                toast("Equipo actualizado correctamente.", 'success');
+                document.getElementById("teamModal").style.display = "none";
+                cargarEquipoPagina('all', '', projectId);
             } catch (err) {
                 console.error("Error al configurar equipo desde página de equipo:", err);
-                toast("Error de conexión", 'error');
+                toast("Error: " + (err.message || "No se pudo actualizar el equipo"), 'error');
             }
         };
     }
 
     if (projectId !== "all") {
         try {
-            const pRes = await fetch(`${API_URL}/proyectos/${projectId}`, { headers: getAuthHeaders() });
-            if (pRes.ok) {
-                const project = await pRes.json();
-                const subtitle = document.getElementById("teamSummary");
-                if (subtitle) {
-                    subtitle.innerHTML = `Personal asignado al proyecto <strong>${project.nombre}</strong>.`;
-                }
+            const project = await api.get(`/proyectos/${projectId}`);
+            const subtitle = document.getElementById("teamSummary");
+            if (subtitle) {
+                subtitle.innerHTML = `Personal asignado al proyecto <strong>${project.nombre}</strong>.`;
             }
         } catch (err) {
             console.error("Error al cargar nombre del proyecto para equipo:", err);
@@ -115,30 +100,20 @@ async function cargarEquipoPagina(filterStatus = 'all', term = '', projectId = '
         if (!payload) return goToLogin();
         let members = [];
         if (payload.role === 1 && projectId === 'all') {
-            const res = await fetch(`${API_URL}/usuarios?id_rol_fk=3`, { headers: getAuthHeaders() });
-            if (res.ok) {
-                members = await res.json();
-            } else {
-                console.error("Error al cargar operarios:", res.status);
-                return;
-            }
+            members = await api.get('/usuarios?id_rol_fk=3');
         } else {
-            const urlProj = projectId !== 'all' ? `${API_URL}/proyectos` : `${API_URL}/proyectos?estado=activo`;
-            const projRes = await fetch(urlProj, { headers: getAuthHeaders() });
-            let projects = projRes.ok ? await projRes.json() : [];
+            const urlProj = projectId !== 'all' ? `/proyectos` : `/proyectos?estado=activo`;
+            let projects = await api.get(urlProj);
             if (!Array.isArray(projects)) projects = [];
             if (projectId !== 'all') {
                 projects = projects.filter(p => p.id_proyecto == projectId);
             }
             const memberMap = new Map();
             for (const p of projects) {
-                const teamRes = await fetch(`${API_URL}/proyectos/${p.id_proyecto}/estado-equipo`, { headers: getAuthHeaders() });
-                if (teamRes.ok) { 
-                    const tData = await teamRes.json();
-                    if (Array.isArray(tData)) {
-                        tData.forEach(m => memberMap.set(m.id_usuario, m)); 
-                    }
-                }
+                try {
+                    const tData = await api.get(`/proyectos/${p.id_proyecto}/estado-equipo`);
+                    if (Array.isArray(tData)) tData.forEach(m => memberMap.set(m.id_usuario, m));
+                } catch(e) { /* skip */ }
             }
             members = Array.from(memberMap.values());
         }

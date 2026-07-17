@@ -122,3 +122,25 @@
       .layout { grid-template-columns: 1fr; padding: 10px; }
       .sidebar { display: none; }
     }
+
+@media (max-width: 640px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 16px 16px 28px;
+    gap: 16px;
+  }
+  .content { padding: 18px; }
+}
+
+@media (max-width: 480px) {
+  .app-header { padding: 10px 14px; }
+  .logout-btn .label { display: none; }
+  .user-info { display: none; }
+}
+
+@media (max-width: 380px) {
+  .app-header { padding: 8px 12px; }
+  .layout { padding: 12px 12px 24px; }
+  .content { padding: 14px; }
+  .grid-3 { grid-template-columns: 1fr; }
+}

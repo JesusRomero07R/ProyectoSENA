@@ -1,14 +1,14 @@
-import { API_URL, fetchJSON, getAuthHeaders } from '../api.js';
 import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
+import { api } from '../services/api.js';
+import { userCard } from '../components/cards.js';
 
 let cachedUsers = [];
 
 export async function setupUserPage() {
-    console.log("setupUserPage: Inicializando filtros...");
-    const roleChips = document.querySelectorAll("#roleFilters .chip");
-    const availabilityChips = document.querySelectorAll("#availabilityFilters .chip");
+    const roleChips = document.querySelectorAll('#roleFilters .chip');
+    const availabilityChips = document.querySelectorAll('#availabilityFilters .chip');
 
     roleChips.forEach(chip => {
         chip.addEventListener('click', () => {
@@ -76,21 +76,14 @@ export async function setupUserPage() {
             formData.id_rol_fk = parseInt(formData.id_rol_fk);
             
             try {
-                const res = await fetch(`${API_URL}/usuarios`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(formData)
-                });
-                if (res.ok) {
-                    toast("Usuario creado correctamente.", 'success');
-                    document.getElementById("userModal").style.display = "none";
-                    userForm.reset();
-                    cargarUsuarios();
-                } else {
-                    const err = await res.json();
-                    toast("Error: " + (err.detail || "No se pudo crear el usuario"), 'error');
-                }
-            } catch (err) { toast("Error de conexión", 'error'); }
+                await api.post('/usuarios', formData);
+                toast("Usuario creado correctamente.", 'success');
+                document.getElementById("userModal").style.display = "none";
+                userForm.reset();
+                cargarUsuarios();
+            } catch (err) {
+                toast("Error: " + (err.message || "No se pudo crear el usuario"), 'error');
+            }
         };
     }
 
@@ -109,20 +102,13 @@ export async function setupUserPage() {
             if (!formData.password) delete formData.password;
 
             try {
-                const res = await fetch(`${API_URL}/usuarios/${id}`, {
-                    method: 'PUT',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(formData)
-                });
-                if (res.ok) {
-                    toast("Usuario actualizado correctamente.", 'success');
-                    document.getElementById("editUserModal").style.display = "none";
-                    cargarUsuarios();
-                } else {
-                    const err = await res.json();
-                    toast("Error: " + (err.detail || "No se pudo actualizar"), 'error');
-                }
-            } catch (err) { toast("Error de conexión", 'error'); }
+                await api.put(`/usuarios/${id}`, formData);
+                toast("Usuario actualizado correctamente.", 'success');
+                document.getElementById("editUserModal").style.display = "none";
+                cargarUsuarios();
+            } catch (err) {
+                toast("Error: " + (err.message || "No se pudo actualizar"), 'error');
+            }
         };
     }
 }
@@ -144,26 +130,16 @@ async function cargarUsuarios() {
     console.log(`cargarUsuarios: Cargando con filtros ui -> rol=${role}, disponibilidad=${availability}, term=${term}`);
 
     try {
-        let url = `${API_URL}/usuarios`;
+        let url = '/usuarios';
         if (role !== 'all') url += `?id_rol_fk=${role}`;
-        const res = await fetch(url, { headers: getAuthHeaders() });
-        if (!res.ok) {
-            console.error("Error al cargar usuarios:", res.status);
-            return;
-        }
-        let users = await res.json();
-        if (!Array.isArray(users)) {
-            console.error("Usuarios cargados no es un array:", users);
-            return;
-        }
+        let users = await api.get(url);
+        if (!Array.isArray(users)) return;
         cachedUsers = users;
-        console.log(`cargarUsuarios: Recibidos ${users.length} usuarios`);
 
         // Cargar proyectos para ver asignaciones reales
         let projects = [];
         try {
-            const projRes = await fetch(`${API_URL}/proyectos`, { headers: getAuthHeaders() });
-            if (projRes.ok) projects = await projRes.json();
+            projects = await api.get('/proyectos');
         } catch (projErr) {
             console.error("Error al cargar proyectos para mapeo:", projErr);
         }
@@ -217,32 +193,12 @@ async function cargarUsuarios() {
         }
 
         users.forEach(u => {
-            const roleName = u.id_rol_fk === 1 ? "Admin" : (u.id_rol_fk === 2 ? "Líder" : "Operario");
-            
-            let availabilityTag = '';
-            if (u.id_rol_fk === 2 || u.id_rol_fk === 3) {
-                const projectName = userProjectMap[u.id_usuario];
-                if (projectName) {
-                    availabilityTag = `<span class="availability-tag occupied-tag" title="Asignado a: ${projectName}">En Proyecto: <strong>${projectName}</strong></span>`;
-                } else {
-                    availabilityTag = `<span class="availability-tag free-tag">Disponible / Libre</span>`;
-                }
-            }
+            const roleName = u.id_rol_fk === 1 ? 'Admin' : (u.id_rol_fk === 2 ? 'Líder' : 'Operario');
+            const projectName = (u.id_rol_fk === 2 || u.id_rol_fk === 3)
+                ? userProjectMap[u.id_usuario]
+                : undefined;
 
-            container.innerHTML += `<div class="user-card ${u.activo ? '' : 'inactive'}" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom:12px; flex-wrap:wrap; gap:15px;">
-                <div class="user-details" style="flex:2; min-width:250px;">
-                    <strong style="color:var(--text); font-size:1.1rem; display:block; margin-bottom:4px;">${u.nombre || ''} ${u.apellido || ''}</strong>
-                    <span style="color:var(--muted); font-size:0.9rem;">${u.correo || ''} | <span style="color:var(--primary); font-weight:600;">${roleName}</span></span>
-                </div>
-                <div class="user-role-status" style="flex:1; min-width:180px; display:flex; flex-direction:column; gap:8px;">
-                    <div><span class="status-tag ${u.activo ? 'badge-status-active' : 'badge-status-inactive'}" style="padding:2px 8px; border-radius:4px; font-weight:bold; color:#fff;">${u.activo ? 'Activo':'Inactivo'}</span></div>
-                    ${availabilityTag ? `<div>${availabilityTag}</div>` : ''}
-                </div>
-                <div class="user-actions flex-row" style="display:flex; gap:8px;">
-                    <button class="btn-small-muted" style="padding:6px 12px;" data-action="editar" data-id="${u.id_usuario}">Editar</button>
-                    <button class="${u.activo ? 'btn-danger':'btn-success'} btn-small" style="padding:6px 12px;" data-action="${u.activo ? 'desactivar':'reactivar'}" data-id="${u.id_usuario}">${u.activo ? 'Desactivar':'Reactivar'}</button>
-                </div>
-            </div>`;
+            container.innerHTML += userCard(u, { roleName, projectName });
         });
     } catch(e) {
         console.error("Error en cargarUsuarios:", e);
@@ -264,20 +220,12 @@ function abrirModalEditarUsuario(id, nombre, apellido, correo, telefono, role) {
 async function desactivarUsuario(id) {
     if (confirm("¿Está seguro de que desea desactivar este usuario? Se desvinculará de todos sus proyectos y tareas activos.")) {
         try {
-            const res = await fetch(`${API_URL}/usuarios/${id}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders()
-            });
-            if (res.ok) {
-                toast("Usuario desactivado con éxito.", 'success');
-                cargarUsuarios();
-            } else {
-                const err = await res.json();
-                toast("Error: " + (err.detail || "No se pudo desactivar el usuario"), 'error');
-            }
+            await api.del(`/usuarios/${id}`);
+            toast("Usuario desactivado con éxito.", 'success');
+            cargarUsuarios();
         } catch (err) {
             console.error("Error al desactivar usuario:", err);
-            toast("Error de conexión", 'error');
+            toast("Error: " + (err.message || "No se pudo desactivar el usuario"), 'error');
         }
     }
 }
@@ -285,20 +233,12 @@ async function desactivarUsuario(id) {
 async function reactivarUsuario(id) {
     if (confirm("¿Está seguro de que desea reactivar este usuario?")) {
         try {
-            const res = await fetch(`${API_URL}/usuarios/${id}/activar`, {
-                method: 'PATCH',
-                headers: getAuthHeaders()
-            });
-            if (res.ok) {
-                toast("Usuario reactivado con éxito.", 'success');
-                cargarUsuarios();
-            } else {
-                const err = await res.json();
-                toast("Error: " + (err.detail || "No se pudo reactivar el usuario"), 'error');
-            }
+            await api.patch(`/usuarios/${id}/activar`, null);
+            toast("Usuario reactivado con éxito.", 'success');
+            cargarUsuarios();
         } catch (err) {
             console.error("Error al reactivar usuario:", err);
-            toast("Error de conexión", 'error');
+            toast("Error: " + (err.message || "No se pudo reactivar el usuario"), 'error');
         }
     }
 }
