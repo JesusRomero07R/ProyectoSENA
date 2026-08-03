@@ -35,9 +35,22 @@ export function setupProjectPage() {
                 presupuesto: parseFloat(data.presupuesto), 
                 id_lider_fk: parseInt(data.id_lider_fk)
             };
+            delete payload.foto_render; // Remove file object from JSON payload
 
             if (isNaN(payload.presupuesto)) { toast("Presupuesto no válido", 'warn'); return; }
             if (isNaN(payload.id_lider_fk)) { toast("Debe seleccionar un líder", 'warn'); return; }
+
+            const fileInput = document.getElementById('foto_render');
+            if (fileInput && fileInput.files.length > 0) {
+                try {
+                    // Ponytail: un solo endpoint de subida que devuelve la URL
+                    payload.foto_render_url = await api.uploadImage(fileInput.files[0]);
+                } catch(e) {
+                    console.error("Error subiendo imagen:", e);
+                    toast("No se pudo subir la imagen del render", "error");
+                    return;
+                }
+            }
 
             try {
                 await api.post('/proyectos', payload);

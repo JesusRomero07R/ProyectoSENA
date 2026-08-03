@@ -2,7 +2,7 @@ import { getPayload } from '../auth.js';
 import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.js';
 import { toast } from '../toast.js';
 import { exportarProyectoPDF } from './pdf.js';
-import { api } from '../services/api.js';
+import { api, API_URL } from '../services/api.js';
 
 export async function setupProjectDetailPage() {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -40,6 +40,22 @@ async function refrescarDetallesProyecto(id) {
     try {
         const p = await api.get(`/proyectos/${id}`);
         if (p) {
+            const headerContainer = document.getElementById("projectHeaderContainer");
+            if (headerContainer) {
+                const oldBanner = headerContainer.querySelector('.project-header-detail-banner');
+                if (oldBanner) oldBanner.remove();
+
+                if (p.foto_render_url) {
+                    headerContainer.classList.add('has-banner');
+                    const banner = document.createElement('div');
+                    banner.className = 'project-header-detail-banner';
+                    banner.style.backgroundImage = `url('${API_URL}${p.foto_render_url}')`;
+                    headerContainer.insertBefore(banner, headerContainer.firstChild);
+                } else {
+                    headerContainer.classList.remove('has-banner');
+                }
+            }
+
             document.getElementById("detNombre").textContent = p.nombre;
             document.getElementById("detEstado").textContent = p.estado;
             document.getElementById("detAvance").textContent = `${p.avance_general}%`;
@@ -123,6 +139,44 @@ async function refrescarDetallesProyecto(id) {
                     toggleBtn.style.alignItems = "center";
                     toggleBtn.style.gap = "6px";
                     actionsContainer.appendChild(toggleBtn);
+                }
+            }
+
+            if (payload && payload.role === 1) {
+                const actionsContainer = document.getElementById("projectDetailActions");
+                if (actionsContainer && !document.getElementById("btnUpdateRender")) {
+                    const btnUploadRender = document.createElement("button");
+                    btnUploadRender.id = "btnUpdateRender";
+                    btnUploadRender.className = "btn-outline";
+                    btnUploadRender.innerHTML = `<span class="icon">🖼️</span> Cambiar Render`;
+                    btnUploadRender.style.height = "41px";
+                    btnUploadRender.style.display = "inline-flex";
+                    btnUploadRender.style.alignItems = "center";
+                    btnUploadRender.style.gap = "6px";
+                    
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.style.display = "none";
+                    
+                    btnUploadRender.onclick = () => fileInput.click();
+                    
+                    fileInput.onchange = async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        try {
+                            const url = await api.uploadImage(file);
+                            await api.put(`/proyectos/${id}`, { foto_render_url: url });
+                            import('../toast.js').then(m => m.toast("Render actualizado", "success"));
+                            refrescarDetallesProyecto(id);
+                        } catch (err) {
+                            console.error(err);
+                            import('../toast.js').then(m => m.toast("Error al actualizar render", "error"));
+                        }
+                    };
+                    
+                    actionsContainer.appendChild(fileInput);
+                    actionsContainer.appendChild(btnUploadRender);
                 }
             }
         }

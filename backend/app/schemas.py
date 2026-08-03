@@ -62,6 +62,7 @@ class ProyectoBase(BaseModel):
     fecha_inicio: Optional[date] = None
     fecha_fin: Optional[date] = None
     id_lider_fk: int
+    foto_render_url: Optional[str] = None
 
 class ProyectoCreate(ProyectoBase):
     pass
@@ -76,6 +77,7 @@ class ProyectoUpdate(BaseModel):
     fecha_fin: Optional[date] = None
     estado: Optional[ProyectoEstado] = None
     id_lider_fk: Optional[int] = None
+    foto_render_url: Optional[str] = None
 
 class Proyecto(ProyectoBase):
     id_proyecto: int

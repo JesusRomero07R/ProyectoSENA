@@ -134,8 +134,28 @@ export async function setupTasksPage() {
             const materiales_usados = Array.from(document.querySelectorAll('.mat-item'))
                 .filter(row => row.querySelector('.mat-id').value && row.querySelector('.mat-qty').value)
                 .map(row => ({ id_material: parseInt(row.querySelector('.mat-id').value), cantidad: parseInt(row.querySelector('.mat-qty').value) }));
+            const payload = { 
+                ...data, 
+                id_tarea_fk: parseInt(id), 
+                porcentaje: parseInt(data.porcentaje), 
+                horas_trabajadas: parseFloat(data.horas_trabajadas), 
+                materiales_usados 
+            };
+            delete payload.foto_reporte;
+
+            const fileInput = document.getElementById('foto_reporte');
+            if (fileInput && fileInput.files.length > 0) {
+                try {
+                    payload.foto_url = await api.uploadImage(fileInput.files[0]);
+                } catch(e) {
+                    console.error("Error subiendo foto de reporte:", e);
+                    toast("No se pudo subir la foto del reporte", "error");
+                    return;
+                }
+            }
+
             try {
-                await api.post('/reportes', { ...data, id_tarea_fk: parseInt(id), porcentaje: parseInt(data.porcentaje), horas_trabajadas: parseFloat(data.horas_trabajadas), materiales_usados });
+                await api.post('/reportes', payload);
                 toast('Reporte enviado', 'success');
                 document.getElementById('reportModal').style.display = 'none';
                 reportForm.reset();

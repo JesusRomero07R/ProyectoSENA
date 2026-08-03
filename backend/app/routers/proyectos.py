@@ -129,6 +129,7 @@ def format_proyecto(p: models.Proyecto, db: Session):
         "fecha_fin": p.fecha_fin,
         "estado": p.estado,
         "id_lider_fk": p.id_lider_fk,
+        "foto_render_url": p.foto_render_url,
         "avance_general": avance,
         "lider": p.lider,
         "id_operarios": [o.id_usuario for o in p.operarios]

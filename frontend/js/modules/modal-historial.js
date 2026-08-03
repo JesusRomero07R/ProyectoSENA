@@ -1,12 +1,20 @@
 import { getPayload } from '../auth.js';
 import { toast } from '../toast.js';
-import { api } from '../services/api.js';
+import { api, API_URL } from '../services/api.js';
 
 function renderHistorialItem(item, userId, tareaId, tareaEstado) {
     const fecha = `${item.date.toLocaleDateString()} ${item.date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
     if (item.type === 'report') {
         const r = item.data;
         const canDelete = userId && r.id_operario_fk === userId && tareaEstado !== 'finalizada';
+        const photoHTML = r.foto_url ? `
+            <div style="margin-top: 8px; margin-bottom: 8px;">
+                <a href="${API_URL}${r.foto_url}" target="_blank">
+                    <img src="${API_URL}${r.foto_url}" alt="Evidencia" style="max-height: 80px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                </a>
+            </div>
+        ` : '';
+
         return `
         <div class="report-item">
             <div class="report-item-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
@@ -18,6 +26,7 @@ function renderHistorialItem(item, userId, tareaId, tareaEstado) {
             </div>
             <div style="font-size:0.8rem; color:var(--accent); margin-bottom:4px;">👷 ${r.nombre_operario || 'Operario desconocido'}</div>
             <p class="notification-text" style="margin-bottom:5px;">${r.observaciones || 'Sin observaciones'}</p>
+            ${photoHTML}
             <div style="font-size:0.75rem; color:var(--muted);">
                 Horas: <strong>${r.horas_trabajadas}</strong>
                 ${r.materiales_detalles.length ? ` | <span style="color:var(--text);">Materiales: ${r.materiales_detalles.map(md => `${md.nombre_material} (${md.cantidad_usada})`).join(', ')}</span>` : ''}

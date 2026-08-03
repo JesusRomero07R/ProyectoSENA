@@ -53,7 +53,7 @@
         </header>
 
         <section>
-            <div class="grid-3">
+            <div class="grid-3" style="margin-bottom: 20px;">
                 <div class="kpi-card">
                     <span class="kpi-label">Pendientes</span>
                     <span class="kpi-value" id="valTareasPendientes">0</span>
@@ -117,6 +117,10 @@
                   <div class="input-group">
                       <label for="report_obs">Observaciones / Novedades</label>
                       <textarea id="report_obs" name="observaciones" placeholder="Escribe qué se hizo hoy..."></textarea>
+                  </div>
+                  <div class="input-group">
+                      <label for="foto_reporte">Evidencia Fotográfica (Opcional)</label>
+                      <input type="file" id="foto_reporte" name="foto_reporte" accept="image/*" capture="environment">
                   </div>
                   <div class="input-group" style="border: 1px solid var(--border); padding: 15px; border-radius: var(--radius-md);">
                       <label style="font-weight: 700; margin-bottom: 10px; display: block;">Materiales Usados</label>

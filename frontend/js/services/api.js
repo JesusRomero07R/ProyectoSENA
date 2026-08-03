@@ -133,4 +133,56 @@ export const api = {
         });
         return parseResponse(res);
     },
+
+    /**
+     * Compresor de imagen usando Canvas
+     * @param {File} file - Archivo de imagen original
+     * @param {number} maxWidth - Ancho máximo permitido (px)
+     * @returns {Promise<File>} - Archivo comprimido
+     */
+    async compressImage(file, maxWidth = 1000) {
+        return new Promise((resolve, reject) => {
+            if (!file.type.match(/image.*/)) return resolve(file);
+            const reader = new FileReader();
+            reader.onload = (readerEvent) => {
+                const image = new Image();
+                image.onload = () => {
+                    let width = image.width;
+                    let height = image.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(image, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        const newFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        });
+                        resolve(newFile);
+                    }, 'image/jpeg', 0.8);
+                };
+                image.src = readerEvent.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    },
+
+    /**
+     * Comprime y sube una imagen al backend genérico
+     * @param {File} file - El archivo a subir
+     * @returns {Promise<string>} - La URL relativa devuelta por el servidor
+     */
+    async uploadImage(file) {
+        const compressed = await this.compressImage(file);
+        const fd = new FormData();
+        fd.append('file', compressed);
+        const res = await this.upload('/upload', fd);
+        return res.url;
+    }
 };

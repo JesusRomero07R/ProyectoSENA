@@ -78,6 +78,7 @@ class Proyecto(Base):
     fecha_fin = Column(Date)
     estado = Column(String(50), default="activo")
     id_lider_fk = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
+    foto_render_url = Column(String(500), nullable=True)
 
     lider = relationship("Usuario")
     operarios = relationship("Usuario", secondary=proyectos_usuarios)

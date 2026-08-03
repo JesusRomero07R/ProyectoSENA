@@ -28,5 +28,26 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
+import os
+import shutil
+from datetime import datetime
+from fastapi import UploadFile, File
+from fastapi.staticfiles import StaticFiles
+
 # Crear tablas en SQLite automáticamente al iniciar
 models.Base.metadata.create_all(bind=engine)
+
+UPLOAD_DIR = "uploads"
+if not os.path.exists(UPLOAD_DIR):
+    os.makedirs(UPLOAD_DIR)
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
+@app.post("/upload")
+async def upload_image(file: UploadFile = File(...)):
+    file_name = f"img_{int(datetime.now().timestamp())}_{file.filename.replace(' ', '_')}"
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    # Devolver URL relativa que luego consumirá el frontend
+    return {"url": f"/uploads/{file_name}"}

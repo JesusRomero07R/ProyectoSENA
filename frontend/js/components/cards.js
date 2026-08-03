@@ -21,6 +21,7 @@
  */
 
 import { projectStatusBadge, statusBadge, availabilityBadge, taskStatusPill } from './badges.js';
+import { API_URL } from '../api.js';
 
 // ---------------------------------------------------------------------------
 // Helpers privados (no exportados)
@@ -68,35 +69,42 @@ export function projectCard(p, opts = {}) {
         ? `<button class="btn-success btn-small" style="padding:6px 12px;" data-action="estado" data-status="activo" data-id="${p.id_proyecto}">Reactivar</button>`
         : '';
 
+    const bannerHTML = p.foto_render_url 
+        ? `<div class="project-card-banner" style="background-image: url('${API_URL}${p.foto_render_url}');"></div>`
+        : '';
+
     return `
     <div class="project-card clickable-card" data-id="${p.id_proyecto}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
-            <div>
-                <strong style="color:var(--text); font-size:1.2rem; display:block; margin-bottom:4px;">${p.nombre}</strong>
-                <span style="color:var(--muted); font-size:0.9rem;"><span style="color:var(--primary);">📍</span> ${p.ciudad}</span>
+        ${bannerHTML}
+        <div class="project-card-body" style="display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <strong style="color:var(--text); font-size:1.2rem; display:block; margin-bottom:4px;">${p.nombre}</strong>
+                    <span style="color:var(--muted); font-size:0.9rem;"><span style="color:var(--primary);">📍</span> ${p.ciudad}</span>
+                </div>
+                <div>${projectStatusBadge(p.estado)}</div>
             </div>
-            <div>${projectStatusBadge(p.estado)}</div>
-        </div>
 
-        <div style="display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; background:rgba(0,0,0,0.1); padding:12px; border-radius:var(--radius-sm);">
-            <div style="flex:1; min-width:150px;">
-                <span style="color:var(--muted); font-size:0.8rem; display:block;">Presupuesto</span>
-                <span style="color:var(--text); font-weight:600; font-size:1.05rem;">${formatCurrency(p.presupuesto)}</span>
+            <div style="display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; background:rgba(0,0,0,0.1); padding:12px; border-radius:var(--radius-sm);">
+                <div style="flex:1; min-width:150px;">
+                    <span style="color:var(--muted); font-size:0.8rem; display:block;">Presupuesto</span>
+                    <span style="color:var(--text); font-weight:600; font-size:1.05rem;">${formatCurrency(p.presupuesto)}</span>
+                </div>
+                <div style="flex:1; min-width:150px;">
+                    <span style="color:var(--muted); font-size:0.8rem; display:block;">Líder Asignado</span>
+                    <span style="color:var(--text); font-weight:600; font-size:1.05rem;">${p.lider ? p.lider.nombre : 'S/A'}</span>
+                </div>
+                <div style="flex:1; min-width:150px; text-align:right;">
+                    <span style="color:var(--muted); font-size:0.8rem; display:block;">Avance General</span>
+                    <span style="color:var(--primary); font-weight:bold; font-size:1.2rem;">${p.avance_general}%</span>
+                </div>
             </div>
-            <div style="flex:1; min-width:150px;">
-                <span style="color:var(--muted); font-size:0.8rem; display:block;">Líder Asignado</span>
-                <span style="color:var(--text); font-weight:600; font-size:1.05rem;">${p.lider ? p.lider.nombre : 'S/A'}</span>
-            </div>
-            <div style="flex:1; min-width:150px; text-align:right;">
-                <span style="color:var(--muted); font-size:0.8rem; display:block;">Avance General</span>
-                <span style="color:var(--primary); font-weight:bold; font-size:1.2rem;">${p.avance_general}%</span>
-            </div>
-        </div>
 
-        <div class="task-actions" style="display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px;">
-            ${finalizarBtn}
-            ${reactivarBtn}
-            ${leaderProjectLinks}
+            <div class="task-actions" style="display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px;">
+                ${finalizarBtn}
+                ${reactivarBtn}
+                ${leaderProjectLinks}
+            </div>
         </div>
     </div>`;
 }
