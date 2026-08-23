@@ -205,8 +205,8 @@ export async function cargarDashboardResumen() {
                 if (document.getElementById('chart-lider-proyectos')) {
                     const avgAvance = projects.length ? Math.round(projects.reduce((s, p) => s + (p.avance_general || 0), 0) / projects.length) : 0;
                     renderSvgDonut('chart-lider-proyectos', [
-                        { label: 'Avance', val: avgAvance, color: '#2563eb' },
-                        { label: 'Pendiente', val: Math.max(0, 100 - avgAvance), color: '#475569' }
+                        { label: 'Avance %', val: avgAvance, color: '#2563eb' },
+                        { label: 'Pendiente %', val: Math.max(0, 100 - avgAvance), color: '#475569' }
                     ]);
                 }
                 if (document.getElementById('chart-lider-inventario')) {
