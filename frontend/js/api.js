@@ -16,9 +16,11 @@ export async function fetchJSON(endpoint, options = {}) {
     const headers = { ...getAuthHeaders(), ...(options.headers || {}) };
     
     // Si body es FormData, el navegador debe settear el Content-Type automáticamente,
-    // así que lo removemos.
-    if (options.body instanceof FormData) {
+    // así que lo removemos explícitamente.
+    const isFormData = options.body instanceof FormData || (options.body && typeof options.body === 'object' && options.body.constructor && options.body.constructor.name === 'FormData');
+    if (isFormData) {
         delete headers['Content-Type'];
+        delete headers['content-type'];
     }
     
     const finalOptions = { ...options, headers };

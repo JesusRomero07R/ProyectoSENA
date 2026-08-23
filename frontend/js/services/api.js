@@ -37,7 +37,13 @@ async function parseResponse(res) {
         let message = `HTTP ${res.status}`;
         try {
             const body = await res.json();
-            message = body.detail || body.message || message;
+            if (typeof body.detail === 'string') {
+                message = body.detail;
+            } else if (Array.isArray(body.detail)) {
+                message = body.detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+            } else if (body.message) {
+                message = body.message;
+            }
         } catch (_) {
             // body no es JSON, usamos el status
         }
@@ -141,34 +147,40 @@ export const api = {
      * @returns {Promise<File>} - Archivo comprimido
      */
     async compressImage(file, maxWidth = 1000) {
-        return new Promise((resolve, reject) => {
-            if (!file.type.match(/image.*/)) return resolve(file);
+        return new Promise((resolve) => {
+            if (!file || !file.type || !file.type.match(/image.*/)) return resolve(file);
             const reader = new FileReader();
             reader.onload = (readerEvent) => {
                 const image = new Image();
                 image.onload = () => {
-                    let width = image.width;
-                    let height = image.height;
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
+                    try {
+                        let width = image.width;
+                        let height = image.height;
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(image, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            if (!blob) return resolve(file);
+                            const newFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(newFile);
+                        }, 'image/jpeg', 0.8);
+                    } catch (_) {
+                        resolve(file);
                     }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(image, 0, 0, width, height);
-                    canvas.toBlob((blob) => {
-                        const newFile = new File([blob], file.name, {
-                            type: 'image/jpeg',
-                            lastModified: Date.now()
-                        });
-                        resolve(newFile);
-                    }, 'image/jpeg', 0.8);
                 };
+                image.onerror = () => resolve(file);
                 image.src = readerEvent.target.result;
             };
-            reader.onerror = reject;
+            reader.onerror = () => resolve(file);
             reader.readAsDataURL(file);
         });
     },
