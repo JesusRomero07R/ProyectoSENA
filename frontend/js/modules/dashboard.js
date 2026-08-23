@@ -177,17 +177,53 @@ export async function cargarDashboardResumen() {
             }
             
             if (Array.isArray(myTasks)) {
+                const pendCount = myTasks.filter(t => t.estado === 'pendiente').length;
+                const progCount = myTasks.filter(t => t.estado === 'en_progreso').length;
+                const finCount  = myTasks.filter(t => t.estado === 'finalizada').length;
+
                 if (document.getElementById('valMisTareasPendientes')) {
-                    document.getElementById('valMisTareasPendientes').textContent = myTasks.filter(t => t.estado === 'pendiente').length;
+                    document.getElementById('valMisTareasPendientes').textContent = pendCount;
                 }
                 if (document.getElementById('valMisTareasEnCurso')) {
-                    document.getElementById('valMisTareasEnCurso').textContent = myTasks.filter(t => t.estado === 'en_progreso').length;
+                    document.getElementById('valMisTareasEnCurso').textContent = progCount;
                 }
                 if (document.getElementById('valMisTareasFinalizadas')) {
-                    document.getElementById('valMisTareasFinalizadas').textContent = myTasks.filter(t => t.estado === 'finalizada').length;
+                    document.getElementById('valMisTareasFinalizadas').textContent = finCount;
                 }
                 if (document.getElementById('valMisProyectosActivos')) {
                     document.getElementById('valMisProyectosActivos').textContent = Array.isArray(projects) ? projects.length : 0;
+                }
+
+                // ponytail: 4 Gráficos visuales SVG nativos específicos para el Líder de Proyecto
+                if (document.getElementById('chart-lider-tareas')) {
+                    renderSvgDonut('chart-lider-tareas', [
+                        { label: 'En Curso', val: progCount, color: '#2563eb' },
+                        { label: 'Finalizadas', val: finCount, color: '#059669' },
+                        { label: 'Pendientes', val: pendCount, color: '#f59e0b' }
+                    ]);
+                }
+                if (document.getElementById('chart-lider-proyectos')) {
+                    const avgAvance = projects.length ? Math.round(projects.reduce((s, p) => s + (p.avance_general || 0), 0) / projects.length) : 0;
+                    renderSvgDonut('chart-lider-proyectos', [
+                        { label: 'Avance', val: avgAvance, color: '#2563eb' },
+                        { label: 'Pendiente', val: Math.max(0, 100 - avgAvance), color: '#475569' }
+                    ]);
+                }
+                if (document.getElementById('chart-lider-inventario')) {
+                    const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
+                    const healthyCount = Math.max(0, inventory.length - lowCount);
+                    renderSvgDonut('chart-lider-inventario', [
+                        { label: 'Óptimo', val: healthyCount, color: '#059669' },
+                        { label: 'Crítico', val: lowCount, color: '#ef4444' }
+                    ]);
+                }
+                if (document.getElementById('chart-lider-equipo')) {
+                    const assigned = myTasks.filter(t => t.operarios_nombres && t.operarios_nombres.length > 0).length;
+                    const unassigned = Math.max(0, myTasks.length - assigned);
+                    renderSvgDonut('chart-lider-equipo', [
+                        { label: 'Asignadas', val: assigned, color: '#059669' },
+                        { label: 'Sin Asignar', val: unassigned, color: '#ef4444' }
+                    ]);
                 }
             }
         }

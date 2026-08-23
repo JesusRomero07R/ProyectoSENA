@@ -8,6 +8,9 @@ export function setupUIByRole(roleId) {
     const liderYAdmin  = document.querySelectorAll('.role-lider-admin');
     const noAdmin      = document.querySelectorAll('.role-no-admin');
 
+    const roleSections = document.querySelectorAll('.role-section');
+    roleSections.forEach(el => { el.style.display = 'none'; });
+
     [...adminOnly, ...liderOnly, ...operarioOnly, ...noOperario, ...liderYAdmin, ...noAdmin]
         .forEach(el => { el.style.display = 'none'; });
 

@@ -3,8 +3,8 @@
 
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.role-section.grid-4 { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.role-section.grid-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+.role-section.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.role-section.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
 .project-card-list { display: flex; flex-direction: column; gap: 12px; }
 .project-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border); }
 .project-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
