@@ -261,23 +261,6 @@ export async function cargarDashboardResumen() {
                         { label: 'Pendiente %', val: Math.max(0, 100 - avgOpAvance), color: '#475569' }
                     ]);
                 }
-                if (document.getElementById('chart-operario-horas')) {
-                    try {
-                        const myReports = await api.get('/reportes?limit=10');
-                        let totalHoras = 0;
-                        if (Array.isArray(myReports)) {
-                            totalHoras = myReports.reduce((sum, r) => sum + (parseFloat(r.horas_trabajadas) || 0), 0);
-                        }
-                        const horasReportadas = Math.round(totalHoras) || (myTasks.length ? 5 : 0);
-                        const jornadaStandard = Math.max(8, horasReportadas);
-                        const horasRestantes = Math.max(0, jornadaStandard - horasReportadas);
-
-                        renderSvgDonut('chart-operario-horas', [
-                            { label: 'Invertidas (h)', val: horasReportadas, color: '#2563eb' },
-                            { label: 'Jornada (h)', val: horasRestantes, color: '#059669' }
-                        ]);
-                    } catch (e) { console.error(e); }
-                }
             }
         }
 
