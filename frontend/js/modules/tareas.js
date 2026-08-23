@@ -156,10 +156,16 @@ export async function setupTasksPage() {
 
             try {
                 await api.post('/reportes', payload);
-                toast('Reporte enviado', 'success');
+                toast('Reporte enviado con éxito', 'success');
                 document.getElementById('reportModal').style.display = 'none';
                 reportForm.reset();
-                cargarTareas();
+                try {
+                    const activeStatus = document.querySelector('#taskFilters .chip-active')?.dataset.status || 'active';
+                    const activeProj = document.getElementById('projectFilterSelect')?.value || 'all';
+                    await cargarTareas(activeStatus, '', activeProj);
+                } catch (recErr) {
+                    console.error('Error al actualizar listado de tareas:', recErr);
+                }
             } catch (err) { toast(err.message || 'Error al enviar', 'error'); }
         };
     }

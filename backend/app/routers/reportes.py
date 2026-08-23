@@ -84,7 +84,7 @@ async def create_reporte(
 
     total_avance = 0
     for t in tareas_proyecto:
-        total_avance += t.avance
+        total_avance += (t.avance or 0)
 
     if tareas_proyecto:
         proyecto.avance_general = total_avance / len(tareas_proyecto)
@@ -99,6 +99,7 @@ async def create_reporte(
             tarea.estado = "en_progreso"
 
     db.commit()
+    db.refresh(db_reporte)
     return db_reporte
 
 @router.delete("/reportes/{id_reporte}")
