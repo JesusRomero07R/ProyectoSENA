@@ -283,7 +283,7 @@ export async function cargarDashboardResumen() {
 }
 
 // ponytail: función universal para dona SVG de 2 a 4 segmentos sin dependencias
-function renderSvgDonut(containerId, items) {
+export function renderSvgDonut(containerId, items) {
     const el = document.getElementById(containerId);
     if (!el) return;
     const total = items.reduce((acc, i) => acc + (i.val || 0), 0);

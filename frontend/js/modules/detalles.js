@@ -3,6 +3,7 @@ import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.
 import { toast } from '../toast.js';
 import { exportarProyectoPDF } from './pdf.js';
 import { api, API_URL } from '../services/api.js';
+import { renderSvgDonut } from './dashboard.js';
 
 export async function setupProjectDetailPage() {
     const id = new URLSearchParams(window.location.search).get("id");
@@ -114,6 +115,16 @@ async function refrescarDetallesProyecto(id) {
                 barSpent.style.width = `${pctSpent}%`;
                 barSpent.className = `kpi-bar-fill ${pctSpent > 90 ? 'danger' : (pctSpent > 75 ? 'warning' : '')}`;
             }
+
+            // ponytail: Renderizar gráficos SVG de Avance y Presupuesto del proyecto
+            renderSvgDonut('det-chart-presupuesto', [
+                { label: 'Físico %', val: Math.round(pctAvance), color: '#059669' },
+                { label: 'Presupuesto %', val: pctSpent, color: '#2563eb' }
+            ]);
+            renderSvgDonut('det-chart-avance', [
+                { label: 'Completado', val: Math.round(pctAvance), color: '#2563eb' },
+                { label: 'Pendiente', val: Math.max(0, 100 - Math.round(pctAvance)), color: '#475569' }
+            ]);
             
             // Ocultar botón de asignación de equipo si el proyecto está finalizado o el usuario no es Admin
             const btnManageTeam = document.getElementById("btnManageTeam");
@@ -330,6 +341,12 @@ async function cargarEquipoProyecto(id, isProjectActive = true) {
                 if (e.target.dataset.action === "desvincular") desvincularOperario(id, e.target.dataset.user);
             });
         }
+        const busyCount = team.filter(e => e.en_tarea).length;
+        const freeCount = Math.max(0, team.length - busyCount);
+        renderSvgDonut('det-chart-operarios', [
+            { label: 'En Tarea', val: busyCount, color: '#2563eb' },
+            { label: 'Disponibles', val: freeCount, color: '#059669' }
+        ]);
     } catch (e) { console.error(e); }
 }
 
