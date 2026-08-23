@@ -63,8 +63,11 @@
 
             <!-- Control de Presupuesto (ponytail: Finanzas nativas CSS) -->
             <div class="card" style="margin-top: 15px; padding: 15px 20px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.9rem;">
-                    <strong>Ejecución del Presupuesto de Obra</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px; font-size:0.9rem;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <strong>Ejecución del Presupuesto de Obra</strong>
+                        <button class="btn-outline role-lider-admin" id="btnRegImprevisto" style="padding:2px 8px; font-size:0.75rem;" title="Registrar sobrecosto por imprevistos de obra">+ Imprevisto / Sobrecosto</button>
+                    </div>
                     <span id="detPresupuestoBadge" style="font-weight:700; color:var(--primary);">0% gastado</span>
                 </div>
                 <div class="kpi-bar" style="height:10px;"><div class="kpi-bar-fill" id="detPresupuestoBar" style="width:0%;"></div></div>

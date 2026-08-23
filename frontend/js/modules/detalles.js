@@ -104,22 +104,52 @@ async function refrescarDetallesProyecto(id) {
 
             const presTotal = p.presupuesto || 0;
             const pctAvance = p.avance_general || 0;
-            const gastado = Math.round(presTotal * (pctAvance / 100));
-            const pctSpent = presTotal > 0 ? Math.round((gastado / presTotal) * 100) : 0;
+            const imprevistos = parseFloat(localStorage.getItem(`overcost_project_${id}`)) || 0;
+            const gastadoBase = Math.round(presTotal * (pctAvance / 100));
+            const gastadoTotal = gastadoBase + imprevistos;
+            const pctSpent = presTotal > 0 ? Math.round((gastadoTotal / presTotal) * 100) : 0;
+            const isOverbudget = pctSpent > 100;
 
             if (document.getElementById("detPresupuesto")) document.getElementById("detPresupuesto").textContent = `$${presTotal.toLocaleString()}`;
-            if (document.getElementById("detEjecutado")) document.getElementById("detEjecutado").textContent = `$${gastado.toLocaleString()}`;
-            if (document.getElementById("detPresupuestoBadge")) document.getElementById("detPresupuestoBadge").textContent = `${pctSpent}% ejecutado`;
+            const detEjecutado = document.getElementById("detEjecutado");
+            if (detEjecutado) {
+                detEjecutado.textContent = `$${gastadoTotal.toLocaleString()}`;
+                detEjecutado.style.color = isOverbudget ? "var(--danger)" : "var(--primary)";
+            }
+
+            const detBadge = document.getElementById("detPresupuestoBadge");
+            if (detBadge) {
+                if (isOverbudget) {
+                    detBadge.textContent = `⚠️ SOBRECOSTO (${pctSpent}% gastado)`;
+                    detBadge.style.color = "var(--danger)";
+                } else {
+                    detBadge.textContent = `${pctSpent}% gastado`;
+                    detBadge.style.color = "var(--primary)";
+                }
+            }
+
             const barSpent = document.getElementById("detPresupuestoBar");
             if (barSpent) {
-                barSpent.style.width = `${pctSpent}%`;
-                barSpent.className = `kpi-bar-fill ${pctSpent > 90 ? 'danger' : (pctSpent > 75 ? 'warning' : '')}`;
+                barSpent.style.width = `${Math.min(100, pctSpent)}%`;
+                barSpent.className = `kpi-bar-fill ${isOverbudget ? 'danger' : (pctSpent > 75 ? 'warning' : '')}`;
+            }
+
+            const btnImp = document.getElementById("btnRegImprevisto");
+            if (btnImp) {
+                btnImp.onclick = () => {
+                    const val = prompt("Ingrese el monto adicional por imprevisto / sobrecosto (en $):", "500000000");
+                    if (val !== null && !isNaN(val) && parseFloat(val) >= 0) {
+                        localStorage.setItem(`overcost_project_${id}`, val);
+                        import('../toast.js').then(m => m.toast("Sobrecosto por imprevisto registrado", "warn"));
+                        refrescarDetallesProyecto(id);
+                    }
+                };
             }
 
             // ponytail: Renderizar gráficos SVG de Avance y Presupuesto del proyecto
             renderSvgDonut('det-chart-presupuesto', [
                 { label: 'Físico %', val: Math.round(pctAvance), color: '#059669' },
-                { label: 'Presupuesto %', val: pctSpent, color: '#2563eb' }
+                { label: isOverbudget ? 'Sobrecosto %' : 'Presupuesto %', val: pctSpent, color: isOverbudget ? '#ef4444' : '#2563eb' }
             ]);
             renderSvgDonut('det-chart-avance', [
                 { label: 'Completado', val: Math.round(pctAvance), color: '#2563eb' },
