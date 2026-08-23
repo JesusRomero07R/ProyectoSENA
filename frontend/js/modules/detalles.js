@@ -135,15 +135,34 @@ async function refrescarDetallesProyecto(id) {
             }
 
             const btnImp = document.getElementById("btnRegImprevisto");
-            if (btnImp) {
+            const modalImp = document.getElementById("overcostModal");
+            const closeImp = document.getElementById("closeOvercostModal");
+            const cancelImp = document.getElementById("btnCancelOvercost");
+            const formImp = document.getElementById("overcostForm");
+            const inputImp = document.getElementById("overcostAmount");
+
+            if (btnImp && modalImp) {
                 btnImp.onclick = () => {
-                    const val = prompt("Ingrese el monto adicional por imprevisto / sobrecosto (en $):", "500000000");
-                    if (val !== null && !isNaN(val) && parseFloat(val) >= 0) {
-                        localStorage.setItem(`overcost_project_${id}`, val);
-                        import('../toast.js').then(m => m.toast("Sobrecosto por imprevisto registrado", "warn"));
-                        refrescarDetallesProyecto(id);
-                    }
+                    inputImp.value = imprevistos || 0;
+                    modalImp.style.display = "block";
                 };
+                const cerrarImp = () => modalImp.style.display = "none";
+                if (closeImp) closeImp.onclick = cerrarImp;
+                if (cancelImp) cancelImp.onclick = cerrarImp;
+
+                if (formImp && !formImp.dataset.bound) {
+                    formImp.dataset.bound = "true";
+                    formImp.onsubmit = (e) => {
+                        e.preventDefault();
+                        const val = inputImp.value;
+                        if (val !== "" && !isNaN(val) && parseFloat(val) >= 0) {
+                            localStorage.setItem(`overcost_project_${id}`, val);
+                            cerrarImp();
+                            import('../toast.js').then(m => m.toast("Sobrecosto por imprevisto registrado", "warn"));
+                            refrescarDetallesProyecto(id);
+                        }
+                    };
+                }
             }
 
             // ponytail: Renderizar gráficos SVG de Avance y Presupuesto del proyecto
