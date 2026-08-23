@@ -245,6 +245,50 @@ export async function cargarDashboardResumen() {
                         { label: 'Disponibles', val: disponibles, color: '#059669' }
                     ]);
                 }
+
+                // ponytail: 3 Gráficos visuales SVG nativos específicos para el Operario
+                if (document.getElementById('chart-operario-tareas')) {
+                    renderSvgDonut('chart-operario-tareas', [
+                        { label: 'En Curso', val: progCount, color: '#2563eb' },
+                        { label: 'Finalizadas', val: finCount, color: '#059669' },
+                        { label: 'Pendientes', val: pendCount, color: '#f59e0b' }
+                    ]);
+                }
+                if (document.getElementById('chart-operario-avance')) {
+                    const avgOpAvance = myTasks.length ? Math.round(myTasks.reduce((s, t) => s + (t.avance || 0), 0) / myTasks.length) : 0;
+                    renderSvgDonut('chart-operario-avance', [
+                        { label: 'Avance %', val: avgOpAvance, color: '#2563eb' },
+                        { label: 'Pendiente %', val: Math.max(0, 100 - avgOpAvance), color: '#475569' }
+                    ]);
+                }
+                if (document.getElementById('chart-operario-materiales')) {
+                    try {
+                        const myReports = await api.get('/reportes?limit=10');
+                        let matMap = new Map();
+                        if (Array.isArray(myReports)) {
+                            myReports.forEach(r => {
+                                if (r.materiales_detalles) {
+                                    r.materiales_detalles.forEach(md => {
+                                        const cur = matMap.get(md.nombre_material) || 0;
+                                        matMap.set(md.nombre_material, cur + md.cantidad_usada);
+                                    });
+                                }
+                            });
+                        }
+                        const items = Array.from(matMap.entries()).slice(0, 3).map(([label, val], idx) => ({
+                            label,
+                            val,
+                            color: ['#2563eb', '#059669', '#f59e0b'][idx % 3]
+                        }));
+                        if (items.length) {
+                            renderSvgDonut('chart-operario-materiales', items);
+                        } else {
+                            renderSvgDonut('chart-operario-materiales', [
+                                { label: 'Reportado', val: 1, color: '#059669' }
+                            ]);
+                        }
+                    } catch (e) { console.error(e); }
+                }
             }
         }
 

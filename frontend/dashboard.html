@@ -124,6 +124,22 @@
           </div>
         </div>
 
+        <!-- GRÁFICOS VISUALES: OPERARIO (ponytail: 3 gráficos SVG nativos adaptados para el Operario) -->
+        <div class="role-operario role-section grid-4" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+          <div class="card">
+            <div class="card-header"><h2>Estado de Mis Tareas</h2></div>
+            <div class="chart-container-svg" id="chart-operario-tareas"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Mi Avance Promedio</h2></div>
+            <div class="chart-container-svg" id="chart-operario-avance"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Consumo de Materiales</h2></div>
+            <div class="chart-container-svg" id="chart-operario-materiales"></div>
+          </div>
+        </div>
+
 
         <!-- ALERTAS Y NOTIFICACIONES (ADMIN) -->
         <div class="card role-admin role-section" style="border-left: 4px solid var(--danger);">
@@ -157,6 +173,6 @@
   </div>
 
   <div id="app-footer"></div>
-  <script type="module" src="js/main.js?v=1.4.0"></script>
+  <script type="module" src="js/main.js?v=1.5.0"></script>
 </body>
 </html>
