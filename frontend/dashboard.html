@@ -29,32 +29,68 @@
       <section class="content">
         <header class="content-header">
           <div class="content-title">
-            <h1 id="welcome-title">Bienvenido</h1>
-            <p id="welcome-subtitle">Resumen de tu actividad en la constructora.</p>
+            <h1 id="welcome-title">Indicadores Globales</h1>
+            <p id="welcome-subtitle">Resumen ejecutivo y métricas en tiempo real de la constructora.</p>
           </div>
         </header>
 
         <!-- SECCIÓN KPI: ADMIN -->
         <div class="card role-admin role-section">
-            <div class="card-header"><h2>Indicadores Globales</h2></div>
+            <div class="card-header"><h2>Resumen de Métricas Clave</h2></div>
             <div class="grid-4">
               <div class="kpi-card clickable-card" id="kpi-usuarios">
-                <span class="kpi-label">Usuarios Registrados</span>
+                <div class="kpi-top">
+                  <span class="kpi-label">Usuarios</span>
+                  <span class="kpi-badge" id="pct-usuarios">--%</span>
+                </div>
                 <span class="kpi-value" id="val-usuarios">--</span>
+                <div class="kpi-bar"><div class="kpi-bar-fill" id="bar-usuarios" style="width: 0%;"></div></div>
               </div>
               <div class="kpi-card clickable-card" id="kpi-proyectos">
-                <span class="kpi-label">Proyectos Activos</span>
+                <div class="kpi-top">
+                  <span class="kpi-label">Proyectos</span>
+                  <span class="kpi-badge" id="pct-proyectos">--%</span>
+                </div>
                 <span class="kpi-value" id="val-proyectos">--</span>
+                <div class="kpi-bar"><div class="kpi-bar-fill" id="bar-proyectos" style="width: 0%;"></div></div>
               </div>
               <div class="kpi-card clickable-card" id="kpi-inventario">
-                <span class="kpi-label">Materiales Críticos</span>
+                <div class="kpi-top">
+                  <span class="kpi-label">Mat. Críticos</span>
+                  <span class="kpi-badge danger" id="pct-inventario">--%</span>
+                </div>
                 <span class="kpi-value" id="val-inventario">--</span>
+                <div class="kpi-bar"><div class="kpi-bar-fill danger" id="bar-inventario" style="width: 0%;"></div></div>
               </div>
               <div class="kpi-card clickable-card" id="kpi-avance">
-                <span class="kpi-label">Alertas Pendientes</span>
+                <div class="kpi-top">
+                  <span class="kpi-label">Alertas</span>
+                  <span class="kpi-badge warning" id="pct-avance">--%</span>
+                </div>
                 <span class="kpi-value" id="val-avance">--</span>
+                <div class="kpi-bar"><div class="kpi-bar-fill warning" id="bar-avance" style="width: 0%;"></div></div>
               </div>
             </div>
+        </div>
+
+        <!-- GRÁFICOS VISUALES: ADMIN (ponytail: 4 gráficos SVG nativos ultraligeros dispuestos horizontalmente) -->
+        <div class="role-admin role-section grid-4" style="margin-bottom: 20px;">
+          <div class="card">
+            <div class="card-header"><h2>Distribución de Usuarios</h2></div>
+            <div class="chart-container-svg" id="chart-usuarios-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Avance de Proyectos</h2></div>
+            <div class="chart-container-svg" id="chart-proyectos-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Salud del Inventario</h2></div>
+            <div class="chart-container-svg" id="chart-inventario-box"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2>Estado de Alertas</h2></div>
+            <div class="chart-container-svg" id="chart-alertas-box"></div>
+          </div>
         </div>
 
         <!-- SECCIÓN KPI: LÍDER / OPERARIO -->
@@ -101,6 +137,6 @@
   </div>
 
   <div id="app-footer"></div>
-  <script type="module" src="js/main.js?v=1.1.0"></script>
+  <script type="module" src="js/main.js?v=1.2.0"></script>
 </body>
 </html>

@@ -80,6 +80,7 @@ async def list_inventario(
     return inventario
 
 @router.put("/materiales/{id_material}/stock", response_model=schemas.InventarioGlobal)
+@router.patch("/materiales/{id_material}/stock", response_model=schemas.InventarioGlobal)
 async def update_stock_manual(
     id_material: int,
     nueva_cantidad: int,

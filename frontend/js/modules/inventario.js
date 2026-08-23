@@ -3,12 +3,16 @@ import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.
 import { toast } from '../toast.js';
 import { api } from '../services/api.js';
 import { stockBadge } from '../components/badges.js';
+import { exportToCSV } from '../services/export.js';
+
+let inventarioDataCache = [];
 
 async function cargarInventarioGlobal(filter = 'all', term = '') {
     const container = document.getElementById("inventoryList");
     if(!container) return;
     try {
         let items = await api.get('/inventario');
+        inventarioDataCache = items;
         if (filter === 'low') items = items.filter(i => i.stock_actual <= i.stock_minimo);
         if (term) { const t = term.toLowerCase(); items = items.filter(i => i.nombre_material.toLowerCase().includes(t) || i.categoria_nombre.toLowerCase().includes(t)); }
         container.innerHTML = "";
@@ -34,6 +38,21 @@ async function cargarInventarioGlobal(filter = 'all', term = '') {
 
 export async function setupInventoryPage() {
     cargarInventarioGlobal('all', '');
+    const btnExp = document.getElementById("btnExportInventoryCSV");
+    if (btnExp) {
+        btnExp.onclick = () => {
+            if (!inventarioDataCache.length) return toast("No hay datos para exportar", "warn");
+            const dataToExport = inventarioDataCache.map(i => ({
+                Material: i.nombre_material,
+                Categoria: i.categoria_nombre,
+                Stock_Actual: i.stock_actual,
+                Unidad: i.unidad_medida,
+                Estado: i.stock_actual <= i.stock_minimo ? 'Bajo Stock' : 'Suficiente'
+            }));
+            exportToCSV("Inventario_Constructora_GG", dataToExport);
+            toast("Inventario exportado a CSV", "success");
+        };
+    }
     const filters = document.querySelectorAll("#inventoryFilters .chip");
     filters.forEach(chip => chip.onclick = () => {
         document.querySelectorAll("#inventoryFilters .chip").forEach(c => c.classList.remove("chip-active"));
@@ -118,7 +137,7 @@ export async function setupInventoryPage() {
             btn.textContent = "Guardando...";
 
             try {
-                await api.patch(`/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, null);
+                await api.put(`/materiales/${id}/stock?nueva_cantidad=${nuevoStock}`, null);
                 toast("Stock actualizado", 'success');
                 adjustModal.style.display = "none";
                 cargarInventarioGlobal();

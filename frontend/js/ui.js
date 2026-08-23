@@ -12,7 +12,17 @@ export function setupUIByRole(roleId) {
         .forEach(el => { el.style.display = 'none'; });
 
     const roleClass = roleId === 1 ? 'role-admin' : (roleId === 2 ? 'role-lider' : 'role-operario');
-    document.querySelectorAll(`.role-section.${roleClass}`).forEach(el => el.style.display = 'block');
+    document.querySelectorAll(`.role-section.${roleClass}`).forEach(el => {
+        if (el.classList.contains('grid-4')) {
+            el.style.display = 'grid';
+            el.style.gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+        } else if (el.classList.contains('grid-2')) {
+            el.style.display = 'grid';
+            el.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+        } else {
+            el.style.display = 'block';
+        }
+    });
 
     if (roleId === 1) {
         adminOnly.forEach(el => el.style.display = '');

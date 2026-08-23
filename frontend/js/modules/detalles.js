@@ -101,7 +101,19 @@ async function refrescarDetallesProyecto(id) {
                 };
             }
 
-            document.getElementById("detPresupuesto").textContent = `$${p.presupuesto.toLocaleString()}`;
+            const presTotal = p.presupuesto || 0;
+            const pctAvance = p.avance_general || 0;
+            const gastado = Math.round(presTotal * (pctAvance / 100));
+            const pctSpent = presTotal > 0 ? Math.round((gastado / presTotal) * 100) : 0;
+
+            if (document.getElementById("detPresupuesto")) document.getElementById("detPresupuesto").textContent = `$${presTotal.toLocaleString()}`;
+            if (document.getElementById("detEjecutado")) document.getElementById("detEjecutado").textContent = `$${gastado.toLocaleString()}`;
+            if (document.getElementById("detPresupuestoBadge")) document.getElementById("detPresupuestoBadge").textContent = `${pctSpent}% ejecutado`;
+            const barSpent = document.getElementById("detPresupuestoBar");
+            if (barSpent) {
+                barSpent.style.width = `${pctSpent}%`;
+                barSpent.className = `kpi-bar-fill ${pctSpent > 90 ? 'danger' : (pctSpent > 75 ? 'warning' : '')}`;
+            }
             
             // Ocultar botón de asignación de equipo si el proyecto está finalizado o el usuario no es Admin
             const btnManageTeam = document.getElementById("btnManageTeam");
@@ -251,6 +263,9 @@ async function cargarTareasProyecto(id, isProjectActive = true) {
         const tasks = await api.get(`/proyectos/${id}/tareas`);
         const payload = getPayload();
         if (!payload) return goToLogin();
+        
+        renderGanttChart('ganttContainer', tasks);
+
         tCont.innerHTML = tasks.length ? "" : "<p>No hay tareas.</p>";
         tasks.forEach(t => {
             const tieneOperarios = t.operarios_nombres && t.operarios_nombres.length > 0;
@@ -268,6 +283,32 @@ async function cargarTareasProyecto(id, isProjectActive = true) {
             });
         }
     } catch (e) { console.error(e); }
+}
+
+// ponytail: Diagrama de Gantt nativo ultraligero
+function renderGanttChart(containerId, tasks) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!tasks || !tasks.length) {
+        container.innerHTML = "<p style='color:var(--muted); font-size:0.85rem;'>No hay tareas registradas para el cronograma.</p>";
+        return;
+    }
+    const html = tasks.map(t => {
+        const pct = t.avance !== undefined ? t.avance : (t.estado === 'finalizada' ? 100 : 0);
+        const color = t.estado === 'finalizada' ? 'var(--success)' : (t.estado === 'en_progreso' ? 'var(--primary)' : 'var(--muted)');
+        return `
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:0.85rem; gap:12px;">
+                <div style="min-width:140px; max-width:180px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text);" title="${t.titulo}">
+                    ${t.titulo}
+                </div>
+                <div style="flex:1; background:var(--border); height:14px; border-radius:999px; overflow:hidden;">
+                    <div style="width:${pct}%; background:${color}; height:100%; transition:width 0.4s ease;"></div>
+                </div>
+                <span style="font-weight:700; width:45px; text-align:right; color:${color}">${pct}%</span>
+            </div>
+        `;
+    }).join('');
+    container.innerHTML = html;
 }
 
 async function cargarEquipoProyecto(id, isProjectActive = true) {

@@ -42,40 +42,68 @@ export async function cargarDashboardResumen() {
 
         // Si es Admin, cargamos los indicadores globales específicos de admin
         if (isAdmin) {
-            // KPI: Proyectos Activos (val-proyectos)
+            // 1. KPI & Gráfico: Proyectos Activos
             const valProj = document.getElementById('val-proyectos');
-            if (valProj) {
-                valProj.textContent = projects.length;
-            }
+            const avgAvance = projects.length ? Math.round(projects.reduce((acc, p) => acc + (p.avance_general || 0), 0) / projects.length) : 0;
+            if (valProj) valProj.textContent = projects.length;
+            const pctProj = document.getElementById('pct-proyectos');
+            if (pctProj) pctProj.textContent = `${avgAvance}% prom`;
+            const barProj = document.getElementById('bar-proyectos');
+            if (barProj) barProj.style.width = `${avgAvance}%`;
+            
+            renderSvgDonut('chart-proyectos-box', [
+                { label: 'Completado', val: avgAvance, color: '#2563eb' },
+                { label: 'Pendiente', val: Math.max(0, 100 - avgAvance), color: '#475569' }
+            ]);
 
-            // KPI: Usuarios Registrados (val-usuarios)
+            // 2. KPI & Gráfico: Usuarios Registrados
             try {
                 const users = await api.get('/usuarios');
-                const valUsers = document.getElementById('val-usuarios');
-                if (valUsers) valUsers.textContent = Array.isArray(users) ? users.length : 0;
+                if (Array.isArray(users)) {
+                    const valUsers = document.getElementById('val-usuarios');
+                    if (valUsers) valUsers.textContent = users.length;
+                    const pctUsers = document.getElementById('pct-usuarios');
+                    if (pctUsers) pctUsers.textContent = '100%';
+                    const barUsers = document.getElementById('bar-usuarios');
+                    if (barUsers) barUsers.style.width = '100%';
+
+                    const operarios = users.filter(u => u.id_rol_fk === 3).length;
+                    const lideres = users.filter(u => u.id_rol_fk === 2).length;
+                    const admins = users.filter(u => u.id_rol_fk === 1).length;
+
+                    renderSvgDonut('chart-usuarios-box', [
+                        { label: 'Operarios', val: operarios, color: '#10b981' },
+                        { label: 'Líderes', val: lideres, color: '#2563eb' },
+                        { label: 'Admins', val: admins, color: '#8b5cf6' }
+                    ]);
+                }
             } catch (err) {
                 console.error("Excepción al buscar usuarios:", err);
             }
 
-            // KPI: Alertas Pendientes (val-avance) y lista de notificaciones de admin
+            // 3. KPI & Gráfico: Alertas Pendientes y Notificaciones
             try {
                 const notifications = await api.get('/notificaciones');
                 if (Array.isArray(notifications)) {
                         const pending = notifications.filter(n => !n.leida);
+                        const read = notifications.filter(n => n.leida);
+                        const pctPending = notifications.length > 0 ? Math.round((pending.length / notifications.length) * 100) : 0;
                         
-                        // Badge de acción requerida en la sección de alertas del sistema
                         const badge = document.getElementById("adminAlertBadge");
-                        if (badge) {
-                            badge.style.display = pending.length ? "inline-block" : "none";
-                        }
+                        if (badge) badge.style.display = pending.length ? "inline-block" : "none";
 
-                        // Indicador "Alertas Pendientes" (anteriormente avance global)
                         const valAvance = document.getElementById('val-avance');
-                        if (valAvance) {
-                            valAvance.textContent = pending.length;
-                        }
+                        if (valAvance) valAvance.textContent = pending.length;
+                        const pctAdv = document.getElementById('pct-avance');
+                        if (pctAdv) pctAdv.textContent = `${pctPending}% pend`;
+                        const barAdv = document.getElementById('bar-avance');
+                        if (barAdv) barAdv.style.width = `${pctPending}%`;
 
-                        // Lista visual de alertas pendientes
+                        renderSvgDonut('chart-alertas-box', [
+                            { label: 'Atendidas', val: read.length, color: '#059669' },
+                            { label: 'Pendientes', val: pending.length, color: '#f59e0b' }
+                        ]);
+
                         if (notifContainer) {
                             notifContainer.innerHTML = pending.length ? "" : "<p style='text-align:center; color:var(--muted); font-size:0.85rem;'>No hay alertas pendientes.</p>";
                             pending.slice(0, 5).forEach(n => {
@@ -107,7 +135,6 @@ export async function cargarDashboardResumen() {
                                     </div>`;
                             });
                         }
-                        console.log("Alertas cargadas para KPI:", pending.length);
                 }
             } catch (err) {
                 console.error("Excepción al cargar notificaciones:", err);
@@ -122,7 +149,6 @@ export async function cargarDashboardResumen() {
                 if (payload.role === 3) {
                     myTasks = await api.get('/tareas/mis-tareas');
                     
-                    // Poblar lista de tareas de hoy para el operario
                     const taskContainer = document.getElementById("operarioTodayTasks");
                     if (taskContainer && Array.isArray(myTasks)) {
                         const todayTasks = myTasks.filter(t => t.estado !== 'finalizada');
@@ -166,15 +192,28 @@ export async function cargarDashboardResumen() {
             }
         }
 
-        // 3. KPI: Materiales Críticos (val-inventario) - para Admin (o quien tenga el elemento val-inventario)
+        // 4. KPI & Gráfico: Salud del Inventario (val-inventario)
         const valI = document.getElementById('val-inventario');
         if (valI) {
             try {
                 const inventory = await api.get('/inventario');
                 if (Array.isArray(inventory)) {
                     const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
+                    const healthyCount = Math.max(0, inventory.length - lowCount);
+                    const pctCrit = inventory.length > 0 ? Math.round((lowCount / inventory.length) * 100) : 0;
+                    
                     valI.textContent = lowCount;
                     valI.style.color = lowCount > 0 ? "#ef4444" : "#059669";
+
+                    const pctInv = document.getElementById('pct-inventario');
+                    if (pctInv) pctInv.textContent = `${pctCrit}% crít`;
+                    const barInv = document.getElementById('bar-inventario');
+                    if (barInv) barInv.style.width = `${pctCrit}%`;
+
+                    renderSvgDonut('chart-inventario-box', [
+                        { label: 'Óptimo', val: healthyCount, color: '#059669' },
+                        { label: 'Crítico', val: lowCount, color: '#ef4444' }
+                    ]);
                 }
             } catch (err) {
                 console.error("Excepción al cargar inventario:", err);
@@ -187,6 +226,34 @@ export async function cargarDashboardResumen() {
     }
 }
 
+// ponytail: función universal para dona SVG de 2 a 4 segmentos sin dependencias
+function renderSvgDonut(containerId, items) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const total = items.reduce((acc, i) => acc + (i.val || 0), 0);
+    if (!total) {
+        el.innerHTML = "<p style='color:var(--muted); font-size:0.85rem; padding:15px 0;'>Sin datos registrados.</p>";
+        return;
+    }
+    let offsetAcc = 0;
+    const circles = items.map(i => {
+        const pct = (i.val / total) * 100;
+        const strokeDash = `${pct} ${100 - pct}`;
+        const offset = -offsetAcc;
+        offsetAcc += pct;
+        return `<circle cx="18" cy="18" r="15.915" fill="none" stroke="${i.color}" stroke-width="4" stroke-dasharray="${strokeDash}" stroke-dashoffset="${offset}"></circle>`;
+    }).join('');
+    const legend = items.map(i => `
+        <span class="chart-legend-item"><span class="chart-dot" style="background:${i.color}"></span>${i.label} (${i.val})</span>
+    `).join('');
+    el.innerHTML = `
+        <svg viewBox="0 0 36 36" style="width: 90px; height: 90px; transform: rotate(-90deg);">
+            ${circles}
+        </svg>
+        <div class="chart-legend">${legend}</div>
+    `;
+}
+
 window.marcarNotificacionLeida = async function(id) {
     try { await api.patch(`/notificaciones/${id}/leer`, null); } catch(e) {}
     cargarDashboardResumen();
@@ -196,4 +263,5 @@ export function setupKPIShortcuts() {
     const ids = { 'kpi-usuarios': 'pages/usuarios.html', 'kpi-proyectos': 'pages/proyectos.html', 'kpi-inventario': 'pages/inventario.html', 'kpi-avance': 'pages/reportes.html' };
     Object.keys(ids).forEach(id => { const el = document.getElementById(id); if (el) el.onclick = () => window.location.href = ids[id]; });
 }
+
 

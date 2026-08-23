@@ -3,7 +3,9 @@ import { loadComponent, renderProjectSubNavigation, setupUIByRole } from '../ui.
 import { toast } from '../toast.js';
 import { exportarProyectoPDF } from './pdf.js';
 import { api } from '../services/api.js';
+import { exportToCSV } from '../services/export.js';
 
+let reportsDataCache = [];
 
 export async function setupReportsPage() {
     cargarDatosReportes();
@@ -12,6 +14,22 @@ export async function setupReportsPage() {
         chip.classList.add("chip-active");
         document.getElementById("reportsSection").style.display = chip.dataset.period === 'financial' ? "none" : "block";
     });
+
+    const btnExp = document.getElementById("btnExportReportsCSV");
+    if (btnExp) {
+        btnExp.onclick = () => {
+            if (!reportsDataCache.length) return toast("No hay reportes para exportar", "warn");
+            const dataToExport = reportsDataCache.map(r => ({
+                Proyecto: r.nombre_proyecto,
+                Tarea: r.titulo_tarea,
+                Operario: r.nombre_operario,
+                Avance_Porcentaje: `${r.porcentaje}%`,
+                Fecha: r.fecha || 'Reciente'
+            }));
+            exportToCSV("Reportes_Avance_Constructora_GG", dataToExport);
+            toast("Reportes exportados a CSV", "success");
+        };
+    }
 
     const select = document.getElementById("proyectoReporteSelect");
     if (select) {
@@ -45,6 +63,7 @@ async function cargarDatosReportes() {
             api.get('/inventario'),
             api.get('/reportes?limit=5')
         ]);
+        reportsDataCache = reports;
         if(document.getElementById("valTotalProyectos")) document.getElementById("valTotalProyectos").textContent = projects.length;
         if(document.getElementById("valAvancePromedio")) { const avg = projects.length ? (projects.reduce((s,p)=>s+p.avance_general,0)/projects.length).toFixed(1)+'%' : '0%'; document.getElementById("valAvancePromedio").textContent = avg; }
         if(document.getElementById("valMaterialesCriticos")) document.getElementById("valMaterialesCriticos").textContent = inventory.filter(i=>i.stock_actual<=i.stock_minimo).length;

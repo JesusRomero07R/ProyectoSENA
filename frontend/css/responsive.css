@@ -49,8 +49,8 @@
     }
 
 @media (max-width: 768px) {
-      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
+  .grid-4, .role-section.grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
 
 @media (max-width: 768px) {
       .layout { grid-template-columns: 1fr; padding: 10px; }

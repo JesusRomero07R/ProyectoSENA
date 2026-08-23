@@ -2,6 +2,29 @@ import { getPayload } from '../auth.js';
 import { toast } from '../toast.js';
 import { api, API_URL } from '../services/api.js';
 
+// ponytail: visor modal de imágenes nativo ultraligero (Lightbox)
+window.abrirVistaPreviaImagen = function(imgUrl) {
+    let modal = document.getElementById("lightboxImageModal");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "lightboxImageModal";
+        modal.className = "modal";
+        modal.style.background = "rgba(0,0,0,0.85)";
+        modal.style.zIndex = "99999";
+        modal.innerHTML = `
+            <div style="position:relative; max-width:90vw; max-height:90vh; margin:40px auto; text-align:center;">
+                <span id="closeLightbox" style="position:absolute; top:-35px; right:0; color:#fff; font-size:2rem; cursor:pointer; font-weight:bold;">&times;</span>
+                <img id="lightboxImgTarget" src="" style="max-width:100%; max-height:80vh; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5);" />
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.querySelector("#closeLightbox").onclick = () => modal.style.display = "none";
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+    }
+    modal.querySelector("#lightboxImgTarget").src = imgUrl;
+    modal.style.display = "block";
+};
+
 function renderHistorialItem(item, userId, tareaId, tareaEstado) {
     const fecha = `${item.date.toLocaleDateString()} ${item.date.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
     if (item.type === 'report') {
@@ -9,8 +32,8 @@ function renderHistorialItem(item, userId, tareaId, tareaEstado) {
         const canDelete = userId && r.id_operario_fk === userId && tareaEstado !== 'finalizada';
         const photoHTML = r.foto_url ? `
             <div style="margin-top: 8px; margin-bottom: 8px;">
-                <a href="${API_URL}${r.foto_url}" target="_blank">
-                    <img src="${API_URL}${r.foto_url}" alt="Evidencia" style="max-height: 80px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                <a href="javascript:void(0)" onclick="abrirVistaPreviaImagen('${API_URL}${r.foto_url}')">
+                    <img src="${API_URL}${r.foto_url}" alt="Evidencia" style="max-height: 90px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer;" title="Hacer clic para ampliar evidencia fotográfica">
                 </a>
             </div>
         ` : '';

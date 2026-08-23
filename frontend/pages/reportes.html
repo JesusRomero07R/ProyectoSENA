@@ -56,9 +56,14 @@
           </div>
 
           <div class="card" style="margin-top: 15px;" id="reportsSection">
-            <div class="card-header">
-              <h2>Últimos Reportes Generados</h2>
-              <p class="card-subtitle">Novedades de avance reciente.</p>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h2>Últimos Reportes Generados</h2>
+                <p class="card-subtitle">Novedades de avance reciente.</p>
+              </div>
+              <button class="btn-outline" id="btnExportReportsCSV">
+                <span class="icon">📊</span> Exportar CSV
+              </button>
             </div>
             <div class="latest-report-list" id="latestReportsList">
                 <!-- Se cargará dinámicamente -->

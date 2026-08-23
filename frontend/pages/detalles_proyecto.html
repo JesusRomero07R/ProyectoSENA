@@ -53,8 +53,21 @@
                             <span>Presupuesto</span>
                             <strong id="detPresupuesto">--</strong>
                         </div>
+                        <div class="stat-card">
+                            <span>Ejecutado</span>
+                            <strong id="detEjecutado" style="color:var(--primary);">--</strong>
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Control de Presupuesto (ponytail: Finanzas nativas CSS) -->
+            <div class="card" style="margin-top: 15px; padding: 15px 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.9rem;">
+                    <strong>Ejecución del Presupuesto de Obra</strong>
+                    <span id="detPresupuestoBadge" style="font-weight:700; color:var(--primary);">0% gastado</span>
+                </div>
+                <div class="kpi-bar" style="height:10px;"><div class="kpi-bar-fill" id="detPresupuestoBar" style="width:0%;"></div></div>
             </div>
 
             <!-- Tareas del Proyecto -->
@@ -64,6 +77,15 @@
                     <p class="card-subtitle">Listado de actividades asignadas y su estado actual.</p>
                 </div>
                 <div id="listadoTareas" style="margin-top: 15px;">Cargando tareas...</div>
+            </div>
+
+            <!-- Cronograma / Gantt de Tareas (ponytail: Gantt nativo SVG) -->
+            <div class="card" style="margin-top: 20px; padding: 20px;">
+                <div class="card-header">
+                    <h2>Cronograma de Avance (Gantt)</h2>
+                    <p class="card-subtitle">Línea de tiempo visual del progreso de actividades.</p>
+                </div>
+                <div id="ganttContainer" style="margin-top: 15px; overflow-x: auto;"></div>
             </div>
 
             <!-- Equipo Asignado -->
