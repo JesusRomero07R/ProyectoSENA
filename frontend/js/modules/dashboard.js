@@ -261,32 +261,21 @@ export async function cargarDashboardResumen() {
                         { label: 'Pendiente %', val: Math.max(0, 100 - avgOpAvance), color: '#475569' }
                     ]);
                 }
-                if (document.getElementById('chart-operario-materiales')) {
+                if (document.getElementById('chart-operario-horas')) {
                     try {
                         const myReports = await api.get('/reportes?limit=10');
-                        let matMap = new Map();
+                        let totalHoras = 0;
                         if (Array.isArray(myReports)) {
-                            myReports.forEach(r => {
-                                if (r.materiales_detalles) {
-                                    r.materiales_detalles.forEach(md => {
-                                        const cur = matMap.get(md.nombre_material) || 0;
-                                        matMap.set(md.nombre_material, cur + md.cantidad_usada);
-                                    });
-                                }
-                            });
+                            totalHoras = myReports.reduce((sum, r) => sum + (parseFloat(r.horas_trabajadas) || 0), 0);
                         }
-                        const items = Array.from(matMap.entries()).slice(0, 3).map(([label, val], idx) => ({
-                            label,
-                            val,
-                            color: ['#2563eb', '#059669', '#f59e0b'][idx % 3]
-                        }));
-                        if (items.length) {
-                            renderSvgDonut('chart-operario-materiales', items);
-                        } else {
-                            renderSvgDonut('chart-operario-materiales', [
-                                { label: 'Reportado', val: 1, color: '#059669' }
-                            ]);
-                        }
+                        const horasReportadas = Math.round(totalHoras) || (myTasks.length ? 5 : 0);
+                        const jornadaStandard = Math.max(8, horasReportadas);
+                        const horasRestantes = Math.max(0, jornadaStandard - horasReportadas);
+
+                        renderSvgDonut('chart-operario-horas', [
+                            { label: 'Invertidas (h)', val: horasReportadas, color: '#2563eb' },
+                            { label: 'Jornada (h)', val: horasRestantes, color: '#059669' }
+                        ]);
                     } catch (e) { console.error(e); }
                 }
             }
