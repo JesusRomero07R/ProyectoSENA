@@ -209,20 +209,40 @@ export async function cargarDashboardResumen() {
                         { label: 'Pendiente %', val: Math.max(0, 100 - avgAvance), color: '#475569' }
                     ]);
                 }
-                if (document.getElementById('chart-lider-inventario')) {
-                    const lowCount = inventory.filter(i => i.stock_actual <= i.stock_minimo).length;
-                    const healthyCount = Math.max(0, inventory.length - lowCount);
-                    renderSvgDonut('chart-lider-inventario', [
-                        { label: 'Óptimo', val: healthyCount, color: '#059669' },
-                        { label: 'Crítico', val: lowCount, color: '#ef4444' }
+                if (document.getElementById('chart-lider-cronograma')) {
+                    const aTiempo = finCount + progCount;
+                    const enRiesgo = myTasks.filter(t => t.estado === 'en_progreso' && (!t.operarios_nombres || !t.operarios_nombres.length)).length;
+                    const retrasadas = pendCount;
+                    renderSvgDonut('chart-lider-cronograma', [
+                        { label: 'A tiempo', val: aTiempo, color: '#059669' },
+                        { label: 'En riesgo', val: enRiesgo, color: '#f59e0b' },
+                        { label: 'Pendiente', val: retrasadas, color: '#ef4444' }
                     ]);
                 }
                 if (document.getElementById('chart-lider-equipo')) {
-                    const assigned = myTasks.filter(t => t.operarios_nombres && t.operarios_nombres.length > 0).length;
-                    const unassigned = Math.max(0, myTasks.length - assigned);
+                    let totalOpsInTeam = 0;
+                    let activeOpsInTasks = 0;
+                    try {
+                        let allTeam = [];
+                        if (Array.isArray(projects)) {
+                            for (const p of projects) {
+                                const team = await api.get(`/proyectos/${p.id_proyecto}/estado-equipo`);
+                                if (Array.isArray(team)) allTeam = allTeam.concat(team);
+                            }
+                        }
+                        const uniqueUsers = new Map();
+                        allTeam.forEach(u => uniqueUsers.set(u.id_usuario, u));
+                        totalOpsInTeam = uniqueUsers.size;
+                        activeOpsInTasks = Array.from(uniqueUsers.values()).filter(u => u.en_tarea).length;
+                    } catch (e) {
+                        activeOpsInTasks = myTasks.filter(t => t.operarios_nombres && t.operarios_nombres.length > 0).length;
+                        totalOpsInTeam = activeOpsInTasks;
+                    }
+
+                    const disponibles = Math.max(0, totalOpsInTeam - activeOpsInTasks);
                     renderSvgDonut('chart-lider-equipo', [
-                        { label: 'Asignadas', val: assigned, color: '#059669' },
-                        { label: 'Sin Asignar', val: unassigned, color: '#ef4444' }
+                        { label: 'Trabajando', val: activeOpsInTasks, color: '#2563eb' },
+                        { label: 'Disponibles', val: disponibles, color: '#059669' }
                     ]);
                 }
             }
