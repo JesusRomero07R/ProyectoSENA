@@ -10,19 +10,49 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   animation: fadeIn 0.25s ease;
+  overflow-y: auto;
+  padding: 20px 0;
+  box-sizing: border-box;
 }
 
 .modal-content {
   background-color: var(--bg-card);
-  margin: 6% auto;
+  margin: 3% auto;
   padding: 32px;
   border-radius: var(--radius-lg);
   width: 90%;
   max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
   position: relative;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+/* Scrollbar estilizado para las ventanas modales */
+.modal-content::-webkit-scrollbar,
+#modalMaterialsList::-webkit-scrollbar,
+.modal::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content::-webkit-scrollbar-track,
+#modalMaterialsList::-webkit-scrollbar-track,
+.modal::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.2);
+  border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb,
+#modalMaterialsList::-webkit-scrollbar-thumb,
+.modal::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.modal-content::-webkit-scrollbar-thumb:hover,
+#modalMaterialsList::-webkit-scrollbar-thumb:hover,
+.modal::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
 @keyframes fadeIn {
