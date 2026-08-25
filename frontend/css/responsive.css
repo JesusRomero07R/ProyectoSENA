@@ -92,7 +92,7 @@
       .content .user-card {
         grid-template-columns: auto 1fr;
         grid-template-rows: auto auto;
-        padding-bottom: 50px; /* Espacio para el bot¨®n */
+        padding-bottom: 50px; /* Espacio para el botÂ¨Â®n */
       }
       .content .user-details {
         grid-row: 1 / 2;
@@ -154,7 +154,7 @@
   .grid-3 { grid-template-columns: 1fr; }
 }
 
-/* ©¤©¤ Men¨² m¨®vil: barra inferior deslizable ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤ */
+/* Â©Â¤Â©Â¤ MenÂ¨Â² mÂ¨Â®vil: barra inferior deslizable Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤Â©Â¤ */
 @media (max-width: 768px) {
   .layout {
     padding-bottom: 90px;
