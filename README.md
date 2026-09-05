@@ -5,7 +5,7 @@
 ![Vanilla JS](https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?logo=javascript&logoColor=black)
 ![SQLite](https://img.shields.io/badge/DB-SQLite-003B57?logo=sqlite&logoColor=white)
 
-Constructora GG es una solución integral diseñada para optimizar la gestión de proyectos de construcción. La plataforma permite la coordinación eficiente entre administradores, líderes de proyecto y operarios, centralizando el control de inventarios, tareas, avances y seguridad.
+Constructora GG es una solución integral diseñada para optimizar la gestión de proyectos de construcción. La plataforma permite la coordinación eficiente entre administradores, líderes de proyecto y operarios, centralizando el control de inventarios, tareas, avances y seguridad. https://constructora.paujity.com
 
 ---
 
